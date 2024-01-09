@@ -33,7 +33,7 @@ public class ChessPosition {
 
     public int toIndex(){ return (this.column-1)+(this.row-1)*8; }
 
-    ChessPosition addOffset(ChessPiece.Offset offset){
+    public ChessPosition addOffset(ChessPiece.Offset offset){
         return new ChessPosition(this.row+offset.y(),this.column+offset.x());
     }
 

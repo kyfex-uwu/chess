@@ -47,6 +47,14 @@ public class ChessMove {
         return new ChessMove(this.start, this.end, type);
     }
 
+    public void apply(ChessBoard board){
+        var startPiece=board.getPiece(this.start);
+        board.addPiece(this.end, this.promotionPiece==null ?
+                startPiece :
+                new ChessPiece(startPiece.getTeamColor(),this.promotionPiece));
+        board.addPiece(this.start, null);
+    }
+
     public String toString(){
         return this.start+" -> "+this.end+(this.promotionPiece!=null?":"+this.promotionPiece:"");
     }

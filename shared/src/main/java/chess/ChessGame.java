@@ -9,16 +9,20 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
+    private TeamColor currTeam;
+    private ChessBoard board;
 
     public ChessGame() {
-
+        this.currTeam=TeamColor.WHITE;
+        this.board=new ChessBoard();
+        this.board.resetBoard();
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return this.currTeam;
     }
 
     /**
@@ -27,7 +31,8 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        this.currTeam=team;
+        this.board.clearEnPassantables(team);
     }
 
     /**
@@ -35,7 +40,7 @@ public class ChessGame {
      */
     public enum TeamColor {
         WHITE,
-        BLACK
+        BLACK,
     }
 
     /**
@@ -46,7 +51,12 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        var piece=this.board.getPiece(startPosition);
+        return piece.pieceMoves(this.board, startPosition).stream().filter(move->{
+            var futureBoard = this.board.clone();
+            move.apply(futureBoard);
+            return !futureBoard.isInCheck(piece.getTeamColor());
+        }).toList();
     }
 
     /**
@@ -96,7 +106,8 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board=board;
+        // :(
     }
 
     /**
@@ -105,6 +116,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return this.board;
     }
 }

@@ -1,5 +1,8 @@
 package chess;
 
+import chess.specialmoves.CastleMove;
+import chess.specialmoves.EnPassantMove;
+
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -74,7 +77,7 @@ public class ChessPiece {
         }
     }
 
-    record Offset(int x, int y) {
+    public record Offset(int x, int y) {
         public Offset mult(int mult){
             return new Offset(this.x*mult, this.y*mult);
         }
@@ -96,7 +99,9 @@ public class ChessPiece {
 
     private void addPawnMove(ChessPosition start, Offset endOffs, ChessBoard board, boolean pieceAtDest,
                              ArrayList<ChessMove> moveList){
-        var move = new ChessMove(start, start.addOffset(endOffs), null);
+        var move = (endOffs.x!=0&&endOffs.y!=0&&board.getPiece(start.addOffset(endOffs))==null)?
+                new ChessMove(start, start.addOffset(endOffs), null):
+                new EnPassantMove(start, start.addOffset(endOffs), null);
         if(!move.getEndPosition().isValid()) return;
         var destPiece=board.getPiece(move.getEndPosition());
         if((destPiece==null)==pieceAtDest) return;
@@ -156,6 +161,13 @@ public class ChessPiece {
                 if(pieceAt!=null) break;
             }
         }
+
+        if(this.type==PieceType.KING){
+            if(board.canCastle(this.color, CastleMove.Side.KINGSIDE))
+                toReturn.add(new CastleMove(this.color, CastleMove.Side.KINGSIDE));
+            if(board.canCastle(this.color, CastleMove.Side.QUEENSIDE))
+                toReturn.add(new CastleMove(this.color, CastleMove.Side.QUEENSIDE));
+        }
         return toReturn;
     }
 
@@ -165,5 +177,8 @@ public class ChessPiece {
     public boolean equals(Object other){
         if(!(other instanceof ChessPiece otherPiece)) return false;
         return this.color==otherPiece.color&&this.type==otherPiece.type;
+    }
+    public ChessPiece clone(){
+        return new ChessPiece(this.color, this.type);
     }
 }

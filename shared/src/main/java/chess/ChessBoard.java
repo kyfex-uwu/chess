@@ -1,5 +1,7 @@
 package chess;
 
+import chess.specialmoves.CastleMove;
+
 import java.util.Arrays;
 
 /**
@@ -12,8 +14,19 @@ public class ChessBoard {
     private final ChessPiece[] pieces = new ChessPiece[8*8];
     private final boolean[] blackEnPassantable=new boolean[8];
     private final boolean[] whiteEnPassantable=new boolean[8];
+    private final boolean[] blackCanCastle=new boolean[]{true, true};
+    private final boolean[] whiteCanCastle=new boolean[]{true, true};
 
     public ChessBoard() {}
+    private ChessBoard(ChessPiece[] pieces, boolean[] BEP, boolean[] WEP, boolean[] BCC, boolean[] WCC){
+        for(int i=0;i<pieces.length;i++){
+            this.pieces[i]=pieces[i]==null?null:pieces[i].clone();
+        }
+        System.arraycopy(BEP, 0, this.blackEnPassantable, 0, 8);
+        System.arraycopy(WEP, 0, this.whiteEnPassantable, 0, 8);
+        System.arraycopy(BCC, 0, this.blackCanCastle, 0, 2);
+        System.arraycopy(WCC, 0, this.whiteCanCastle, 0, 2);
+    }
 
     /**
      * Adds a chess piece to the chessboard
@@ -64,17 +77,70 @@ public class ChessBoard {
             this.pieces[48+i]=new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
         }
 
-        this.clearEnPassantables();
+        Arrays.fill(this.whiteEnPassantable, false);
+        Arrays.fill(this.blackEnPassantable, false);
+        Arrays.fill(this.whiteCanCastle, true);
+        Arrays.fill(this.blackCanCastle, true);
     }
+
+    //--
+
+    public boolean isInCheck(ChessGame.TeamColor color){
+        for(int i=0;i<64;i++){
+            if(this.pieces[i]==null||this.pieces[i].getTeamColor()==color) continue;
+
+            for(var move : this.pieces[i].pieceMoves(this,
+                    new ChessPosition(i%8+1, (int) Math.floor(i/8f)+1))){
+                var destPiece = this.getPiece(move.getEndPosition());
+                if(destPiece!=null&&destPiece.getPieceType()==ChessPiece.PieceType.KING
+                        &&destPiece.getTeamColor()==color)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    //--
 
     public boolean isEnPassantable(ChessGame.TeamColor color, ChessPosition pos){
         if(!pos.isValid()) return false;
         return (color==ChessGame.TeamColor.WHITE?this.whiteEnPassantable:this.blackEnPassantable)[pos.getColumn()];
     }
-    public void clearEnPassantables(){
-        Arrays.fill(this.blackEnPassantable, false);
-        Arrays.fill(this.whiteEnPassantable, false);
+    public void clearEnPassantables(ChessGame.TeamColor color){
+        if(color== ChessGame.TeamColor.WHITE)
+            Arrays.fill(this.whiteEnPassantable, false);
+        else if(color== ChessGame.TeamColor.BLACK)
+            Arrays.fill(this.blackEnPassantable, false);
     }
+
+    public boolean canCastle(ChessGame.TeamColor color, CastleMove.Side side){
+        if((color== ChessGame.TeamColor.WHITE&&this.whiteCanCastle[side==CastleMove.Side.QUEENSIDE?0:1])||
+                (color== ChessGame.TeamColor.BLACK&&this.blackCanCastle[side==CastleMove.Side.QUEENSIDE?0:1])){
+
+            if(this.isInCheck(color)) return false;
+            for(int i=side.x-side.direc;i!=5;i-=side.direc){
+                var pos=new ChessPosition(i,color==ChessGame.TeamColor.WHITE?1:8);
+                if(this.getPiece(pos)!=null) return false;
+                var futureBoard = this.clone();
+                futureBoard.addPiece(pos, new ChessPiece(color, ChessPiece.PieceType.KING));
+                if(futureBoard.isInCheck(color)) return false;
+            }
+        }
+        return false;
+    }
+    public void removeCastlePrivileges(ChessGame.TeamColor color, CastleMove.Side side){
+        if(color== ChessGame.TeamColor.WHITE) this.whiteCanCastle[side==CastleMove.Side.QUEENSIDE?0:1]=false;
+        else if(color== ChessGame.TeamColor.BLACK) this.blackCanCastle[side==CastleMove.Side.QUEENSIDE?0:1]=false;
+    }
+
+    //--
+
+    public ChessBoard clone(){
+        return new ChessBoard(this.pieces, this.blackEnPassantable, this.whiteEnPassantable,
+                this.blackCanCastle, this.whiteCanCastle);
+    }
+
+    //--
 
     public boolean equals(Object other){
         if(!(other instanceof ChessBoard otherBoard)) return false;
