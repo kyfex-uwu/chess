@@ -3,6 +3,7 @@ package passoffTests;
 import chess.*;
 import org.junit.jupiter.api.Assertions;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +65,36 @@ public class TestFactory {
         var testPiece = board.getPiece(startPosition);
         var validMoves = loadMoves(startPosition, endPositions);
 
-        Assertions.assertEquals(validMoves, testPiece.pieceMoves(board, startPosition), "Wrong moves");
+        movesEqual(validMoves, testPiece.pieceMoves(board, startPosition));
+
+        //Assertions.assertEquals(validMoves, pieceMoves, "Wrong moves");
+    }
+    //added by axel
+    public static void movesEqual(Collection<ChessMove> validMoves, Collection<ChessMove> pieceMoves){
+        System.out.print("Valid moves: ");
+        for(var move: validMoves)
+            System.out.print(move+", ");
+        System.out.print("\nOutput moves: ");
+        for(var move: pieceMoves)
+            System.out.print(move+", ");
+
+        main:for(var move: validMoves){
+            for(var secMove: pieceMoves){
+                if(move.equals(secMove))
+                    continue main;
+            }
+            sneakyThrow(new Exception("Move not found: "+move));
+        }
+        main:for(var move: pieceMoves){
+            for(var secMove: validMoves){
+                if(move.equals(secMove))
+                    continue main;
+            }
+            sneakyThrow(new Exception("Extra move: "+move));
+        }
+    }
+    public static <E extends Throwable> void sneakyThrow(Throwable e) throws E {
+        throw (E) e;
     }
 
     final static Map<Character, ChessPiece.PieceType> charToTypeMap = Map.of(

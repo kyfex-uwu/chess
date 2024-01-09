@@ -13,9 +13,7 @@ public class ChessBoard {
     private final boolean[] blackEnPassantable=new boolean[8];
     private final boolean[] whiteEnPassantable=new boolean[8];
 
-    public ChessBoard() {
-        this.resetBoard();
-    }
+    public ChessBoard() {}
 
     /**
      * Adds a chess piece to the chessboard
@@ -76,5 +74,12 @@ public class ChessBoard {
     public void clearEnPassantables(){
         Arrays.fill(this.blackEnPassantable, false);
         Arrays.fill(this.whiteEnPassantable, false);
+    }
+
+    public boolean equals(Object other){
+        if(!(other instanceof ChessBoard otherBoard)) return false;
+        return Arrays.equals(this.pieces, otherBoard.pieces)&&
+                Arrays.equals(this.whiteEnPassantable, otherBoard.whiteEnPassantable)&&
+                Arrays.equals(this.blackEnPassantable, otherBoard.blackEnPassantable);
     }
 }

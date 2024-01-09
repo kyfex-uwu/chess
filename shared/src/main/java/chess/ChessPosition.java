@@ -31,14 +31,25 @@ public class ChessPosition {
         return this.column;
     }
 
-    public int toIndex(){ return this.row+this.column*8; }
+    public int toIndex(){ return (this.column-1)+(this.row-1)*8; }
 
     ChessPosition addOffset(ChessPiece.Offset offset){
-        return new ChessPosition(this.row+offset.x(),this.column+offset.y());
+        return new ChessPosition(this.row+offset.y(),this.column+offset.x());
     }
 
     public boolean isValid(){
         return this.row>=1&&this.row<=8&&
                 this.column>=1&&this.column<=8;
+    }
+
+    public String toString(){
+        return ""+(char)(this.column+96)+this.row;
+    }
+    public boolean equals(Object other){
+        return other instanceof ChessPosition otherPos &&
+                otherPos.row==this.row&&otherPos.column==this.column;
+    }
+    public int hashCode(){
+        return (this.column-1)*8+this.row-1;
     }
 }

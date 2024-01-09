@@ -43,11 +43,11 @@ public class ChessPiece {
             moves.add(List.of(new Offset(-1,-2)));
             moves.add(List.of(new Offset(1,-2)));
             moves.add(List.of(new Offset(-1,2)));
-            moves.add(List.of(new Offset(-1,2)));
+            moves.add(List.of(new Offset(1,2)));
 
             moves.add(List.of(new Offset(-2,-1)));
-            moves.add(List.of(new Offset(-2,1)));
             moves.add(List.of(new Offset(2,-1)));
+            moves.add(List.of(new Offset(-2,1)));
             moves.add(List.of(new Offset(2,1)));
         }),
         ROOK(new Offset[]{
@@ -98,8 +98,9 @@ public class ChessPiece {
                              ArrayList<ChessMove> moveList){
         var move = new ChessMove(start, start.addOffset(endOffs), null);
         if(!move.getEndPosition().isValid()) return;
-        if((board.getPiece(move.getEndPosition())==null)!=pieceAtDest) return;
-        //if (piece is present) != (need to capture)
+        var destPiece=board.getPiece(move.getEndPosition());
+        if((destPiece==null)==pieceAtDest) return;
+        if(destPiece!=null&&destPiece.color==this.color) return;
 
         if(move.getEndPosition().getRow()==(this.color==ChessGame.TeamColor.WHITE?8:1)) {
             moveList.add(move.withPromotionPiece(PieceType.BISHOP));
@@ -123,7 +124,8 @@ public class ChessPiece {
             var toReturn = new ArrayList<ChessMove>();
             var yOffs = this.color==ChessGame.TeamColor.WHITE?1:-1;
 
-            if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?2:7)){
+            if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?2:7)&&
+                    board.getPiece(myPosition.addOffset(new Offset(0,yOffs)))==null){
                 this.addPawnMove(myPosition, new Offset(0,yOffs*2), board, false, toReturn);
             }else if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?5:4)){
                 if(board.isEnPassantable(this.color, myPosition.addOffset(new Offset(1,0)))){
@@ -144,13 +146,24 @@ public class ChessPiece {
         for(var chain : this.type.moves){
             for(var offs : chain){
                 var newPos = myPosition.addOffset(offs);
-                if(newPos.isValid()){
+                if(!newPos.isValid()) break;
+                var pieceAt=board.getPiece(newPos);
+                if(pieceAt==null||pieceAt.color!=this.color){
                     toReturn.add(new ChessMove(myPosition, newPos, null));
                 }else{
                     break;
                 }
+                if(pieceAt!=null) break;
             }
         }
         return toReturn;
+    }
+
+    public String toString(){
+        return this.color+"-"+this.type;
+    }
+    public boolean equals(Object other){
+        if(!(other instanceof ChessPiece otherPiece)) return false;
+        return this.color==otherPiece.color&&this.type==otherPiece.type;
     }
 }

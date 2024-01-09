@@ -46,4 +46,17 @@ public class ChessMove {
     public ChessMove withPromotionPiece(ChessPiece.PieceType type){
         return new ChessMove(this.start, this.end, type);
     }
+
+    public String toString(){
+        return this.start+" -> "+this.end+(this.promotionPiece!=null?":"+this.promotionPiece:"");
+    }
+    public boolean equals(Object other){
+        return other instanceof ChessMove otherMove &&
+                otherMove.start.equals(this.start) && otherMove.end.equals(this.end) &&
+                otherMove.promotionPiece==this.promotionPiece;
+    }
+    public int hashCode(){
+        return this.start.hashCode()*64+this.end.hashCode()+
+                (this.promotionPiece==null?0:(this.promotionPiece.ordinal()+1)*64*64);
+    }
 }
