@@ -10,6 +10,8 @@ public class EnPassantMove extends ChessMove {
     @Override
     public void apply(ChessBoard board) {
         var startPiece=board.getPiece(this.getStartPosition());
+        board.setEnPassantable(this.getEndPosition().getColumn(), startPiece.getTeamColor());
+
         board.addPiece(this.getEndPosition(), this.getPromotionPiece()==null ?
                 startPiece :
                 new ChessPiece(startPiece.getTeamColor(),this.getPromotionPiece()));

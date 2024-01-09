@@ -3,6 +3,7 @@ package chess;
 import chess.specialmoves.CastleMove;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -85,12 +86,21 @@ public class ChessBoard {
 
     //--
 
+    public Collection<ChessMove> validMovesOf(ChessPosition startPosition) {
+        var piece=this.getPiece(startPosition);
+        if(piece==null) return null;
+        return piece.pieceMoves(this, startPosition).stream().filter(move->{
+            var futureBoard = this.clone();
+            move.apply(futureBoard);
+            return !futureBoard.isInCheck(piece.getTeamColor());
+        }).toList();
+    }
+
     public boolean isInCheck(ChessGame.TeamColor color){
         for(int i=0;i<64;i++){
             if(this.pieces[i]==null||this.pieces[i].getTeamColor()==color) continue;
 
-            for(var move : this.pieces[i].pieceMoves(this,
-                    new ChessPosition(i%8+1, (int) Math.floor(i/8f)+1))){
+            for(var move : this.validMovesOf(new ChessPosition(i%8+1, (int) Math.floor(i/8f)+1))){
                 var destPiece = this.getPiece(move.getEndPosition());
                 if(destPiece!=null&&destPiece.getPieceType()==ChessPiece.PieceType.KING
                         &&destPiece.getTeamColor()==color)
@@ -104,8 +114,7 @@ public class ChessBoard {
         for(int i=0;i<64;i++){
             if(this.pieces[i]==null||this.pieces[i].getTeamColor()!=color) continue;
 
-            if(this.pieces[i].pieceMoves(this,
-                    new ChessPosition(i%8+1, (int) Math.floor(i/8f)+1)).size()>0)
+            if(this.validMovesOf(new ChessPosition(i%8+1, (int) Math.floor(i/8f)+1)).size()>0)
                 return false;
         }
         return true;
@@ -126,6 +135,12 @@ public class ChessBoard {
             Arrays.fill(this.whiteEnPassantable, false);
         else if(color== ChessGame.TeamColor.BLACK)
             Arrays.fill(this.blackEnPassantable, false);
+    }
+
+    public void setEnPassantable(int col, ChessGame.TeamColor color){
+        (color== ChessGame.TeamColor.WHITE?
+                this.whiteEnPassantable:
+                this.blackEnPassantable)[col]=true;
     }
 
     public boolean canCastle(ChessGame.TeamColor color, CastleMove.Side side){

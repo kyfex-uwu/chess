@@ -51,12 +51,7 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        var piece=this.board.getPiece(startPosition);
-        return piece.pieceMoves(this.board, startPosition).stream().filter(move->{
-            var futureBoard = this.board.clone();
-            move.apply(futureBoard);
-            return !futureBoard.isInCheck(piece.getTeamColor());
-        }).toList();
+        return this.board.validMovesOf(startPosition);
     }
 
     /**
@@ -67,11 +62,12 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         var piece = this.board.getPiece(move.getStartPosition());
-        if(piece.pieceMoves(this.board, move.getStartPosition()).contains(move)){
+        if(piece.getTeamColor()==this.currTeam&&this.validMoves(move.getStartPosition()).contains(move)){
             move.apply(this.board);
         }else{
             throw new InvalidMoveException();
         }
+        this.setTeamTurn(this.currTeam==TeamColor.WHITE?TeamColor.BLACK:TeamColor.WHITE);
     }
 
     /**
