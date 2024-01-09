@@ -100,6 +100,21 @@ public class ChessBoard {
         return false;
     }
 
+    public boolean hasValidMoves(ChessGame.TeamColor color){
+        for(int i=0;i<64;i++){
+            if(this.pieces[i]==null||this.pieces[i].getTeamColor()!=color) continue;
+
+            if(this.pieces[i].pieceMoves(this,
+                    new ChessPosition(i%8+1, (int) Math.floor(i/8f)+1)).size()>0)
+                return false;
+        }
+        return true;
+    }
+
+    public boolean isInCheckMate(ChessGame.TeamColor color){
+        return this.isInCheck(color)&&!this.hasValidMoves(color);
+    }
+
     //--
 
     public boolean isEnPassantable(ChessGame.TeamColor color, ChessPosition pos){
