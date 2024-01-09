@@ -31,6 +31,8 @@ public class ChessPosition {
         return this.column;
     }
 
+    public int toIndex(){ return this.row+this.column*8; }
+
     ChessPosition addOffset(ChessPiece.Offset offset){
         return new ChessPosition(this.row+offset.x(),this.column+offset.y());
     }

@@ -1,8 +1,6 @@
 package chess;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -28,54 +26,59 @@ public class ChessPiece {
             for(int y=-1;y<=1;y++){
                 for(int x=-1;x<=1;x++){
                     if(y==0&&x==0) continue;
-                    moves.add(new Offset(x, y));
+                    moves.add(List.of(new Offset(x, y)));
                 }
             }
         }),
-        QUEEN(moves->{
-            for(int i=-7;i<=7;i++){
-                if(i==0) continue;
-                moves.add(new Offset(i,i));
-                moves.add(new Offset(-i,i));
-                moves.add(new Offset(i,0));
-                moves.add(new Offset(0,i));
-            }
+        QUEEN(new Offset[]{
+                new Offset(-1,-1),new Offset(0,-1),new Offset(1,-1),
+                new Offset(-1,0),/*new Offset(0,0),*/new Offset(1,0),
+                new Offset(-1,1),new Offset(0,1),new Offset(1,1),
         }),
-        BISHOP(moves->{
-            for(int i=-7;i<=7;i++){
-                if(i==0) continue;
-                moves.add(new Offset(i,i));
-                moves.add(new Offset(-i,i));
-            }
+        BISHOP(new Offset[]{
+                new Offset(-1,-1),new Offset(1,-1),
+                new Offset(-1,1),new Offset(1,1),
         }),
         KNIGHT(moves->{
-            moves.add(new Offset(-1,-2));
-            moves.add(new Offset(1,-2));
-            moves.add(new Offset(-1,2));
-            moves.add(new Offset(-1,2));
+            moves.add(List.of(new Offset(-1,-2)));
+            moves.add(List.of(new Offset(1,-2)));
+            moves.add(List.of(new Offset(-1,2)));
+            moves.add(List.of(new Offset(-1,2)));
 
-            moves.add(new Offset(-2,-1));
-            moves.add(new Offset(-2,1));
-            moves.add(new Offset(2,-1));
-            moves.add(new Offset(2,1));
+            moves.add(List.of(new Offset(-2,-1)));
+            moves.add(List.of(new Offset(-2,1)));
+            moves.add(List.of(new Offset(2,-1)));
+            moves.add(List.of(new Offset(2,1)));
         }),
-        ROOK(moves->{
-            for(int i=-7;i<=7;i++){
-                if(i==0) continue;
-                moves.add(new Offset(i,0));
-                moves.add(new Offset(0,i));
-            }
+        ROOK(new Offset[]{
+                new Offset(0,-1),new Offset(0,1),
+                new Offset(-1,0),new Offset(1,0),
         }),
-        PAWN(moves->{});//pawns are handled specially
-        public final Collection<Offset> moves;
-        PieceType(Consumer<Collection<Offset>> moveFunc){
-            var collection = new ArrayList<Offset>();
+        PAWN(new Offset[]{});//pawns are handled specially
+        public final Collection<List<Offset>> moves;
+        PieceType(Consumer<Collection<List<Offset>>> moveFunc){
+            var collection = new ArrayList<List<Offset>>();
             moveFunc.accept(collection);
+            this.moves=Collections.unmodifiableCollection(collection);
+        }
+        PieceType(Offset[] offsets){
+            var collection = new ArrayList<List<Offset>>();
+            for (Offset offset : offsets) {
+                List<Offset> list = new ArrayList<>();
+                for (int j = 1; j < 8; j++) {
+                    list.add(offset.mult(j));
+                }
+                collection.add(list);
+            }
             this.moves=Collections.unmodifiableCollection(collection);
         }
     }
 
-    record Offset(int x, int y) {}
+    record Offset(int x, int y) {
+        public Offset mult(int mult){
+            return new Offset(this.x*mult, this.y*mult);
+        }
+    }
 
     /**
      * @return Which team this chess piece belongs to
@@ -123,10 +126,10 @@ public class ChessPiece {
             if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?2:7)){
                 this.addPawnMove(myPosition, new Offset(0,yOffs*2), board, false, toReturn);
             }else if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?5:4)){
-                if(board.enPassantable(this.color, myPosition.addOffset(new Offset(1,0)))){
+                if(board.isEnPassantable(this.color, myPosition.addOffset(new Offset(1,0)))){
                     this.addPawnMove(myPosition, new Offset(1,yOffs), board, false, toReturn);
                 }
-                if(board.enPassantable(this.color, myPosition.addOffset(new Offset(-1,0)))){
+                if(board.isEnPassantable(this.color, myPosition.addOffset(new Offset(-1,0)))){
                     this.addPawnMove(myPosition, new Offset(-1,yOffs), board, false, toReturn);
                 }
             }
@@ -138,10 +141,14 @@ public class ChessPiece {
         }
 
         var toReturn = new ArrayList<ChessMove>();
-        for(var offset : this.type.moves){
-            var newPos = myPosition.addOffset(offset);
-            if(newPos.isValid()){
-                toReturn.add(new ChessMove(myPosition, newPos, null));
+        for(var chain : this.type.moves){
+            for(var offs : chain){
+                var newPos = myPosition.addOffset(offs);
+                if(newPos.isValid()){
+                    toReturn.add(new ChessMove(myPosition, newPos, null));
+                }else{
+                    break;
+                }
             }
         }
         return toReturn;
