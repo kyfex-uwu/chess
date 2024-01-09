@@ -3,7 +3,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 /**
  * Represents a single chess piece
@@ -24,62 +24,54 @@ public class ChessPiece {
      * The various different chess piece options
      */
     public enum PieceType {
-        KING(()->{
-            var toReturn = new ArrayList<Offset>();
+        KING(moves->{
             for(int y=-1;y<=1;y++){
                 for(int x=-1;x<=1;x++){
                     if(y==0&&x==0) continue;
-                    toReturn.add(new Offset(x, y));
+                    moves.add(new Offset(x, y));
                 }
             }
-            return toReturn;
         }),
-        QUEEN(()->{
-            var toReturn = new ArrayList<Offset>();
+        QUEEN(moves->{
             for(int i=-7;i<=7;i++){
                 if(i==0) continue;
-                toReturn.add(new Offset(i,i));
-                toReturn.add(new Offset(-i,i));
-                toReturn.add(new Offset(i,0));
-                toReturn.add(new Offset(0,i));
+                moves.add(new Offset(i,i));
+                moves.add(new Offset(-i,i));
+                moves.add(new Offset(i,0));
+                moves.add(new Offset(0,i));
             }
-            return toReturn;
         }),
-        BISHOP(()->{
-            var toReturn = new ArrayList<Offset>();
+        BISHOP(moves->{
             for(int i=-7;i<=7;i++){
                 if(i==0) continue;
-                toReturn.add(new Offset(i,i));
-                toReturn.add(new Offset(-i,i));
+                moves.add(new Offset(i,i));
+                moves.add(new Offset(-i,i));
             }
-            return toReturn;
         }),
-        KNIGHT(()->{
-            var toReturn = new ArrayList<Offset>();
-            toReturn.add(new Offset(-1,-2));
-            toReturn.add(new Offset(1,-2));
-            toReturn.add(new Offset(-1,2));
-            toReturn.add(new Offset(-1,2));
+        KNIGHT(moves->{
+            moves.add(new Offset(-1,-2));
+            moves.add(new Offset(1,-2));
+            moves.add(new Offset(-1,2));
+            moves.add(new Offset(-1,2));
 
-            toReturn.add(new Offset(-2,-1));
-            toReturn.add(new Offset(-2,1));
-            toReturn.add(new Offset(2,-1));
-            toReturn.add(new Offset(2,1));
-            return toReturn;
+            moves.add(new Offset(-2,-1));
+            moves.add(new Offset(-2,1));
+            moves.add(new Offset(2,-1));
+            moves.add(new Offset(2,1));
         }),
-        ROOK(()->{
-            var toReturn = new ArrayList<Offset>();
+        ROOK(moves->{
             for(int i=-7;i<=7;i++){
                 if(i==0) continue;
-                toReturn.add(new Offset(i,0));
-                toReturn.add(new Offset(0,i));
+                moves.add(new Offset(i,0));
+                moves.add(new Offset(0,i));
             }
-            return toReturn;
         }),
-        PAWN(ArrayList::new);//pawns are handled specially
+        PAWN(moves->{});//pawns are handled specially
         public final Collection<Offset> moves;
-        PieceType(Supplier<Collection<Offset>> moveFunc){
-            this.moves=Collections.unmodifiableCollection(moveFunc.get());
+        PieceType(Consumer<Collection<Offset>> moveFunc){
+            var collection = new ArrayList<Offset>();
+            moveFunc.accept(collection);
+            this.moves=Collections.unmodifiableCollection(collection);
         }
     }
 
@@ -99,6 +91,23 @@ public class ChessPiece {
         return this.type;
     }
 
+    private void addPawnMove(ChessPosition start, Offset endOffs, ChessBoard board, boolean pieceAtDest,
+                             ArrayList<ChessMove> moveList){
+        var move = new ChessMove(start, start.addOffset(endOffs), null);
+        if(!move.getEndPosition().isValid()) return;
+        if((board.getPiece(move.getEndPosition())==null)!=pieceAtDest) return;
+        //if (piece is present) != (need to capture)
+
+        if(move.getEndPosition().getRow()==(this.color==ChessGame.TeamColor.WHITE?8:1)) {
+            moveList.add(move.withPromotionPiece(PieceType.BISHOP));
+            moveList.add(move.withPromotionPiece(PieceType.ROOK));
+            moveList.add(move.withPromotionPiece(PieceType.KNIGHT));
+            moveList.add(move.withPromotionPiece(PieceType.QUEEN));
+        }else{
+            moveList.add(move.withPromotionPiece(null));
+        }
+    }
+
     /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
@@ -109,22 +118,29 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         if(this.type==PieceType.PAWN){
             var toReturn = new ArrayList<ChessMove>();
-            /*
-            if(this.color==ChessGame.TeamColor.WHITE){
-                if(myPosition.getRow()==2){}
-                else if(myPosition.getRow()==5){}
+            var yOffs = this.color==ChessGame.TeamColor.WHITE?1:-1;
 
-                if(board.getPiece(myPosition.addOffset(new Offset(0,1)))!=null)
-                    toReturn.add(new ChessMove(myPosition, myPosition.addOffset(new Offset(0,1)), null)));
+            if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?2:7)){
+                this.addPawnMove(myPosition, new Offset(0,yOffs*2), board, false, toReturn);
+            }else if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?5:4)){
+                if(board.enPassantable(this.color, myPosition.addOffset(new Offset(1,0)))){
+                    this.addPawnMove(myPosition, new Offset(1,yOffs), board, false, toReturn);
+                }
+                if(board.enPassantable(this.color, myPosition.addOffset(new Offset(-1,0)))){
+                    this.addPawnMove(myPosition, new Offset(-1,yOffs), board, false, toReturn);
+                }
             }
-            */
+
+            this.addPawnMove(myPosition, new Offset(0,yOffs), board, false, toReturn);
+            this.addPawnMove(myPosition, new Offset(1,yOffs), board, true, toReturn);
+            this.addPawnMove(myPosition, new Offset(-1,yOffs), board, true, toReturn);
             return toReturn;
         }
+
         var toReturn = new ArrayList<ChessMove>();
         for(var offset : this.type.moves){
             var newPos = myPosition.addOffset(offset);
-            if(newPos.getRow()>=1&&newPos.getRow()<=8&&
-                newPos.getColumn()>=1&&newPos.getColumn()<=8){
+            if(newPos.isValid()){
                 toReturn.add(new ChessMove(myPosition, newPos, null));
             }
         }

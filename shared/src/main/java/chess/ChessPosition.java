@@ -34,4 +34,9 @@ public class ChessPosition {
     ChessPosition addOffset(ChessPiece.Offset offset){
         return new ChessPosition(this.row+offset.x(),this.column+offset.y());
     }
+
+    public boolean isValid(){
+        return this.row>=1&&this.row<=8&&
+                this.column>=1&&this.column<=8;
+    }
 }

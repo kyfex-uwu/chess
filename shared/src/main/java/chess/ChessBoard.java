@@ -40,4 +40,8 @@ public class ChessBoard {
     public void resetBoard() {
         throw new RuntimeException("Not implemented");
     }
+
+    public boolean enPassantable(ChessGame.TeamColor color, ChessPosition pos){
+
+    }
 }
