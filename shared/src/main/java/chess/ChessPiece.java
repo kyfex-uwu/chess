@@ -124,7 +124,7 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition, boolean canCastle) {
         if(this.type==PieceType.PAWN){
             var toReturn = new ArrayList<ChessMove>();
             var yOffs = this.color==ChessGame.TeamColor.WHITE?1:-1;
@@ -162,13 +162,16 @@ public class ChessPiece {
             }
         }
 
-        if(this.type==PieceType.KING){
+        if(this.type==PieceType.KING&&canCastle){
             if(board.canCastle(this.color, CastleMove.Side.KINGSIDE))
                 toReturn.add(new CastleMove(this.color, CastleMove.Side.KINGSIDE));
             if(board.canCastle(this.color, CastleMove.Side.QUEENSIDE))
                 toReturn.add(new CastleMove(this.color, CastleMove.Side.QUEENSIDE));
         }
         return toReturn;
+    }
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        return this.pieceMoves(board, myPosition, true);
     }
 
     public String toString(){

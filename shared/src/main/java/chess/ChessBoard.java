@@ -100,7 +100,8 @@ public class ChessBoard {
         for(int i=0;i<64;i++){
             if(this.pieces[i]==null||this.pieces[i].getTeamColor()==color) continue;
 
-            for(var move : this.validMovesOf(new ChessPosition(i%8+1, (int) Math.floor(i/8f)+1))){
+            for(var move : this.pieces[i].pieceMoves(this,
+                    new ChessPosition((int) Math.floor(i/8f)+1, i%8+1), false)){
                 var destPiece = this.getPiece(move.getEndPosition());
                 if(destPiece!=null&&destPiece.getPieceType()==ChessPiece.PieceType.KING
                         &&destPiece.getTeamColor()==color)
@@ -114,7 +115,7 @@ public class ChessBoard {
         for(int i=0;i<64;i++){
             if(this.pieces[i]==null||this.pieces[i].getTeamColor()!=color) continue;
 
-            if(this.validMovesOf(new ChessPosition(i%8+1, (int) Math.floor(i/8f)+1)).size()>0)
+            if(this.validMovesOf(new ChessPosition((int) Math.floor(i/8f)+1, i%8+1)).size()>0)
                 return false;
         }
         return true;
@@ -143,10 +144,19 @@ public class ChessBoard {
                 this.blackEnPassantable)[col]=true;
     }
 
+    public static boolean checkPiece(ChessBoard board, ChessPiece piece, ChessPosition pos){
+        var toCheck=board.pieces[pos.toIndex()];
+        if(toCheck==null) return false;
+        return toCheck.getPieceType() == piece.getPieceType() && toCheck.getTeamColor() == piece.getTeamColor();
+    }
     public boolean canCastle(ChessGame.TeamColor color, CastleMove.Side side){
+        if(!checkPiece(this, new ChessPiece(color, ChessPiece.PieceType.KING),
+                new ChessPosition(color== ChessGame.TeamColor.WHITE?1:8,5))||
+                !checkPiece(this, new ChessPiece(color, ChessPiece.PieceType.ROOK),
+                    new ChessPosition(color== ChessGame.TeamColor.WHITE?1:8,side.x))) return false;
+
         if((color== ChessGame.TeamColor.WHITE&&this.whiteCanCastle[side==CastleMove.Side.QUEENSIDE?0:1])||
                 (color== ChessGame.TeamColor.BLACK&&this.blackCanCastle[side==CastleMove.Side.QUEENSIDE?0:1])){
-
             if(this.isInCheck(color)) return false;
             for(int i=side.x-side.direc;i!=5;i-=side.direc){
                 var pos=new ChessPosition(i,color==ChessGame.TeamColor.WHITE?1:8);
@@ -155,6 +165,7 @@ public class ChessBoard {
                 futureBoard.addPiece(pos, new ChessPiece(color, ChessPiece.PieceType.KING));
                 if(futureBoard.isInCheck(color)) return false;
             }
+            return true;
         }
         return false;
     }

@@ -17,7 +17,8 @@ public class CastleMove extends ChessMove {
     private final Side side;
     private final ChessGame.TeamColor color;
     public CastleMove(ChessGame.TeamColor color, Side side) {
-        super(null, null, null);
+        super(new ChessPosition(color==ChessGame.TeamColor.WHITE?1:8,5),
+                new ChessPosition(color==ChessGame.TeamColor.WHITE?1:8,5+side.direc*2), null);
         this.side=side;
         this.color=color;
     }
@@ -36,10 +37,6 @@ public class CastleMove extends ChessMove {
 
     public String toString(){
         return this.side.toString()+" "+this.color;
-    }
-    public boolean equals(Object other){
-        return other instanceof CastleMove otherMove &&
-                otherMove.side==this.side&&otherMove.color==this.color;
     }
     public int hashCode(){
         return 40960+this.side.ordinal()+this.color.ordinal()*2;
