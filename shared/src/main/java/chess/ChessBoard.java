@@ -127,9 +127,9 @@ public class ChessBoard {
 
     //--
 
-    public boolean isEnPassantable(ChessGame.TeamColor color, ChessPosition pos){
+    public boolean canEnPassant(ChessGame.TeamColor color, ChessPosition pos){
         if(!pos.isValid()) return false;
-        return (color==ChessGame.TeamColor.WHITE?this.whiteEnPassantable:this.blackEnPassantable)[pos.getColumn()];
+        return (color==ChessGame.TeamColor.WHITE?this.blackEnPassantable:this.whiteEnPassantable)[pos.getColumn()];
     }
     public void clearEnPassantables(ChessGame.TeamColor color){
         if(color== ChessGame.TeamColor.WHITE)

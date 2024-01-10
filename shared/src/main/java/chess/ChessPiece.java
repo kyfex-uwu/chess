@@ -133,10 +133,10 @@ public class ChessPiece {
                     board.getPiece(myPosition.addOffset(new Offset(0,yOffs)))==null){
                 this.addPawnMove(myPosition, new Offset(0,yOffs*2), board, false, toReturn);
             }else if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?5:4)){
-                if(board.isEnPassantable(this.color, myPosition.addOffset(new Offset(1,0)))){
+                if(board.canEnPassant(this.color, myPosition.addOffset(new Offset(1,0)))){
                     this.addPawnMove(myPosition, new Offset(1,yOffs), board, false, toReturn);
                 }
-                if(board.isEnPassantable(this.color, myPosition.addOffset(new Offset(-1,0)))){
+                if(board.canEnPassant(this.color, myPosition.addOffset(new Offset(-1,0)))){
                     this.addPawnMove(myPosition, new Offset(-1,yOffs), board, false, toReturn);
                 }
             }
