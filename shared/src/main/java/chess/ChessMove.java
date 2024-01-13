@@ -16,7 +16,7 @@ public class ChessMove {
     private final ChessPosition end;
     private final ChessPiece.PieceType promotionPiece;
 
-    private static final boolean TESTING=true;
+    private static final boolean TESTING=false;
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
         var stacktrace = Arrays.toString(new Exception().getStackTrace());
@@ -64,7 +64,7 @@ public class ChessMove {
                         board.addPiece(new ChessPosition(color.row,5+side.direc),
                                 new ChessPiece(color, ChessPiece.PieceType.ROOK));
 
-                        board.removeCastlePrivileges(color, side);
+                        board.removeCastlePrivileges(color);
                     };
                 }
             }
@@ -99,11 +99,21 @@ public class ChessMove {
         return this.promotionPiece;
     }
 
+    /**
+     * Returns a copy of this move, but with the promotion piece set to {@code type}
+     * @param type piece to promote to (can be null)
+     * @return new {@code ChessMove}
+     */
     public ChessMove withPromotionPiece(ChessPiece.PieceType type){
         return new ChessMove(this.start, this.end, type);
     }
 
     private Consumer<ChessBoard> hackApply;
+
+    /**
+     * Applies this move to the chessboard. Does not check for validity
+     * @param board board to make the move on
+     */
     public void apply(ChessBoard board){
         if(this.hackApply!=null){
             //stinky
@@ -118,8 +128,7 @@ public class ChessMove {
         board.addPiece(this.start, null);
 
         if(startPiece.getPieceType()== ChessPiece.PieceType.KING){
-            board.removeCastlePrivileges(startPiece.getTeamColor(), CastleMove.Side.KINGSIDE);
-            board.removeCastlePrivileges(startPiece.getTeamColor(), CastleMove.Side.QUEENSIDE);
+            board.removeCastlePrivileges(startPiece.getTeamColor());
         }else if(startPiece.getPieceType()== ChessPiece.PieceType.ROOK){
             if(this.getStartPosition().getColumn()==1)
                 board.removeCastlePrivileges(startPiece.getTeamColor(), CastleMove.Side.QUEENSIDE);

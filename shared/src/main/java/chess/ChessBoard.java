@@ -86,6 +86,13 @@ public class ChessBoard {
 
     //--
 
+    /**
+     * Gets a valid moves for a piece at the given location
+     *
+     * @param startPosition the piece to get valid moves for
+     * @return Set of valid moves for requested piece, or null if no piece at
+     * startPosition
+     */
     public Collection<ChessMove> validMovesOf(ChessPosition startPosition) {
         var piece=this.getPiece(startPosition);
         if(piece==null) return null;
@@ -96,6 +103,12 @@ public class ChessBoard {
         }).toList();
     }
 
+    /**
+     * Determines if the given team is in check
+     *
+     * @param color which team to check for check
+     * @return True if the specified team is in check
+     */
     public boolean isInCheck(ChessGame.TeamColor color){
         for(int i=0;i<64;i++){
             if(this.pieces[i]==null||this.pieces[i].getTeamColor()==color) continue;
@@ -111,26 +124,54 @@ public class ChessBoard {
         return false;
     }
 
+    /**
+     * Returns if the given team has any valid moves
+     * @param color team to check
+     * @return if the team has any valid moves
+     */
     public boolean hasValidMoves(ChessGame.TeamColor color){
         for(int i=0;i<64;i++){
             if(this.pieces[i]==null||this.pieces[i].getTeamColor()!=color) continue;
 
             if(this.validMovesOf(new ChessPosition((int) Math.floor(i/8f)+1, i%8+1)).size()>0)
-                return false;
+                return true;
         }
-        return true;
+        return false;
     }
 
+    /**
+     * Determines if the given team is in checkmate
+     * (returns if the team is in check, and if they do not have any valid moves)
+     *
+     * @param color which team to check for checkmate
+     * @return True if the specified team is in checkmate
+     */
     public boolean isInCheckMate(ChessGame.TeamColor color){
         return this.isInCheck(color)&&!this.hasValidMoves(color);
     }
 
     //--
 
+    /**
+     * Returns if a pawn of color {@code color} can <b>finish</b> their en passant on this position
+     * @param color color of pawn performing the en passant
+     * @param pos position the pawn will end it's en passant on
+     * @return if the pawn can perform this en passant
+     */
     public boolean canEnPassantTo(ChessGame.TeamColor color, ChessPosition pos){
-        if(!pos.isValid()) return false;
-        return color.whiteOrBlack(this.blackDoubleMoved,this.whiteDoubleMoved)[pos.getColumn()-1];
+        if(!pos.isValid()||pos.getRow()!=color.whiteOrBlack(6,3)) return false;
+
+        var capturingPiece = this.getPiece(pos.addOffset(new ChessPiece.Offset(0,-1)));
+        return color.whiteOrBlack(this.blackDoubleMoved,this.whiteDoubleMoved)[pos.getColumn()-1]&&
+                (capturingPiece!=null&&capturingPiece.getPieceType()== ChessPiece.PieceType.PAWN&&
+                        capturingPiece.getTeamColor()==color.opposite());
     }
+
+    /**
+     * Call {@code clearDidDoubleMove(color)} right before team {@code color} moves<br>
+     * Clears the double move flag of the team specified
+     * @param color the team to clear
+     */
     public void clearDidDoubleMove(ChessGame.TeamColor color){
         if(color== ChessGame.TeamColor.WHITE)
             Arrays.fill(this.whiteDoubleMoved, false);
@@ -138,15 +179,35 @@ public class ChessBoard {
             Arrays.fill(this.blackDoubleMoved, false);
     }
 
+    /**
+     * Call {@code clearDidDoubleMove(color)} right after team {@code color} moves, if the move is a double move<br>
+     * Sets the double move flag of the team specified
+     * @param col the column the pawn double moved on
+     * @param color the team to set
+     */
     public void setDoubleMoved(int col, ChessGame.TeamColor color){
         color.whiteOrBlack(this.whiteDoubleMoved,this.blackDoubleMoved)[col-1]=true;
     }
 
+    /**
+     * Returns if the board contains a piece of the specified type and color at the specified position
+     * @param board the board to check
+     * @param piece the piece that should be at the position
+     * @param pos the position to check
+     * @return if the specified piece is at the position
+     */
     public static boolean checkPiece(ChessBoard board, ChessPiece piece, ChessPosition pos){
         var toCheck=board.pieces[pos.toIndex()];
         if(toCheck==null) return false;
         return toCheck.getPieceType() == piece.getPieceType() && toCheck.getTeamColor() == piece.getTeamColor();
     }
+
+    /**
+     * Returns if the specified team can castle on that side
+     * @param color the team requesting to castle
+     * @param side the side to castle on
+     * @return if that team can castle on that side
+     */
     public boolean canCastle(ChessGame.TeamColor color, CastleMove.Side side){
         if(!checkPiece(this, new ChessPiece(color, ChessPiece.PieceType.KING),
                 new ChessPosition(color.row,5))||
@@ -167,9 +228,24 @@ public class ChessBoard {
         }
         return false;
     }
+
+    /**
+     * Call {@code removeCastlePrivileges(color, side)} after team {@code color} castles
+     * Removes both castle privileges from a team
+     *
+     * @param color team to remove castle privileges from
+     */
+    public void removeCastlePrivileges(ChessGame.TeamColor color){
+        Arrays.fill(color.whiteOrBlack(this.whiteCanCastle, this.blackCanCastle), false);
+    }
+    /**
+     * Call {@code removeCastlePrivileges(color, side)} after team {@code color} castles
+     * Removes castle privileges from a team on the specified side
+     *
+     * @param color team to remove castle privileges from
+     */
     public void removeCastlePrivileges(ChessGame.TeamColor color, CastleMove.Side side){
-        if(color== ChessGame.TeamColor.WHITE) this.whiteCanCastle[side==CastleMove.Side.QUEENSIDE?0:1]=false;
-        else if(color== ChessGame.TeamColor.BLACK) this.blackCanCastle[side==CastleMove.Side.QUEENSIDE?0:1]=false;
+        color.whiteOrBlack(this.whiteCanCastle, this.blackCanCastle)[side== CastleMove.Side.QUEENSIDE?0:1]=false;
     }
 
     //--

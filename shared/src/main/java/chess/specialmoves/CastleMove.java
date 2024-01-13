@@ -2,6 +2,9 @@ package chess.specialmoves;
 
 import chess.*;
 
+/**
+ * Represents a castling move
+ */
 public class CastleMove extends ChessMove {
     public enum Side{
         KINGSIDE(8, 1),
@@ -31,7 +34,7 @@ public class CastleMove extends ChessMove {
         board.addPiece(new ChessPosition(this.color.row,5+this.side.direc),
                 new ChessPiece(this.color, ChessPiece.PieceType.ROOK));
 
-        board.removeCastlePrivileges(this.color, this.side);
+        board.removeCastlePrivileges(this.color);
     }
 
     public String toString(){

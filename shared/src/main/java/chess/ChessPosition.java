@@ -31,12 +31,25 @@ public class ChessPosition {
         return this.column;
     }
 
+    /**
+     * @return the integer 1-64 corresponding to this position <br>
+     * a1 -> 0, a2 -> 1, b1 -> 8, h8 -> 63
+     */
+
     public int toIndex(){ return (this.column-1)+(this.row-1)*8; }
 
+    /**
+     * Returns a new {@code ChessPosition} with the offset applied
+     * @param offset the offset to apply to the position
+     * @return the new offset position
+     */
     public ChessPosition addOffset(ChessPiece.Offset offset){
         return new ChessPosition(this.row+offset.y(),this.column+offset.x());
     }
 
+    /**
+     * @return if this position is on the chessboard
+     */
     public boolean isValid(){
         return this.row>=1&&this.row<=8&&
                 this.column>=1&&this.column<=8;
@@ -50,6 +63,6 @@ public class ChessPosition {
                 otherPos.row==this.row&&otherPos.column==this.column;
     }
     public int hashCode(){
-        return (this.column-1)*8+this.row-1;
+        return this.toIndex();
     }
 }

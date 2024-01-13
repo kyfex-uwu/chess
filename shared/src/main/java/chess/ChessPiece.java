@@ -78,7 +78,17 @@ public class ChessPiece {
         }
     }
 
+    /**
+     * An x,y pair that can modify {@code ChessPosition}s
+     * @param x (column offset, left and right)
+     * @param y (row offset, up and down)
+     */
     public record Offset(int x, int y) {
+        /**
+         * Returns a new {@code Offset} with the x and y multiplied by {@code mult}
+         * @param mult offset scalar
+         * @return new {@code Offset}
+         */
         public Offset mult(int mult){
             return new Offset(this.x*mult, this.y*mult);
         }
@@ -102,6 +112,14 @@ public class ChessPiece {
         return this.type;
     }
 
+    /**
+     * Adds a pawn move from start to end, accounting for en passant and a double move
+     * @param start start position
+     * @param endOffs end <b>offset</b>, not position
+     * @param board chessboard to add to
+     * @param pieceAtDest if there should be a piece at this destination (if not, don't add the move)
+     * @param moveList the list to add the move to, if it is valid
+     */
     private void addPawnMove(ChessPosition start, Offset endOffs, ChessBoard board, boolean pieceAtDest,
                              Collection<ChessMove> moveList){
         ChessMove move;
@@ -132,6 +150,9 @@ public class ChessPiece {
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
      * danger
+     * You probably want to use pieceMoves(ChessBoard board, ChessPosition myPosition),
+     * this only exists for check recursion reasons
+     * @see #pieceMoves(ChessBoard, ChessPosition)
      *
      * @return Collection of valid moves
      */
@@ -180,6 +201,10 @@ public class ChessPiece {
         }
         return toReturn;
     }
+
+    /**
+     * @see #pieceMoves(ChessBoard, ChessPosition, boolean)
+     */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         return this.pieceMoves(board, myPosition, true);
     }

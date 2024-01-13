@@ -1,9 +1,20 @@
 package chess;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
+import static chess.ChessRenderer.CLColor.*;
+
+/**
+ * Everything needed to render a chess game.
+ * Use renderGame(ChessGame game, RenderData renderData) to draw a game, and
+ * RenderData.from to get the renderData
+ */
 public class ChessRenderer {
+    /**
+     * Optional data to render a chess game
+     */
     public static class RenderData{
         private final Collection<ChessPiece.Offset> highlightedPositions;
         private final ChessPiece.Offset originPosition;
@@ -12,11 +23,26 @@ public class ChessRenderer {
             this.highlightedPositions=highlightedPositions;
             this.originPosition=originPosition;
         }
+
+        /**
+         * Creates a {@code RenderData} instance with moves to highlight and an origin space that can make those moves
+         * @param movesToShow
+         * @param positionToShow
+         * @return RenderData instance
+         */
         public static RenderData from(Collection<ChessMove> movesToShow, ChessPosition positionToShow){
             return new RenderData(movesToShow.stream().map(move->new ChessPiece.Offset(move.getEndPosition().getColumn()-1,
                     move.getEndPosition().getRow()-1)).toList(),
                     positionToShow!=null?new ChessPiece.Offset(positionToShow.getColumn()-1, positionToShow.getRow()-1):
                             new ChessPiece.Offset(-1,-1));
+        }
+
+        /**
+         * Creates an empty {@code RenderData} instance
+         * @return RenderData instance
+         */
+        public static RenderData from(){
+            return new RenderData(Collections.emptySet(), new ChessPiece.Offset(-1,-1));
         }
     }
     private static final Map<ChessPiece.PieceType, String> blackPieces = Map.ofEntries(
@@ -84,15 +110,18 @@ public class ChessRenderer {
                             \s A \s""")
     );
     private static final String highlight="""
-            #=   =#
+            +=   =+
             |     |
-            #=   =#""";
-    private enum CLColor{
+            +=   =+""";
+    public enum CLColor{
         WHITE(97,107),
         GRAY(37,47),
         DARK_GRAY(90,100),
         BLACK(30,40),
-        CLEAR(0,0);
+        CLEAR(0,0),
+
+        HIGHLIGHT(93,43),
+        HIGHLIGHT2(92,42);
 
         public final int fg;
         public final int bg;
@@ -100,29 +129,31 @@ public class ChessRenderer {
             this.fg=fg;
             this.bg=bg;
         }
-        static CLColor getComplimentary(CLColor color){
-            return switch (color){
-                case WHITE -> DARK_GRAY;
-                case GRAY -> BLACK;
-                case DARK_GRAY -> WHITE;
-                case BLACK -> GRAY;
-                case CLEAR -> CLEAR;
-            };
+
+        /**
+         * Sets the terminal color
+         * @param fg foreground (text) color
+         * @param bg background color
+         */
+        public static void setColor(CLColor fg, CLColor bg){
+            if(!canShowColor) return;
+            currColor=new int[]{fg.fg,bg.bg};
+            System.out.print("\u001b["+currColor[0]+";"+currColor[1]+"m");
         }
     }
-    private static void setColor(CLColor fg, CLColor bg){
-        if(!canShowColor) return;
-        currColor=new int[]{fg.fg,bg.bg};
-        System.out.print("\u001b["+currColor[0]+";"+currColor[1]+"m");
-    }
-    private static void setComplimentaryColor(CLColor color){
-        setColor(color,CLColor.getComplimentary(color));
-    }
+
     private static int[] currColor = {0,0};
     public static boolean canShowColor=false;
+
+    /**
+     * Renders the specified game
+     * @see RenderData
+     * @param game The game to render
+     * @param data Any additional data
+     */
     public static void renderGame(ChessGame game, RenderData data){
         for(int y=0;y<=8;y++){
-            setColor(CLColor.CLEAR, CLColor.CLEAR);
+            setColor(CLEAR, CLEAR);
             if(!canShowColor) System.out.println("   "+"+-------".repeat(8)+"+");
             if(y==8){
                 System.out.print("   ");
@@ -130,13 +161,20 @@ public class ChessRenderer {
                     System.out.print((canShowColor?"   ":"    ")+(char)(x+97)+"   ");
                 }
                 System.out.print("\n\n   ");
-                setComplimentaryColor(game.getTeamTurn().whiteOrBlack(CLColor.WHITE,CLColor.BLACK));
+
+                var color = game.getTeamTurn().whiteOrBlack(WHITE,BLACK);
+                setColor(color,color==WHITE?DARK_GRAY:GRAY);
+
                 if(game.isInCheckmate(game.getTeamTurn())){
-                    System.out.print("Checkmate! ")
-                }else {
+                    System.out.print("Checkmate! "+game.getTeamTurn().opposite()+" wins");
+                }else if(game.isInStalemate(game.getTeamTurn())){
+                    System.out.print("Stalemate");
+                }else{
                     System.out.print(game.getTeamTurn() + "'s move");
+                    if(game.isInCheck(game.getTeamTurn()))
+                        System.out.print(" (Check)");
                 }
-                setColor(CLColor.CLEAR, CLColor.CLEAR);
+                setColor(CLEAR, CLEAR);
                 System.out.println();
                 break;
             }
@@ -154,9 +192,9 @@ public class ChessRenderer {
                     if(!canShowColor) System.out.print("|");
 
                     setColor(currPiece==null?
-                                    CLColor.CLEAR:
-                                    currPiece.getTeamColor().whiteOrBlack(CLColor.WHITE,CLColor.GRAY),
-                            x%2==y%2?CLColor.DARK_GRAY:CLColor.BLACK);
+                                    CLEAR:
+                                    currPiece.getTeamColor().whiteOrBlack(WHITE,BLACK),
+                            x%2==y%2?GRAY:DARK_GRAY);
                     String strToPrint;
                     if(currPiece!=null) {
                         strToPrint = " " +
@@ -166,7 +204,7 @@ public class ChessRenderer {
                         strToPrint="       ";
                     }
                     if(isHighlighted||isOrigin){
-                        var colors=isOrigin?new int[]{93,43}:new int[]{92,42};
+                        var highlightColor=isOrigin?HIGHLIGHT:HIGHLIGHT2;
                         var overlayLine = highlight.substring(i*8,i*8+7)+" ";
                         var chars = strToPrint.toCharArray();
                         strToPrint="";
@@ -174,9 +212,9 @@ public class ChessRenderer {
                             var overlayChar = overlayLine.charAt(j);
                             if(canShowColor) {
                                 if (overlayChar == '=' || overlayChar == '|') {
-                                    strToPrint+="\u001b["+colors[0]+";"+currColor[1]+"m";
+                                    strToPrint+="\u001b["+highlightColor.fg+";"+currColor[1]+"m";
                                 } else if (overlayChar == '#') {
-                                    strToPrint+="\u001b["+colors[0]+";"+colors[1]+"m";
+                                    strToPrint+="\u001b["+highlightColor.fg+";"+highlightColor.bg+"m";
                                 } else {// space
                                     strToPrint+="\u001b["+currColor[0]+";"+currColor[1]+"m";
                                 }
@@ -185,7 +223,7 @@ public class ChessRenderer {
                         }
                     }
                     System.out.print(strToPrint);
-                    setColor(CLColor.CLEAR, CLColor.CLEAR);
+                    setColor(CLEAR, CLEAR);
 
                     if(x==7)
                         System.out.println(canShowColor?"":"|");

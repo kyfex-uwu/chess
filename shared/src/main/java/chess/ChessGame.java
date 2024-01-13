@@ -47,9 +47,20 @@ public class ChessGame {
             this.row=row;
             this.advDir=advDir;
         }
+
+        /**
+         * @return opposite color
+         */
         public TeamColor opposite(){
             return this==WHITE?BLACK:WHITE;
         }
+
+        /**
+         * Returns {@code white} if this is WHITE, and {@code black} if this is BLACK
+         * @param white To return if WHITE
+         * @param black To return if BLACK
+         * @return Either {@code white} or {@code black}
+         */
         public <T> T whiteOrBlack(T white, T black){
             if(this==WHITE) return white;
             return black;
@@ -57,11 +68,7 @@ public class ChessGame {
     }
 
     /**
-     * Gets a valid moves for a piece at the given location
-     *
-     * @param startPosition the piece to get valid moves for
-     * @return Set of valid moves for requested piece, or null if no piece at
-     * startPosition
+     * @see ChessBoard#validMovesOf(ChessPosition)
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         return this.board.validMovesOf(startPosition);
@@ -85,20 +92,14 @@ public class ChessGame {
     }
 
     /**
-     * Determines if the given team is in check
-     *
-     * @param teamColor which team to check for check
-     * @return True if the specified team is in check
+     * @see ChessBoard#isInCheck(TeamColor)
      */
     public boolean isInCheck(TeamColor teamColor) {
         return this.board.isInCheck(teamColor);
     }
 
     /**
-     * Determines if the given team is in checkmate
-     *
-     * @param teamColor which team to check for checkmate
-     * @return True if the specified team is in checkmate
+     * @see ChessBoard#isInCheckMate(TeamColor)
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         return this.board.isInCheckMate(teamColor);
@@ -107,6 +108,7 @@ public class ChessGame {
     /**
      * Determines if the given team is in stalemate, which here is defined as having
      * no valid moves
+     * (returns if the team has no valid moves and they are not in check)
      *
      * @param teamColor which team to check for stalemate
      * @return True if the specified team is in stalemate, otherwise false
