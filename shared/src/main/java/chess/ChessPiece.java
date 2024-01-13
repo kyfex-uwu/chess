@@ -1,6 +1,7 @@
 package chess;
 
 import chess.specialmoves.CastleMove;
+import chess.specialmoves.DoublePawnMove;
 import chess.specialmoves.EnPassantMove;
 
 import java.util.*;
@@ -98,10 +99,16 @@ public class ChessPiece {
     }
 
     private void addPawnMove(ChessPosition start, Offset endOffs, ChessBoard board, boolean pieceAtDest,
-                             ArrayList<ChessMove> moveList){
-        var move = (endOffs.x!=0&&endOffs.y!=0&&board.getPiece(start.addOffset(endOffs))==null)?
-                new ChessMove(start, start.addOffset(endOffs), null):
-                new EnPassantMove(start, start.addOffset(endOffs), null);
+                             Collection<ChessMove> moveList){
+        ChessMove move;
+        if(endOffs.x!=0&&endOffs.y!=0&&board.getPiece(start.addOffset(endOffs))==null){
+            move = new EnPassantMove(start, start.addOffset(endOffs), null);
+        }else if(Math.abs(endOffs.y)==2){
+            move = new DoublePawnMove(start, start.addOffset(endOffs), null);
+        }else{
+            move=new ChessMove(start, start.addOffset(endOffs), null);
+        }
+
         if(!move.getEndPosition().isValid()) return;
         var destPiece=board.getPiece(move.getEndPosition());
         if((destPiece==null)==pieceAtDest) return;
@@ -126,17 +133,17 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition, boolean canCastle) {
         if(this.type==PieceType.PAWN){
-            var toReturn = new ArrayList<ChessMove>();
+            var toReturn = new HashSet<ChessMove>();
             var yOffs = this.color==ChessGame.TeamColor.WHITE?1:-1;
 
             if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?2:7)&&
                     board.getPiece(myPosition.addOffset(new Offset(0,yOffs)))==null){
                 this.addPawnMove(myPosition, new Offset(0,yOffs*2), board, false, toReturn);
             }else if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?5:4)){
-                if(board.canEnPassant(this.color, myPosition.addOffset(new Offset(1,0)))){
+                if(board.canEnPassantTo(this.color, myPosition.addOffset(new Offset(1,0)))){
                     this.addPawnMove(myPosition, new Offset(1,yOffs), board, false, toReturn);
                 }
-                if(board.canEnPassant(this.color, myPosition.addOffset(new Offset(-1,0)))){
+                if(board.canEnPassantTo(this.color, myPosition.addOffset(new Offset(-1,0)))){
                     this.addPawnMove(myPosition, new Offset(-1,yOffs), board, false, toReturn);
                 }
             }
@@ -147,7 +154,7 @@ public class ChessPiece {
             return toReturn;
         }
 
-        var toReturn = new ArrayList<ChessMove>();
+        var toReturn = new HashSet<ChessMove>();
         for(var chain : this.type.moves){
             for(var offs : chain){
                 var newPos = myPosition.addOffset(offs);

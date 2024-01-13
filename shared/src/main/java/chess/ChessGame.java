@@ -32,7 +32,7 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         this.currTeam=team;
-        this.board.clearEnPassantables(team);
+        this.board.clearDidDoubleMove(team);
     }
 
     /**
@@ -65,6 +65,7 @@ public class ChessGame {
         if(piece.getTeamColor()==this.currTeam&&this.validMoves(move.getStartPosition()).contains(move)){
             move.apply(this.board);
         }else{
+            System.out.println(move+" is invalid");
             throw new InvalidMoveException();
         }
         this.setTeamTurn(this.currTeam==TeamColor.WHITE?TeamColor.BLACK:TeamColor.WHITE);

@@ -2,8 +2,8 @@ package chess.specialmoves;
 
 import chess.*;
 
-public class EnPassantMove extends ChessMove {
-    public EnPassantMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPiece) {
+public class DoublePawnMove extends ChessMove {
+    public DoublePawnMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPiece) {
         super(startPosition, endPosition, promotionPiece);
     }
 
@@ -15,7 +15,7 @@ public class EnPassantMove extends ChessMove {
                 startPiece :
                 new ChessPiece(startPiece.getTeamColor(),this.getPromotionPiece()));
         board.addPiece(this.getStartPosition(), null);
-        board.addPiece(this.getEndPosition().addOffset(new ChessPiece.Offset(0,
-                startPiece.getTeamColor()== ChessGame.TeamColor.WHITE?-1:1)), null);
+
+        board.setDoubleMoved(this.getStartPosition().getColumn(), startPiece.getTeamColor());
     }
 }

@@ -25,11 +25,11 @@ public class CastleMove extends ChessMove {
 
     public void apply(ChessBoard board){
         var y=this.color== ChessGame.TeamColor.WHITE?1:8;
-        board.addPiece(new ChessPosition(this.side.x,y), null);
-        board.addPiece(new ChessPosition(5,y), null);
-        board.addPiece(new ChessPosition(5+this.side.direc*2,y),
+        board.addPiece(new ChessPosition(y,this.side.x), null);
+        board.addPiece(new ChessPosition(y,5), null);
+        board.addPiece(new ChessPosition(y,5+this.side.direc*2),
                 new ChessPiece(this.color, ChessPiece.PieceType.KING));
-        board.addPiece(new ChessPosition(5+this.side.direc,y),
+        board.addPiece(new ChessPosition(y,5+this.side.direc),
                 new ChessPiece(this.color, ChessPiece.PieceType.ROOK));
 
         board.removeCastlePrivileges(this.color, this.side);

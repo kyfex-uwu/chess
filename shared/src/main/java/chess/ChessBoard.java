@@ -4,6 +4,9 @@ import chess.specialmoves.CastleMove;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Function;
+
+import static chess.ChessGame.TeamColor.WHITE;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -12,9 +15,40 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessBoard {
+    public static void printGame(ChessGame game, Collection<ChessMove> movesToShow){
+        for(int y=8;y>=1;y--){
+            System.out.print("|");
+            for(int x=1;x<=8;x++){
+                int finalX = x;
+                int finalY = y;
+                if (movesToShow.stream().anyMatch(move -> move.getEndPosition()
+                        .equals(new ChessPosition(finalY, finalX)))) {
+                    System.out.print("*|");
+                    continue;
+                }
+
+                var piece = game.getBoard().getPiece(new ChessPosition(y,x));
+                if(piece==null){
+                    System.out.print(" |");
+                    continue;
+                }
+                Function<Character, Character> transformFunc = piece.getTeamColor()==WHITE?
+                        Character::toUpperCase : c->c;
+                System.out.print(transformFunc.apply(switch(piece.getPieceType()){
+                    case KING -> 'k';
+                    case QUEEN -> 'q';
+                    case BISHOP -> 'b';
+                    case KNIGHT -> 'n';
+                    case ROOK -> 'r';
+                    case PAWN -> 'p';
+                })+"|");
+            }
+            System.out.println();
+        }
+    }
     private final ChessPiece[] pieces = new ChessPiece[8*8];
-    private final boolean[] blackEnPassantable=new boolean[8];
-    private final boolean[] whiteEnPassantable=new boolean[8];
+    private final boolean[] blackDoubleMoved =new boolean[8];
+    private final boolean[] whiteDoubleMoved =new boolean[8];
     private final boolean[] blackCanCastle=new boolean[]{true, true};
     private final boolean[] whiteCanCastle=new boolean[]{true, true};
 
@@ -23,8 +57,8 @@ public class ChessBoard {
         for(int i=0;i<pieces.length;i++){
             this.pieces[i]=pieces[i]==null?null:pieces[i].clone();
         }
-        System.arraycopy(BEP, 0, this.blackEnPassantable, 0, 8);
-        System.arraycopy(WEP, 0, this.whiteEnPassantable, 0, 8);
+        System.arraycopy(BEP, 0, this.blackDoubleMoved, 0, 8);
+        System.arraycopy(WEP, 0, this.whiteDoubleMoved, 0, 8);
         System.arraycopy(BCC, 0, this.blackCanCastle, 0, 2);
         System.arraycopy(WCC, 0, this.whiteCanCastle, 0, 2);
     }
@@ -78,8 +112,8 @@ public class ChessBoard {
             this.pieces[48+i]=new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
         }
 
-        Arrays.fill(this.whiteEnPassantable, false);
-        Arrays.fill(this.blackEnPassantable, false);
+        Arrays.fill(this.whiteDoubleMoved, false);
+        Arrays.fill(this.blackDoubleMoved, false);
         Arrays.fill(this.whiteCanCastle, true);
         Arrays.fill(this.blackCanCastle, true);
     }
@@ -127,21 +161,21 @@ public class ChessBoard {
 
     //--
 
-    public boolean canEnPassant(ChessGame.TeamColor color, ChessPosition pos){
+    public boolean canEnPassantTo(ChessGame.TeamColor color, ChessPosition pos){
         if(!pos.isValid()) return false;
-        return (color==ChessGame.TeamColor.WHITE?this.blackEnPassantable:this.whiteEnPassantable)[pos.getColumn()];
+        return (color==ChessGame.TeamColor.WHITE?this.blackDoubleMoved :this.whiteDoubleMoved)[pos.getColumn()-1];
     }
-    public void clearEnPassantables(ChessGame.TeamColor color){
+    public void clearDidDoubleMove(ChessGame.TeamColor color){
         if(color== ChessGame.TeamColor.WHITE)
-            Arrays.fill(this.whiteEnPassantable, false);
+            Arrays.fill(this.whiteDoubleMoved, false);
         else if(color== ChessGame.TeamColor.BLACK)
-            Arrays.fill(this.blackEnPassantable, false);
+            Arrays.fill(this.blackDoubleMoved, false);
     }
 
-    public void setEnPassantable(int col, ChessGame.TeamColor color){
+    public void setDoubleMoved(int col, ChessGame.TeamColor color){
         (color== ChessGame.TeamColor.WHITE?
-                this.whiteEnPassantable:
-                this.blackEnPassantable)[col]=true;
+                this.whiteDoubleMoved :
+                this.blackDoubleMoved)[col-1]=true;
     }
 
     public static boolean checkPiece(ChessBoard board, ChessPiece piece, ChessPosition pos){
@@ -155,11 +189,11 @@ public class ChessBoard {
                 !checkPiece(this, new ChessPiece(color, ChessPiece.PieceType.ROOK),
                     new ChessPosition(color== ChessGame.TeamColor.WHITE?1:8,side.x))) return false;
 
-        if((color== ChessGame.TeamColor.WHITE&&this.whiteCanCastle[side==CastleMove.Side.QUEENSIDE?0:1])||
-                (color== ChessGame.TeamColor.BLACK&&this.blackCanCastle[side==CastleMove.Side.QUEENSIDE?0:1])){
+        if(((color==ChessGame.TeamColor.WHITE?this.whiteCanCastle:this.blackCanCastle)
+                [side==CastleMove.Side.QUEENSIDE?0:1])){
             if(this.isInCheck(color)) return false;
             for(int i=side.x-side.direc;i!=5;i-=side.direc){
-                var pos=new ChessPosition(i,color==ChessGame.TeamColor.WHITE?1:8);
+                var pos=new ChessPosition(color==ChessGame.TeamColor.WHITE?1:8, i);
                 if(this.getPiece(pos)!=null) return false;
                 var futureBoard = this.clone();
                 futureBoard.addPiece(pos, new ChessPiece(color, ChessPiece.PieceType.KING));
@@ -177,7 +211,7 @@ public class ChessBoard {
     //--
 
     public ChessBoard clone(){
-        return new ChessBoard(this.pieces, this.blackEnPassantable, this.whiteEnPassantable,
+        return new ChessBoard(this.pieces, this.blackDoubleMoved, this.whiteDoubleMoved,
                 this.blackCanCastle, this.whiteCanCastle);
     }
 
@@ -186,7 +220,7 @@ public class ChessBoard {
     public boolean equals(Object other){
         if(!(other instanceof ChessBoard otherBoard)) return false;
         return Arrays.equals(this.pieces, otherBoard.pieces)&&
-                Arrays.equals(this.whiteEnPassantable, otherBoard.whiteEnPassantable)&&
-                Arrays.equals(this.blackEnPassantable, otherBoard.blackEnPassantable);
+                Arrays.equals(this.whiteDoubleMoved, otherBoard.whiteDoubleMoved)&&
+                Arrays.equals(this.blackDoubleMoved, otherBoard.blackDoubleMoved);
     }
 }
