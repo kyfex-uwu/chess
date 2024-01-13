@@ -19,7 +19,11 @@ public class Main {
         String ans = scanner.nextLine();
         if(ans.startsWith("y")) ChessRenderer.canShowColor=true;
         while (true) {
-            renderGame(game, ChessRenderer.RenderData.from(movesToShow, positionToShow));
+            var builder = new ChessRenderer.RenderData.Builder();
+            if(positionToShow!=null){
+                builder.setPositions(movesToShow, positionToShow);
+            }
+            renderGame(game, builder.facingWhite(game.getTeamTurn().whiteOrBlack(true,false)).build());
             System.out.println();
             String line = scanner.nextLine();
 

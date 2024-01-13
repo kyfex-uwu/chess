@@ -18,31 +18,50 @@ public class ChessRenderer {
     public static class RenderData{
         private final Collection<ChessPiece.Offset> highlightedPositions;
         private final ChessPiece.Offset originPosition;
+        private final boolean facingWhite;
         private RenderData(Collection<ChessPiece.Offset> highlightedPositions,
-                           ChessPiece.Offset originPosition){
+                           ChessPiece.Offset originPosition, boolean facingWhite){
             this.highlightedPositions=highlightedPositions;
             this.originPosition=originPosition;
+            this.facingWhite=facingWhite;
         }
 
         /**
-         * Creates a {@code RenderData} instance with moves to highlight and an origin space that can make those moves
-         * @param movesToShow
-         * @param positionToShow
-         * @return RenderData instance
+         * Builder class to generate RenderData
          */
-        public static RenderData from(Collection<ChessMove> movesToShow, ChessPosition positionToShow){
-            return new RenderData(movesToShow.stream().map(move->new ChessPiece.Offset(move.getEndPosition().getColumn()-1,
-                    move.getEndPosition().getRow()-1)).toList(),
-                    positionToShow!=null?new ChessPiece.Offset(positionToShow.getColumn()-1, positionToShow.getRow()-1):
-                            new ChessPiece.Offset(-1,-1));
-        }
+        public static class Builder{
+            private Collection<ChessPiece.Offset> highlightedPositions = Collections.emptySet();
+            private ChessPiece.Offset originPosition = new ChessPiece.Offset(-1,-1);
+            private boolean facingWhite=true;
 
-        /**
-         * Creates an empty {@code RenderData} instance
-         * @return RenderData instance
-         */
-        public static RenderData from(){
-            return new RenderData(Collections.emptySet(), new ChessPiece.Offset(-1,-1));
+            /**
+             * Sets the positions to be highlighted
+             * @param movesToShow moves this piece can make
+             * @param positionToShow the piece making the moves
+             * @return this, for chaining
+             */
+            public Builder setPositions(Collection<ChessMove> movesToShow, ChessPosition positionToShow){
+                this.highlightedPositions = movesToShow.stream()
+                        .map(move->new ChessPiece.Offset(move.getEndPosition().getColumn()-1,
+                        move.getEndPosition().getRow()-1)).toList();
+                this.originPosition=
+                        new ChessPiece.Offset(positionToShow.getColumn()-1, positionToShow.getRow()-1);
+                return this;
+            }
+
+            /**
+             * Sets if the board should be rendered with white on bottom (true) or black on botton (false)
+             * @param isFacing if white is on bottom
+             * @return this, for chaining
+             */
+            public Builder facingWhite(boolean isFacing){ this.facingWhite=isFacing; return this;}
+
+            /**
+             * @return a RenderData
+             */
+            public RenderData build(){
+                return new RenderData(this.highlightedPositions, this.originPosition, this.facingWhite);
+            }
         }
     }
     private static final Map<ChessPiece.PieceType, String> blackPieces = Map.ofEntries(
@@ -152,32 +171,10 @@ public class ChessRenderer {
      * @param data Any additional data
      */
     public static void renderGame(ChessGame game, RenderData data){
-        for(int y=0;y<=8;y++){
+        for(int yCounter=0;yCounter<8;yCounter++){
+            int y=data.facingWhite?yCounter:7-yCounter;
             setColor(CLEAR, CLEAR);
             if(!canShowColor) System.out.println("   "+"+-------".repeat(8)+"+");
-            if(y==8){
-                System.out.print("   ");
-                for(int x=0;x<8;x++){
-                    System.out.print((canShowColor?"   ":"    ")+(char)(x+97)+"   ");
-                }
-                System.out.print("\n\n   ");
-
-                var color = game.getTeamTurn().whiteOrBlack(WHITE,BLACK);
-                setColor(color,color==WHITE?DARK_GRAY:GRAY);
-
-                if(game.isInCheckmate(game.getTeamTurn())){
-                    System.out.print("Checkmate! "+game.getTeamTurn().opposite()+" wins");
-                }else if(game.isInStalemate(game.getTeamTurn())){
-                    System.out.print("Stalemate");
-                }else{
-                    System.out.print(game.getTeamTurn() + "'s move");
-                    if(game.isInCheck(game.getTeamTurn()))
-                        System.out.print(" (Check)");
-                }
-                setColor(CLEAR, CLEAR);
-                System.out.println();
-                break;
-            }
 
             for(int i=0;i<3;i++) {
                 for (int x = 0; x < 8; x++) {
@@ -230,5 +227,25 @@ public class ChessRenderer {
                 }
             }
         }
+        System.out.print("   ");
+        for(int x=0;x<8;x++){
+            System.out.print((canShowColor?"   ":"    ")+(char)(x+97)+"   ");
+        }
+        System.out.print("\n\n   ");
+
+        var color = game.getTeamTurn().whiteOrBlack(WHITE,BLACK);
+        setColor(color,color==WHITE?GRAY:DARK_GRAY);
+
+        if(game.isInCheckmate(game.getTeamTurn())){
+            System.out.print("Checkmate! "+game.getTeamTurn().opposite()+" wins");
+        }else if(game.isInStalemate(game.getTeamTurn())){
+            System.out.print("Stalemate");
+        }else{
+            System.out.print(game.getTeamTurn() + "'s move");
+            if(game.isInCheck(game.getTeamTurn()))
+                System.out.print(" (Check)");
+        }
+        setColor(CLEAR, CLEAR);
+        System.out.println();
     }
 }
