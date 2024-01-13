@@ -82,6 +82,10 @@ public class ChessPiece {
         public Offset mult(int mult){
             return new Offset(this.x*mult, this.y*mult);
         }
+        public boolean equals(Object other){
+            if(!(other instanceof Offset otherOffset)) return false;
+            return otherOffset.x==this.x&&otherOffset.y==this.y;
+        }
     }
 
     /**

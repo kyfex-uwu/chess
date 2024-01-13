@@ -4,9 +4,6 @@ import chess.specialmoves.CastleMove;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.Function;
-
-import static chess.ChessGame.TeamColor.WHITE;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -15,37 +12,6 @@ import static chess.ChessGame.TeamColor.WHITE;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    public static void printGame(ChessGame game, Collection<ChessMove> movesToShow){
-        for(int y=8;y>=1;y--){
-            System.out.print("|");
-            for(int x=1;x<=8;x++){
-                int finalX = x;
-                int finalY = y;
-                if (movesToShow.stream().anyMatch(move -> move.getEndPosition()
-                        .equals(new ChessPosition(finalY, finalX)))) {
-                    System.out.print("*|");
-                    continue;
-                }
-
-                var piece = game.getBoard().getPiece(new ChessPosition(y,x));
-                if(piece==null){
-                    System.out.print(" |");
-                    continue;
-                }
-                Function<Character, Character> transformFunc = piece.getTeamColor()==WHITE?
-                        Character::toUpperCase : c->c;
-                System.out.print(transformFunc.apply(switch(piece.getPieceType()){
-                    case KING -> 'k';
-                    case QUEEN -> 'q';
-                    case BISHOP -> 'b';
-                    case KNIGHT -> 'n';
-                    case ROOK -> 'r';
-                    case PAWN -> 'p';
-                })+"|");
-            }
-            System.out.println();
-        }
-    }
     private final ChessPiece[] pieces = new ChessPiece[8*8];
     private final boolean[] blackDoubleMoved =new boolean[8];
     private final boolean[] whiteDoubleMoved =new boolean[8];
