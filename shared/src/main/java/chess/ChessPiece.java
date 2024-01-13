@@ -118,7 +118,7 @@ public class ChessPiece {
         if((destPiece==null)==pieceAtDest) return;
         if(destPiece!=null&&destPiece.color==this.color) return;
 
-        if(move.getEndPosition().getRow()==(this.color==ChessGame.TeamColor.WHITE?8:1)) {
+        if(move.getEndPosition().getRow()==(this.color.opposite().row)) {
             moveList.add(move.withPromotionPiece(PieceType.BISHOP));
             moveList.add(move.withPromotionPiece(PieceType.ROOK));
             moveList.add(move.withPromotionPiece(PieceType.KNIGHT));
@@ -138,23 +138,22 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition, boolean canCastle) {
         if(this.type==PieceType.PAWN){
             var toReturn = new HashSet<ChessMove>();
-            var yOffs = this.color==ChessGame.TeamColor.WHITE?1:-1;
 
-            if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?2:7)&&
-                    board.getPiece(myPosition.addOffset(new Offset(0,yOffs)))==null){
-                this.addPawnMove(myPosition, new Offset(0,yOffs*2), board, false, toReturn);
-            }else if(myPosition.getRow()==(this.color==ChessGame.TeamColor.WHITE?5:4)){
+            if(myPosition.getRow()==this.color.row+this.color.advDir&&
+                    board.getPiece(myPosition.addOffset(new Offset(0,this.color.advDir)))==null){
+                this.addPawnMove(myPosition, new Offset(0,this.color.advDir*2), board, false, toReturn);
+            }else if(myPosition.getRow()==this.color.row+this.color.advDir*4){
                 if(board.canEnPassantTo(this.color, myPosition.addOffset(new Offset(1,0)))){
-                    this.addPawnMove(myPosition, new Offset(1,yOffs), board, false, toReturn);
+                    this.addPawnMove(myPosition, new Offset(1,this.color.advDir), board, false, toReturn);
                 }
                 if(board.canEnPassantTo(this.color, myPosition.addOffset(new Offset(-1,0)))){
-                    this.addPawnMove(myPosition, new Offset(-1,yOffs), board, false, toReturn);
+                    this.addPawnMove(myPosition, new Offset(-1,this.color.advDir), board, false, toReturn);
                 }
             }
 
-            this.addPawnMove(myPosition, new Offset(0,yOffs), board, false, toReturn);
-            this.addPawnMove(myPosition, new Offset(1,yOffs), board, true, toReturn);
-            this.addPawnMove(myPosition, new Offset(-1,yOffs), board, true, toReturn);
+            this.addPawnMove(myPosition, new Offset(0,this.color.advDir), board, false, toReturn);
+            this.addPawnMove(myPosition, new Offset(1,this.color.advDir), board, true, toReturn);
+            this.addPawnMove(myPosition, new Offset(-1,this.color.advDir), board, true, toReturn);
             return toReturn;
         }
 

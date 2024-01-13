@@ -34,7 +34,7 @@ public class ChessMove {
                                 new ChessPiece(startPiece.getTeamColor(),this.getPromotionPiece()));
                         board.addPiece(this.getStartPosition(), null);
                         board.addPiece(this.getEndPosition().addOffset(new ChessPiece.Offset(0,
-                                startPiece.getTeamColor()== ChessGame.TeamColor.WHITE?-1:1)), null);
+                                -startPiece.getTeamColor().advDir)), null);
                     };
                 }else if(startPosition.getColumn()==endPosition.getColumn()&&
                         Math.abs(startPosition.getRow()-endPosition.getRow())==2){
@@ -57,12 +57,11 @@ public class ChessMove {
                     var color = startPosition.getRow()==1? ChessGame.TeamColor.WHITE: ChessGame.TeamColor.BLACK;
                     var side = endPosition.getColumn()==3?CastleMove.Side.QUEENSIDE: CastleMove.Side.KINGSIDE;
                     this.hackApply = board -> {
-                        var y=color== ChessGame.TeamColor.WHITE?1:8;
-                        board.addPiece(new ChessPosition(y,side.x), null);
-                        board.addPiece(new ChessPosition(y,5), null);
-                        board.addPiece(new ChessPosition(y,5+side.direc*2),
+                        board.addPiece(new ChessPosition(color.row,side.x), null);
+                        board.addPiece(new ChessPosition(color.row,5), null);
+                        board.addPiece(new ChessPosition(color.row,5+side.direc*2),
                                 new ChessPiece(color, ChessPiece.PieceType.KING));
-                        board.addPiece(new ChessPosition(y,5+side.direc),
+                        board.addPiece(new ChessPosition(color.row,5+side.direc),
                                 new ChessPiece(color, ChessPiece.PieceType.ROOK));
 
                         board.removeCastlePrivileges(color, side);

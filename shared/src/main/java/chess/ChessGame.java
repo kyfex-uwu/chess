@@ -39,8 +39,21 @@ public class ChessGame {
      * Enum identifying the 2 possible teams in a chess game
      */
     public enum TeamColor {
-        WHITE,
-        BLACK,
+        WHITE(1, 1),
+        BLACK(8, -1);
+        public final int row;
+        public final int advDir;
+        TeamColor(int row, int advDir){
+            this.row=row;
+            this.advDir=advDir;
+        }
+        public TeamColor opposite(){
+            return this==WHITE?BLACK:WHITE;
+        }
+        public <T> T whiteOrBlack(T white, T black){
+            if(this==WHITE) return white;
+            return black;
+        }
     }
 
     /**
@@ -68,7 +81,7 @@ public class ChessGame {
             System.out.println(move+" is invalid");
             throw new InvalidMoveException();
         }
-        this.setTeamTurn(this.currTeam==TeamColor.WHITE?TeamColor.BLACK:TeamColor.WHITE);
+        this.setTeamTurn(this.currTeam.opposite());
     }
 
     /**

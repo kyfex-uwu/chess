@@ -130,8 +130,12 @@ public class ChessRenderer {
                     System.out.print((canShowColor?"   ":"    ")+(char)(x+97)+"   ");
                 }
                 System.out.print("\n\n   ");
-                setComplimentaryColor(game.getTeamTurn()== ChessGame.TeamColor.WHITE?CLColor.WHITE:CLColor.BLACK);
-                System.out.print(game.getTeamTurn()+"'s move");
+                setComplimentaryColor(game.getTeamTurn().whiteOrBlack(CLColor.WHITE,CLColor.BLACK));
+                if(game.isInCheckmate(game.getTeamTurn())){
+                    System.out.print("Checkmate! ")
+                }else {
+                    System.out.print(game.getTeamTurn() + "'s move");
+                }
                 setColor(CLColor.CLEAR, CLColor.CLEAR);
                 System.out.println();
                 break;
@@ -149,8 +153,9 @@ public class ChessRenderer {
 
                     if(!canShowColor) System.out.print("|");
 
-                    setColor(currPiece==null?CLColor.CLEAR:
-                                    (currPiece.getTeamColor()==ChessGame.TeamColor.WHITE?CLColor.WHITE:CLColor.GRAY),
+                    setColor(currPiece==null?
+                                    CLColor.CLEAR:
+                                    currPiece.getTeamColor().whiteOrBlack(CLColor.WHITE,CLColor.GRAY),
                             x%2==y%2?CLColor.DARK_GRAY:CLColor.BLACK);
                     String strToPrint;
                     if(currPiece!=null) {

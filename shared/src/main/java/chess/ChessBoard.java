@@ -129,7 +129,7 @@ public class ChessBoard {
 
     public boolean canEnPassantTo(ChessGame.TeamColor color, ChessPosition pos){
         if(!pos.isValid()) return false;
-        return (color==ChessGame.TeamColor.WHITE?this.blackDoubleMoved :this.whiteDoubleMoved)[pos.getColumn()-1];
+        return color.whiteOrBlack(this.blackDoubleMoved,this.whiteDoubleMoved)[pos.getColumn()-1];
     }
     public void clearDidDoubleMove(ChessGame.TeamColor color){
         if(color== ChessGame.TeamColor.WHITE)
@@ -139,9 +139,7 @@ public class ChessBoard {
     }
 
     public void setDoubleMoved(int col, ChessGame.TeamColor color){
-        (color== ChessGame.TeamColor.WHITE?
-                this.whiteDoubleMoved :
-                this.blackDoubleMoved)[col-1]=true;
+        color.whiteOrBlack(this.whiteDoubleMoved,this.blackDoubleMoved)[col-1]=true;
     }
 
     public static boolean checkPiece(ChessBoard board, ChessPiece piece, ChessPosition pos){
@@ -151,15 +149,15 @@ public class ChessBoard {
     }
     public boolean canCastle(ChessGame.TeamColor color, CastleMove.Side side){
         if(!checkPiece(this, new ChessPiece(color, ChessPiece.PieceType.KING),
-                new ChessPosition(color== ChessGame.TeamColor.WHITE?1:8,5))||
+                new ChessPosition(color.row,5))||
                 !checkPiece(this, new ChessPiece(color, ChessPiece.PieceType.ROOK),
-                    new ChessPosition(color== ChessGame.TeamColor.WHITE?1:8,side.x))) return false;
+                    new ChessPosition(color.row,side.x))) return false;
 
-        if(((color==ChessGame.TeamColor.WHITE?this.whiteCanCastle:this.blackCanCastle)
-                [side==CastleMove.Side.QUEENSIDE?0:1])){
+        if(color.whiteOrBlack(this.whiteCanCastle,this.blackCanCastle)
+                [side==CastleMove.Side.QUEENSIDE?0:1]){
             if(this.isInCheck(color)) return false;
             for(int i=side.x-side.direc;i!=5;i-=side.direc){
-                var pos=new ChessPosition(color==ChessGame.TeamColor.WHITE?1:8, i);
+                var pos=new ChessPosition(color.row, i);
                 if(this.getPiece(pos)!=null) return false;
                 var futureBoard = this.clone();
                 futureBoard.addPiece(pos, new ChessPiece(color, ChessPiece.PieceType.KING));

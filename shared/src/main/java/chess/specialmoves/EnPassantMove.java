@@ -16,6 +16,6 @@ public class EnPassantMove extends ChessMove {
                 new ChessPiece(startPiece.getTeamColor(),this.getPromotionPiece()));
         board.addPiece(this.getStartPosition(), null);
         board.addPiece(this.getEndPosition().addOffset(new ChessPiece.Offset(0,
-                startPiece.getTeamColor()== ChessGame.TeamColor.WHITE?-1:1)), null);
+                -startPiece.getTeamColor().advDir)), null);
     }
 }
