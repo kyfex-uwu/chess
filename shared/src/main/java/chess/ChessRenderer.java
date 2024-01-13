@@ -210,7 +210,7 @@ public class ChessRenderer {
                             if(canShowColor) {
                                 if (overlayChar == '=' || overlayChar == '|') {
                                     strToPrint+="\u001b["+highlightColor.fg+";"+currColor[1]+"m";
-                                } else if (overlayChar == '#') {
+                                } else if (overlayChar == '+') {
                                     strToPrint+="\u001b["+highlightColor.fg+";"+highlightColor.bg+"m";
                                 } else {// space
                                     strToPrint+="\u001b["+currColor[0]+";"+currColor[1]+"m";
