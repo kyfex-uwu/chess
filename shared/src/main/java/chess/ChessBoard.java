@@ -4,6 +4,7 @@ import chess.specialmoves.CastleMove;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -13,6 +14,7 @@ import java.util.Collection;
  */
 public class ChessBoard {
     private final ChessPiece[] pieces = new ChessPiece[8*8];
+
     private final boolean[] blackDoubleMoved =new boolean[8];
     private final boolean[] whiteDoubleMoved =new boolean[8];
     private final boolean[] blackCanCastle=new boolean[]{true, true};
@@ -100,7 +102,7 @@ public class ChessBoard {
             var futureBoard = this.clone();
             move.apply(futureBoard);
             return !futureBoard.isInCheck(piece.getTeamColor());
-        }).toList();
+        }).collect(Collectors.toSet());
     }
 
     /**
@@ -161,7 +163,7 @@ public class ChessBoard {
     public boolean canEnPassantTo(ChessGame.TeamColor color, ChessPosition pos){
         if(!pos.isValid()||pos.getRow()!=color.whiteOrBlack(6,3)) return false;
 
-        var capturingPiece = this.getPiece(pos.addOffset(new ChessPiece.Offset(0,-1)));
+        var capturingPiece = this.getPiece(pos.addOffset(new ChessPiece.Offset(0,-color.advDir)));
         return color.whiteOrBlack(this.blackDoubleMoved,this.whiteDoubleMoved)[pos.getColumn()-1]&&
                 (capturingPiece!=null&&capturingPiece.getPieceType()== ChessPiece.PieceType.PAWN&&
                         capturingPiece.getTeamColor()==color.opposite());

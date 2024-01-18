@@ -38,9 +38,6 @@ public class CastleMove extends ChessMove {
     }
 
     public String toString(){
-        return this.side.toString()+" "+this.color;
-    }
-    public int hashCode(){
-        return 40960+this.side.ordinal()+this.color.ordinal()*2;
+        return this.side.toString()+" "+this.color+" "+super.toString();
     }
 }

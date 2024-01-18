@@ -164,10 +164,10 @@ public class ChessPiece {
                     board.getPiece(myPosition.addOffset(new Offset(0,this.color.advDir)))==null){
                 this.addPawnMove(myPosition, new Offset(0,this.color.advDir*2), board, false, toReturn);
             }else if(myPosition.getRow()==this.color.row+this.color.advDir*4){
-                if(board.canEnPassantTo(this.color, myPosition.addOffset(new Offset(1,0)))){
+                if(board.canEnPassantTo(this.color, myPosition.addOffset(new Offset(1,this.color.advDir)))){
                     this.addPawnMove(myPosition, new Offset(1,this.color.advDir), board, false, toReturn);
                 }
-                if(board.canEnPassantTo(this.color, myPosition.addOffset(new Offset(-1,0)))){
+                if(board.canEnPassantTo(this.color, myPosition.addOffset(new Offset(-1,this.color.advDir)))){
                     this.addPawnMove(myPosition, new Offset(-1,this.color.advDir), board, false, toReturn);
                 }
             }

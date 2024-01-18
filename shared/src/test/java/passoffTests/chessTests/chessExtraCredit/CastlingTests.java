@@ -1,6 +1,7 @@
-package passoffTests.chessExtraCredit;
+package passoffTests.chessTests.chessExtraCredit;
 
 import chess.*;
+import chess.specialmoves.CastleMove;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -411,10 +412,11 @@ public class CastlingTests {
                         TestFactory.getNewPosition(1, 3), null)),
                 "ChessGame validMoves contained an invalid castling move");
 
+
         Assertions.assertTrue(game.validMoves(position).contains(
                 TestFactory.getNewMove(TestFactory.getNewPosition(1, 5),
                         TestFactory.getNewPosition(1, 7), null)),
-                "ChessGame validMoves missing kingside castle");
+                "ChessGame validMoves contained an invalid castling move");
 
         //move king
         game.makeMove(TestFactory.getNewMove(TestFactory.getNewPosition(6, 1),

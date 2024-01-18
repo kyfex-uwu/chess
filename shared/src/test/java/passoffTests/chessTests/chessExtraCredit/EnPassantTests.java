@@ -1,4 +1,4 @@
-package passoffTests.chessExtraCredit;
+package passoffTests.chessTests.chessExtraCredit;
 
 import chess.*;
 import org.junit.jupiter.api.Assertions;
@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import passoffTests.TestFactory;
+
+import java.util.Arrays;
 
 /**
  * Tests if the ChessGame implementation can handle En Passant moves
@@ -56,7 +58,6 @@ public class EnPassantTests {
 
         //move black piece 2 spaces
         game.makeMove(TestFactory.getNewMove(TestFactory.getNewPosition(7, 3), TestFactory.getNewPosition(5, 3), null));
-        //game.makeMove(new DoublePawnMove(new ChessPosition(7,3), new ChessPosition(5,3), null));
         /*
         | | | | | | | | |
 		| | | | | | | | |
@@ -71,7 +72,6 @@ public class EnPassantTests {
         //make sure pawn has En Passant move
         ChessMove enPassantMove =
                 TestFactory.getNewMove(TestFactory.getNewPosition(5, 2), TestFactory.getNewPosition(6, 3), null);
-        //new EnPassantMove(new ChessPosition(5,2), new ChessPosition(6,3), null);
         Assertions.assertTrue(game.validMoves(position).contains(enPassantMove),
                 "ChessGame validMoves did not contain a valid En Passant move");
 
@@ -121,7 +121,6 @@ public class EnPassantTests {
 
         //move black piece 2 spaces
         game.makeMove(TestFactory.getNewMove(TestFactory.getNewPosition(7, 3), TestFactory.getNewPosition(5, 3), null));
-        //game.makeMove(new DoublePawnMove(new ChessPosition(7,3), new ChessPosition(5,3),null));
         /*
         | | | | | | | | |
 		| | | | | | | | |
@@ -136,7 +135,6 @@ public class EnPassantTests {
         //make sure pawn has En Passant move
         ChessMove enPassantMove =
                 TestFactory.getNewMove(TestFactory.getNewPosition(5, 4), TestFactory.getNewPosition(6, 3), null);
-        //new EnPassantMove(new ChessPosition(5,4), new ChessPosition(6,3), null);
         Assertions.assertTrue(game.validMoves(position).contains(enPassantMove),
                 "ChessGame validMoves did not contain a valid En Passant move");
 
@@ -186,7 +184,6 @@ public class EnPassantTests {
 
         //move white piece 2 spaces
         game.makeMove(TestFactory.getNewMove(TestFactory.getNewPosition(2, 7), TestFactory.getNewPosition(4, 7), null));
-        //game.makeMove(new DoublePawnMove(new ChessPosition(2,7), new ChessPosition(4,7),null));
         /*
         | | | | | | | | |
 		| | | | | | | | |
@@ -201,7 +198,6 @@ public class EnPassantTests {
         //make sure pawn has En Passant move
         ChessMove enPassantMove =
                 TestFactory.getNewMove(TestFactory.getNewPosition(4, 6), TestFactory.getNewPosition(3, 7), null);
-        //new EnPassantMove(new ChessPosition(4,6), new ChessPosition(3,7), null);
         Assertions.assertTrue(game.validMoves(position).contains(enPassantMove),
                 "ChessGame validMoves did not contain a valid En Passant move");
 
@@ -251,7 +247,6 @@ public class EnPassantTests {
 
         //move white piece 2 spaces
         game.makeMove(TestFactory.getNewMove(TestFactory.getNewPosition(2, 7), TestFactory.getNewPosition(4, 7), null));
-        //game.makeMove(new DoublePawnMove(new ChessPosition(2,7), new ChessPosition(4,7),null));
         /*
         | | | | | | | | |
 		| | | | | | | | |
@@ -266,7 +261,6 @@ public class EnPassantTests {
         //make sure pawn has En Passant move
         ChessMove enPassantMove =
                 TestFactory.getNewMove(TestFactory.getNewPosition(4, 8), TestFactory.getNewPosition(3, 7), null);
-        //new EnPassantMove(new ChessPosition(4,8), new ChessPosition(3,7), null);
         Assertions.assertTrue(game.validMoves(position).contains(enPassantMove),
                 "ChessGame validMoves did not contain a valid En Passant move");
 

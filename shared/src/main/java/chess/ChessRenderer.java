@@ -115,7 +115,7 @@ public class ChessRenderer {
             Map.entry(ChessPiece.PieceType.KNIGHT,
                     """
                             \s/*^\s
-                            \sL/%|
+                            \sL/ |
                             \s/%%|"""),
             Map.entry(ChessPiece.PieceType.ROOK,
                     """
