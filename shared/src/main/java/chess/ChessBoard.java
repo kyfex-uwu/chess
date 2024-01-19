@@ -1,7 +1,9 @@
 package chess;
 
 import chess.specialmoves.CastleMove;
+import com.google.gson.*;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -264,5 +266,23 @@ public class ChessBoard {
         return Arrays.equals(this.pieces, otherBoard.pieces)&&
                 Arrays.equals(this.whiteDoubleMoved, otherBoard.whiteDoubleMoved)&&
                 Arrays.equals(this.blackDoubleMoved, otherBoard.blackDoubleMoved);
+    }
+
+    public static class ChessBoardSerializer implements JsonSerializer<ChessBoard> {
+        @Override
+        public JsonElement serialize(ChessBoard chessBoard, Type type, JsonSerializationContext jsonSerializationContext) {
+            var toReturn = new JsonObject();
+            toReturn.addProperty("pieces", Arrays.stream(chessBoard.pieces).map(piece->
+                    String.valueOf(piece == null ? ' ' : piece.toCompressedString()))
+                    .collect(Collectors.joining())+"-");
+
+            return null;
+        }
+    }
+    public static class ChessBoardDeserializer implements JsonDeserializer<ChessBoard> {
+        @Override
+        public ChessBoard deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            return null;
+        }
     }
 }

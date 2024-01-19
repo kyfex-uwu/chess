@@ -6,6 +6,7 @@ import chess.specialmoves.EnPassantMove;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Represents a single chess piece
@@ -33,16 +34,16 @@ public class ChessPiece {
                     moves.add(List.of(new Offset(x, y)));
                 }
             }
-        }),
+        }, 'k'),
         QUEEN(new Offset[]{
                 new Offset(-1,-1),new Offset(0,-1),new Offset(1,-1),
                 new Offset(-1,0),/*new Offset(0,0),*/new Offset(1,0),
                 new Offset(-1,1),new Offset(0,1),new Offset(1,1),
-        }),
+        }, 'q'),
         BISHOP(new Offset[]{
                 new Offset(-1,-1),new Offset(1,-1),
                 new Offset(-1,1),new Offset(1,1),
-        }),
+        }, 'b'),
         KNIGHT(moves->{
             moves.add(List.of(new Offset(-1,-2)));
             moves.add(List.of(new Offset(1,-2)));
@@ -53,19 +54,22 @@ public class ChessPiece {
             moves.add(List.of(new Offset(2,-1)));
             moves.add(List.of(new Offset(-2,1)));
             moves.add(List.of(new Offset(2,1)));
-        }),
+        }, 'n'),
         ROOK(new Offset[]{
                 new Offset(0,-1),new Offset(0,1),
                 new Offset(-1,0),new Offset(1,0),
-        }),
-        PAWN(new Offset[]{});//pawns are handled specially
+        }, 'r'),
+        PAWN(new Offset[]{}, 'p');//pawns are handled specially
         public final Collection<List<Offset>> moves;
-        PieceType(Consumer<Collection<List<Offset>>> moveFunc){
+        private final char identifier;
+        PieceType(Consumer<Collection<List<Offset>>> moveFunc, char identifier){
+            this.identifier=identifier;
             var collection = new ArrayList<List<Offset>>();
             moveFunc.accept(collection);
             this.moves=Collections.unmodifiableCollection(collection);
         }
-        PieceType(Offset[] offsets){
+        PieceType(Offset[] offsets, char identifier){
+            this.identifier=identifier;
             var collection = new ArrayList<List<Offset>>();
             for (Offset offset : offsets) {
                 List<Offset> list = new ArrayList<>();
@@ -211,6 +215,9 @@ public class ChessPiece {
 
     public String toString(){
         return this.color+"-"+this.type;
+    }
+    public Character toCompressedString(){
+        return this.color.whiteOrBlack(this.type.identifier,Character.toUpperCase(this.type.identifier));
     }
     public boolean equals(Object other){
         if(!(other instanceof ChessPiece otherPiece)) return false;
