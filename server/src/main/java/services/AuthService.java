@@ -1,17 +1,16 @@
 package services;
 
-import model.AuthData;
 import model.LoginData;
 import model.UserData;
+import server.Server;
+import spark.Request;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Optional;
+import java.util.*;
 
 public class AuthService {
-    private static final ArrayList<UserData> userData = new ArrayList<>();
-    private static final ArrayList<String> tokens = new ArrayList<>();
+    private static final HashMap<String, UserData> userData = new HashMap<>();//username, data
+    private static final HashMap<String, String> tokens = new HashMap<>();//token, username
 
     public static void clear(){
         userData.clear();
@@ -19,7 +18,7 @@ public class AuthService {
     }
 
     public static boolean validateToken(String token){
-        return tokens.contains(token);
+        return tokens.containsKey(token);
     }
 
     // https://stackoverflow.com/a/56628391/14000178
@@ -32,21 +31,33 @@ public class AuthService {
     }
 
     public static boolean registerUser(UserData dataToAdd){
-        if(userData.stream().anyMatch(data->data.username().equals(dataToAdd.username()))) return false;
+        if(userData.containsKey(dataToAdd.username())) return false;
 
-        userData.add(dataToAdd);
+        userData.put(dataToAdd.username(), dataToAdd);
         return true;
     }
 
     public static Optional<String> login(LoginData loginData){
-        if(userData.stream().anyMatch(data->data.matchesLoginData(loginData))){
+        if(userData.values().stream().anyMatch(data->data.matchesLoginData(loginData))){
             var token = generateNewToken();
-            tokens.add(token);
+            tokens.put(token, loginData.username());
             return Optional.of(token);
         }
         return Optional.empty();
     }
     public static void logout(String token){
         tokens.remove(token);
+    }
+
+    public static Optional<String> getUserFromToken(String token){
+        if(tokens.containsKey(token)) return Optional.of(tokens.get(token));
+        return Optional.empty();
+    }
+
+    public static Optional<Server.FailedResponse> validateHeader(Request req){
+        var authHeader = req.headers("authorization");
+        if(authHeader==null||authHeader.isEmpty()) return Optional.of(Server.FailedResponse.BAD_REQ);
+        if(!validateToken(authHeader)) return Optional.of(Server.FailedResponse.NOT_AUTH);
+        return Optional.empty();
     }
 }

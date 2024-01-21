@@ -85,7 +85,7 @@ public class ChessGame {
         if(piece.getTeamColor()==this.currTeam&&this.validMoves(move.getStartPosition()).contains(move)){
             move.apply(this.board);
         }else{
-            System.out.println(move+" is invalid");
+            //System.out.println(move+" is invalid");
             throw new InvalidMoveException();
         }
         this.setTeamTurn(this.currTeam.opposite());
