@@ -16,7 +16,7 @@ public class ChessMove {
     private final ChessPosition end;
     private final ChessPiece.PieceType promotionPiece;
 
-    private static final boolean TESTING=true;
+    private static final boolean TESTING=false;
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
         var stacktrace = Arrays.toString(new Exception().getStackTrace());
