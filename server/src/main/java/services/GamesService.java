@@ -1,6 +1,9 @@
 package services;
 
 import chess.ChessGame;
+import dataAccess.AuthDataAccess;
+import dataAccess.DataAccessException;
+import dataAccess.GamesDataAccess;
 import model.GameData;
 import server.Server;
 
@@ -9,26 +12,23 @@ import java.util.HashSet;
 import java.util.Optional;
 
 public class GamesService {
-    private static final HashMap<Integer, GameData> games = new HashMap<>();
-    private static final HashSet<Integer> gameIDs = new HashSet<>();
-
+    //todo: cache
     public static void clear(){
-        games.clear();
-        gameIDs.clear();
+        GamesDataAccess.clear();
     }
 
-    public static int createGame(String name){
+    public static int createGame(String name) throws DataAccessException {
         int id;
-        do{
-            id= (int) Math.floor(Math.random()*1544804416);//34^6
-        }while(gameIDs.contains(id));
+        do {
+            id = (int) Math.floor(Math.random() * 1544804416);//34^6
+        }while(GamesDataAccess.getGame(id)!=null);
 
-        gameIDs.add(id);
-        games.put(id, new GameData(id, name));//new ChessGame() ??
+        GamesDataAccess.createGame(id, name);
         return id;
     }
-    public static Optional<Server.FailedResponse> joinGame(int gameID, String color, String username){
-        var game = games.get(gameID);
+    public static Optional<Server.FailedResponse> joinGame(int gameID, String color, String username)
+            throws DataAccessException{
+        var game = GamesDataAccess.getGame(gameID);
         if(game==null) return Optional.of(Server.FailedResponse.BAD_REQ);
 
         ChessGame.TeamColor teamColor;
@@ -41,16 +41,13 @@ public class GamesService {
         }
 
         if(teamColor.whiteOrBlack(game.whiteUsername, game.blackUsername)==null){
-            if(teamColor== ChessGame.TeamColor.WHITE)
-                game.whiteUsername=username;
-            else
-                game.blackUsername=username;
+            GamesDataAccess.joinGame(gameID, teamColor, username);
             return Optional.empty();
         }else{
             return Optional.of(Server.FailedResponse.ALREADY_TAKEN);
         }
     }
-    public static GameData[] getGames(){
-        return games.values().toArray(new GameData[0]);
+    public static GameData[] getGames() throws DataAccessException {
+        return GamesDataAccess.getGames();
     }
 }

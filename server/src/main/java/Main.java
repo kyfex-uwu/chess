@@ -1,7 +1,9 @@
-import chess.*;
+import server.Server;
 
 public class Main {
     public static void main(String[] args) {
-        //System.out.println("♕ 240 Chess Server: " + piece);
+        var server = new Server();
+        var port = server.run(0);
+        System.out.println("Started test HTTP server on " + port);
     }
 }

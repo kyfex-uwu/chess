@@ -2,9 +2,11 @@ package server;
 
 import chess.ChessBoard;
 import com.google.gson.*;
+import dataAccess.DataAccessException;
 import model.*;
 import services.AuthService;
 import services.GamesService;
+import spark.ExceptionHandler;
 import spark.Spark;
 
 public class Server {
@@ -16,7 +18,8 @@ public class Server {
     public enum FailedResponse {
         ALREADY_TAKEN(403, "already taken"),
         NOT_AUTH(401, "not authorized"),
-        BAD_REQ(400,"bad request");
+        BAD_REQ(400,"bad request"),
+        SERVER_ERROR(500, "something went wrong, please try again");
         public final int status;
         public final String message;
         FailedResponse(int status, String message){
@@ -35,12 +38,7 @@ public class Server {
     public int run(int desiredPort) {
         Spark.port(desiredPort);
         
-        Spark.staticFiles.location( "web");
-
-        Spark.get("/", (req, res) -> {
-            res.status(200);
-            return "CS 240 Chess Server Web API";
-        });
+        Spark.staticFiles.location("web");
 
         //delete db
         Spark.delete("/db", (req, res) -> {
@@ -52,50 +50,40 @@ public class Server {
         });
         //register
         Spark.post("/user", (req, res) -> {
-            try {
-                var data = GSON.fromJson(req.body(), UserData.class);
-                if(!data.isValid()) throw new InvalidRequestException();
+            var data = GSON.fromJson(req.body(), UserData.class);
+            if(!data.isValid()) throw new InvalidRequestException();
 
-                if(!AuthService.registerUser(data)) {
-                    res.status(403);
-                    return ErrorMessage.error("already taken");
-                }
-
-                var token = AuthService.login(new LoginData(data.username(), data.password()));
-                if(token.isEmpty()){
-                    res.status(500);
-                    return ErrorMessage.error("login failed");
-                }
-
-                res.status(200);
-                return GSON.toJson(new AuthData(token.get(), data.username()));
-            }catch(JsonSyntaxException | InvalidRequestException e){
-                res.status(400);
-                return ErrorMessage.error("bad request");
+            if(!AuthService.registerUser(data)){
+                res.status(FailedResponse.ALREADY_TAKEN.status);
+                return ErrorMessage.error(FailedResponse.ALREADY_TAKEN.message);
             }
+
+            var token = AuthService.login(new LoginData(data.username(), data.password()));
+            if(token.isEmpty()){
+                res.status(FailedResponse.SERVER_ERROR.status);
+                return ErrorMessage.error(FailedResponse.SERVER_ERROR.message);
+            }
+
+            res.status(200);
+            return GSON.toJson(new AuthData(token.get(), data.username()));
         });
         //login
         Spark.post("/session", (req, res) -> {
-            try {
-                var data = GSON.fromJson(req.body(), LoginData.class);
-                if(!data.isValid()) throw new InvalidRequestException();
+            var data = GSON.fromJson(req.body(), LoginData.class);
+            if(!data.isValid()) throw new InvalidRequestException();
 
-                var token = AuthService.login(data);
-                if(token.isEmpty()){
-                    res.status(401);
-                    return ErrorMessage.error("unauthorized");
-                }
-
-                res.status(200);
-                return GSON.toJson(new AuthData(token.get(), data.username()));
-            }catch(JsonSyntaxException | InvalidRequestException e){
-                res.status(400);
-                return ErrorMessage.error("bad request");
+            var token = AuthService.login(data);
+            if(token.isEmpty()){
+                res.status(FailedResponse.NOT_AUTH.status);
+                return ErrorMessage.error(FailedResponse.NOT_AUTH.message);
             }
+
+            res.status(200);
+            return GSON.toJson(new AuthData(token.get(), data.username()));
         });
         //logout
         Spark.delete("/session", (req, res) -> {
-            var hRes= AuthService.validateHeader(req);
+            var hRes=AuthService.validateHeader(req);
             if(hRes.isPresent()){
                 res.status(hRes.get().status);
                 return ErrorMessage.error(hRes.get().message);
@@ -120,7 +108,7 @@ public class Server {
             }
 
             var toReturn = new JsonObject();
-            toReturn.add("games", array);//remove chessgame field
+            toReturn.add("games", array);//remove chessgame field (? what)
             res.status(200);
             return toReturn;
         });
@@ -133,13 +121,14 @@ public class Server {
             }
 
             var body = JsonParser.parseString(req.body());
-            int id;
-            try {
-                id = GamesService.createGame(((JsonObject)body).get("gameName").getAsString());
+            String gameName;
+            try{
+                gameName=((JsonObject)body).get("gameName").getAsString();
             }catch(Exception e){
-                res.status(400);
-                return ErrorMessage.error("bad request");
+                res.status(FailedResponse.BAD_REQ.status);
+                return ErrorMessage.error(FailedResponse.BAD_REQ.message);
             }
+            var id = GamesService.createGame(gameName);
 
             var toReturn = new JsonObject();
             toReturn.addProperty("gameID", id);
@@ -153,33 +142,35 @@ public class Server {
                 res.status(hRes.get().status);
                 return ErrorMessage.error(hRes.get().message);
             }
+            var data = GSON.fromJson(req.body(), JoinGameData.class);
+            if (!data.isValid()) throw new InvalidRequestException();
 
-            try {
-                var data = GSON.fromJson(req.body(), JoinGameData.class);
-                if (!data.isValid()) throw new InvalidRequestException();
+            var username = AuthService.getUserFromToken(req.headers("authorization")).username();
 
-                var username = AuthService.getUserFromToken(req.headers("authorization"));
-                if (username.isEmpty()) {
-                    res.status(500);
-                    return ErrorMessage.error("server error");
+            if(data.playerColor()!=null){//joining
+                var gameJoin = GamesService.joinGame(data.gameID(), data.playerColor(), username);
+                if (gameJoin.isPresent()) {
+                    res.status(gameJoin.get().status);
+                    return ErrorMessage.error(gameJoin.get().message);
                 }
+            }else{//watching
 
-                if(data.playerColor()!=null){//joining
-                    var gameJoin = GamesService.joinGame(data.gameID(), data.playerColor(), username.get());
-                    if (gameJoin.isPresent()) {
-                        res.status(gameJoin.get().status);
-                        return ErrorMessage.error(gameJoin.get().message);
-                    }
-                }else{//watching
-
-                }
-
-                res.status(200);
-                return jsonEmpty;
-            }catch(JsonSyntaxException | InvalidRequestException e){
-                res.status(400);
-                return ErrorMessage.error("bad request");
             }
+
+            res.status(200);
+            return jsonEmpty;
+        });
+
+        ExceptionHandler<Exception> e400handler = (e, request, response) -> {
+            response.status(FailedResponse.BAD_REQ.status);
+            response.body(ErrorMessage.error(FailedResponse.BAD_REQ.message));
+        };
+        Spark.exception(JsonSyntaxException.class, e400handler);
+        Spark.exception(InvalidRequestException.class, e400handler);
+
+        Spark.exception(DataAccessException.class, (e, request, response)->{
+            response.status(FailedResponse.SERVER_ERROR.status);
+            response.body(ErrorMessage.error("Error: "+e.getMessage()));
         });
 
         Spark.awaitInitialization();
