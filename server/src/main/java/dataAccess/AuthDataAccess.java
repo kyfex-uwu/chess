@@ -2,12 +2,15 @@ package dataAccess;
 
 import model.AuthData;
 import model.UserData;
+
 import java.util.HashMap;
 
-import static services.AuthService.withPassHashed;
+import static services.AuthService.encoder;
 
 public class AuthDataAccess {
-
+    public static UserData withPassHashed(UserData data){
+        return new UserData(data.username(), encoder.encode(data.password()), data.email());
+    }
     public static void clear(){
         data.clear();
         tokens.clear();

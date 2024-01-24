@@ -21,14 +21,7 @@ public class AuthService {
         secureRandom.nextBytes(randomBytes);
         return base64Encoder.encodeToString(randomBytes);
     }
-
-    private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    public static UserData withPassHashed(UserData data){
-        return new UserData(data.username(), passHashed(data.password()), data.email());
-    }
-    private static String passHashed(String password){
-        return encoder.encode(password);
-    }
+    public static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     //public static HashMap<Integer, HashSet<Void>> watchers = new HashMap<>();
     public static void clear(){
