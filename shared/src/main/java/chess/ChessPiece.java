@@ -27,53 +27,39 @@ public class ChessPiece {
      * The various different chess piece options
      */
     public enum PieceType {
-        KING(moves->{
-            for(int y=-1;y<=1;y++){
-                for(int x=-1;x<=1;x++){
-                    if(y==0&&x==0) continue;
-                    moves.add(List.of(new Offset(x, y)));
-                }
-            }
-        }, 'k'),
+        KING(new Offset[]{
+                new Offset(-1,-1),new Offset(0,-1),new Offset(1,-1),
+                new Offset(-1,0),/*new Offset(0,0),*/new Offset(1,0),
+                new Offset(-1,1),new Offset(0,1),new Offset(1,1),
+        }, false, 'k'),
         QUEEN(new Offset[]{
                 new Offset(-1,-1),new Offset(0,-1),new Offset(1,-1),
                 new Offset(-1,0),/*new Offset(0,0),*/new Offset(1,0),
                 new Offset(-1,1),new Offset(0,1),new Offset(1,1),
-        }, 'q'),
+        }, true, 'q'),
         BISHOP(new Offset[]{
                 new Offset(-1,-1),new Offset(1,-1),
                 new Offset(-1,1),new Offset(1,1),
-        }, 'b'),
-        KNIGHT(moves->{
-            moves.add(List.of(new Offset(-1,-2)));
-            moves.add(List.of(new Offset(1,-2)));
-            moves.add(List.of(new Offset(-1,2)));
-            moves.add(List.of(new Offset(1,2)));
-
-            moves.add(List.of(new Offset(-2,-1)));
-            moves.add(List.of(new Offset(2,-1)));
-            moves.add(List.of(new Offset(-2,1)));
-            moves.add(List.of(new Offset(2,1)));
-        }, 'n'),
+        }, true, 'b'),
+        KNIGHT(new Offset[]{
+                new Offset(-1,-2),new Offset(1,-2),
+                new Offset(-1,2),new Offset(1,2),
+                new Offset(-2,-1), new Offset(2,-1),
+                new Offset(-2,1), new Offset(2,1),
+        }, false, 'n'),
         ROOK(new Offset[]{
                 new Offset(0,-1),new Offset(0,1),
                 new Offset(-1,0),new Offset(1,0),
-        }, 'r'),
-        PAWN(new Offset[]{}, 'p');//pawns are handled specially
+        }, true, 'r'),
+        PAWN(new Offset[]{}, false, 'p');//pawns are handled specially
         public final Collection<List<Offset>> moves;
         private final char identifier;
-        PieceType(Consumer<Collection<List<Offset>>> moveFunc, char identifier){
-            this.identifier=identifier;
-            var collection = new ArrayList<List<Offset>>();
-            moveFunc.accept(collection);
-            this.moves=Collections.unmodifiableCollection(collection);
-        }
-        PieceType(Offset[] offsets, char identifier){
+        PieceType(Offset[] offsets, boolean eightFlag, char identifier){
             this.identifier=identifier;
             var collection = new ArrayList<List<Offset>>();
             for (Offset offset : offsets) {
                 List<Offset> list = new ArrayList<>();
-                for (int j = 1; j < 8; j++) {
+                for (int j = 1; j < (eightFlag?8:1); j++) {
                     list.add(offset.mult(j));
                 }
                 collection.add(list);
