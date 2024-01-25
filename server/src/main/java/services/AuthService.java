@@ -31,13 +31,17 @@ public class AuthService {
         return AuthDataAccess.userFromToken(token)!=null;
     }
 
-    public static boolean registerUser(UserData dataToAdd) throws DataAccessException {
+    public static boolean registerUser(UserData dataToAdd) throws DataAccessException, Server.InvalidRequestException {
+        if(!dataToAdd.isValid()) throw new Server.InvalidRequestException();
+
         if(AuthDataAccess.getUser(dataToAdd.username())!=null) return false;
         AuthDataAccess.createUser(dataToAdd);
         return true;
     }
 
-    public static Optional<String> login(LoginData loginData) throws DataAccessException {
+    public static Optional<String> login(LoginData loginData) throws DataAccessException, Server.InvalidRequestException {
+        if(!loginData.isValid()) throw new Server.InvalidRequestException();
+
         var user = AuthDataAccess.getUser(loginData.username());
         if(user!=null&&encoder.matches(loginData.password(), user.password())){
             //AuthDataAccess.deleteToken(AuthDataAccess.getToken(loginData.username()));

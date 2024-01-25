@@ -3,6 +3,7 @@ package chess;
 import chess.specialmoves.CastleMove;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -146,7 +147,6 @@ public class ChessMove {
                 otherMove.promotionPiece==this.promotionPiece;
     }
     public int hashCode(){
-        return this.start.hashCode()*64+this.end.hashCode()+
-                (this.promotionPiece==null?0:(this.promotionPiece.ordinal()+1)*64*64);
+        return Objects.hash(this.start, this.end, this.promotionPiece);
     }
 }

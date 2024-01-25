@@ -33,7 +33,7 @@ public class Server {
             return GSON.toJson(new ErrorMessage("Error: "+message));
         }
     }
-    private class InvalidRequestException extends Exception{}
+    public static class InvalidRequestException extends Exception{}
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -51,7 +51,6 @@ public class Server {
         //register
         Spark.post("/user", (req, res) -> {
             var data = GSON.fromJson(req.body(), UserData.class);
-            if(!data.isValid()) throw new InvalidRequestException();
 
             if(!AuthService.registerUser(data)){
                 res.status(FailedResponse.ALREADY_TAKEN.status);
@@ -70,7 +69,6 @@ public class Server {
         //login
         Spark.post("/session", (req, res) -> {
             var data = GSON.fromJson(req.body(), LoginData.class);
-            if(!data.isValid()) throw new InvalidRequestException();
 
             var token = AuthService.login(data);
             if(token.isEmpty()){
