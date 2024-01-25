@@ -17,10 +17,12 @@ public class GamesService {
         GamesDataAccess.clear();
     }
 
-    public static int createGame(String name) throws DataAccessException {
+    public static int createGame(String name) throws DataAccessException, Server.InvalidRequestException {
+        if(name==null||name.isEmpty()) throw new Server.InvalidRequestException();
+
         int id;
         do {
-            id = (int) Math.floor(Math.random() * 1544804416);//34^6
+            id = (int) Math.floor(Math.random() * 1544804416);//[0, 34^6)
         }while(GamesDataAccess.getGame(id)!=null);
 
         GamesDataAccess.createGame(id, name);
@@ -28,6 +30,8 @@ public class GamesService {
     }
     public static Optional<Server.FailedResponse> joinGame(int gameID, String color, String username)
             throws DataAccessException{
+        if(username==null||username.isEmpty()||
+                color==null||color.isEmpty()) return Optional.of(Server.FailedResponse.BAD_REQ);
         var game = GamesDataAccess.getGame(gameID);
         if(game==null) return Optional.of(Server.FailedResponse.BAD_REQ);
 

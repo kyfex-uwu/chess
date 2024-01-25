@@ -15,11 +15,10 @@ public class AuthTests {
         AuthService.clear();
     }
 
-    private static void registerUser(String username, String password, String email) throws DataAccessException {
+    private static void registerUser(String username, String password, String email) throws Exception {
         assertTrue(AuthService.registerUser(new UserData(username, password, email)), "Could not register user");
     }
 
-    //.registerUser should only be called after LoginData#isValid returns true
     @Test @Order(1) @DisplayName("Register")
     public void register() throws Exception{
         assertFalse(AuthService.login(new LoginData("username", "password")).isPresent(),
@@ -35,7 +34,6 @@ public class AuthTests {
                 "Registered user with duplicate username");
     }
 
-    //.login should only be called after UserData#isValid returns true
     @Test @Order(3) @DisplayName("Login")
     public void login() throws Exception{
         registerUser("username", "password", "email");
