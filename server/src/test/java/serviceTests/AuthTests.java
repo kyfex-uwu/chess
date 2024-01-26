@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthTests {
     @BeforeEach
-    public void setup() {
+    public void setup() throws DataAccessException{
         AuthService.clear();
     }
 

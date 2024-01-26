@@ -24,7 +24,7 @@ public class GamesDataAccess {
     }
     public static void joinGame(int id, ChessGame.TeamColor color, String username) throws DataAccessException{
         DatabaseManager.execStatement(
-                "UPDATE games SET "+color.whiteOrBlack("white","black")+"=? WHERE gameID=?", query->{
+                "UPDATE games SET " + color.whiteOrBlack("white", "black") + "=? WHERE gameID=?", query -> {
                     query.setString(1, username);
                     query.setInt(2, id);
                 });
@@ -41,7 +41,7 @@ public class GamesDataAccess {
                             resultSet.getString(2),
                             resultSet.getString(3),
                             resultSet.getString(4),
-                            GSON.fromJson(resultSet.getString(5), ChessGame.class)
+                            ChessGame.deserialize(resultSet.getString(5))
                     ));
                 });
         return toReturn.get();

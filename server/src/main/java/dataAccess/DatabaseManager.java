@@ -82,7 +82,7 @@ public class DatabaseManager {
                   UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);""");
         execStatement("CREATE TABLE IF NOT EXISTS "+ """
                 `auth` (
-                 `token` VARCHAR(32) NOT NULL,
+                 `token` VARCHAR(64) NOT NULL,
                  `username` VARCHAR(16) NOT NULL,
                  PRIMARY KEY (`token`),
                  UNIQUE INDEX `token_UNIQUE` (`token` ASC) VISIBLE);""");
