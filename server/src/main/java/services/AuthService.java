@@ -24,7 +24,7 @@ public class AuthService {
     public static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     //public static HashMap<Integer, HashSet<Void>> watchers = new HashMap<>();
-    public static void clear(){
+    public static void clear() throws DataAccessException {
         AuthDataAccess.clear();
     }
     public static boolean validateToken(String token) throws DataAccessException {

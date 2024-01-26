@@ -3,49 +3,68 @@ package dataAccess;
 import model.AuthData;
 import model.UserData;
 
-import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static services.AuthService.encoder;
 
 public class AuthDataAccess {
-    public static UserData withPassHashed(UserData data){
-        return new UserData(data.username(), encoder.encode(data.password()), data.email());
-    }
-    public static void clear(){
-        data.clear();
-        tokens.clear();
+    public static void clear() throws DataAccessException {
+        DatabaseManager.execStatement("DELETE FROM auth");
+        DatabaseManager.execStatement("DELETE FROM users");
     }
     public static UserData getUser(String username) throws DataAccessException{
-        if(data.containsKey(username)) return data.get(username);
-        return null;
+        AtomicReference<UserData> toReturn = new AtomicReference<>();
+        DatabaseManager.execQuery("SELECT * FROM users WHERE username=?", query->{
+            query.setString(1,username);
+        }, resultSet->{
+            if(!resultSet.next()) return;
+            toReturn.set(new UserData(resultSet.getString(1),
+                    resultSet.getString(2),
+                    resultSet.getString(3)));
+        });
+        return toReturn.get();
     }
     public static void createUser(UserData userData) throws DataAccessException{
-        if(!data.containsKey(userData.username()))
-            data.put(userData.username(), withPassHashed(userData));
-        else
-            throw new DataAccessException("name already taken");
+        DatabaseManager.execStatement(
+                "INSERT INTO users (username, password, email) VALUES (?, ?, ?)", query->{
+                    query.setString(1, userData.username());
+                    query.setString(2, encoder.encode(userData.password()));
+                    query.setString(3, userData.email());
+                });
     }
-    public static void createToken(AuthData data) throws DataAccessException{
-        tokens.put(data.authToken(), data.username());
-    }
-    public static String getToken(String username) throws DataAccessException{
-        if(tokens.containsValue(username)) {
-            var toReturn = tokens.entrySet().stream().filter(e->e.getValue().equals(username)).findFirst();
-            if(toReturn.isPresent()) return toReturn.get().getKey();
-        }
-        return null;
+    public static void createToken(AuthData authData) throws DataAccessException{
+        DatabaseManager.execStatement(
+                "INSERT INTO auth (token, username) VALUES (?, ?)", query->{
+                    query.setString(1, authData.authToken());
+                    query.setString(2, authData.username());
+                });
     }
     public static void deleteToken(String token) throws DataAccessException{
-        tokens.remove(token);
+        DatabaseManager.execStatement(
+                "DELETE FROM auth WHERE token=?", query->{
+                    query.setString(1, token);
+                });
     }
     public static UserData userFromToken(String token) throws DataAccessException{
-        if(tokens.containsKey(token)&&data.containsKey(tokens.get(token)))
-            return data.get(tokens.get(token));
-        return null;
+        AtomicReference<UserData> toReturn = new AtomicReference<>();
+
+        DatabaseManager.execQuery("SELECT username from auth WHERE token=?", query->{
+            query.setString(1, token);
+        }, resultSet -> {
+            if(!resultSet.next()) return;
+
+            DatabaseManager.execQuery("SELECT * FROM users WHERE username=?", query2->{
+                query2.setString(1, resultSet.getString(1));
+            }, resultSet2 -> {
+                if(!resultSet2.next()) return;
+                toReturn.set(new UserData(
+                        resultSet2.getString(1),
+                        resultSet2.getString(2),
+                        resultSet2.getString(3)
+                ));
+            });
+        });
+
+        return toReturn.get();
     }
-
-    //--
-
-    private static final HashMap<String, UserData> data = new HashMap<>();//username, data
-    public static final HashMap<String, String> tokens = new HashMap<>();//token, username
 }
