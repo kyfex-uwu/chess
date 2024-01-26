@@ -177,11 +177,14 @@ public class ChessRenderer {
             if(!canShowColor) System.out.println("   "+"+-------".repeat(8)+"+");
 
             for(int i=0;i<3;i++) {
-                for (int x = 0; x < 8; x++) {
+                for (int xCounter = 0; xCounter < 8; xCounter++) {
+                    int x=data.facingWhite?xCounter:7-xCounter;
+
                     var currPiece = game.getBoard().getPiece(new ChessPosition(8-y,x+1));
                     boolean isHighlighted = data.highlightedPositions.contains(new ChessPiece.Offset(x,7-y));
                     boolean isOrigin = data.originPosition.equals(new ChessPiece.Offset(x,7-y));
-                    if (x == 0) {
+
+                    if (xCounter == 0) {
                         if(i==1) System.out.print(" "+(8-y)+" ");
                         else System.out.print("   ");
                     }
@@ -222,14 +225,16 @@ public class ChessRenderer {
                     System.out.print(strToPrint);
                     setColor(CLEAR, CLEAR);
 
-                    if(x==7)
+                    if(xCounter==7)
                         System.out.println(canShowColor?"":"|");
                 }
             }
         }
+        if(!canShowColor) System.out.println("   "+"+-------".repeat(8)+"+");
         System.out.print("   ");
         for(int x=0;x<8;x++){
-            System.out.print((canShowColor?"   ":"    ")+(char)(x+97)+"   ");
+            System.out.print((canShowColor?"   ":"    ")+
+                    (char)((data.facingWhite?x:7-x)+97)+"   ");
         }
         System.out.print("\n\n   ");
 

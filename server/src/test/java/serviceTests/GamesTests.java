@@ -1,27 +1,24 @@
 package serviceTests;
 
 import dataAccess.DataAccessException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import services.GamesService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GamesTests {
-    @BeforeEach
-    public void setup() throws DataAccessException {
+    @BeforeEach @AfterAll
+    public static void setup() throws DataAccessException {
         GamesService.clear();
     }
 
-    @Test @Order(1) @DisplayName("Create Game")
+    @Test @DisplayName("Create Game")
     public void createGame() throws Exception {
         int gameID = GamesService.createGame("name");
         assertTrue(GamesService.joinGame(gameID, "WHITE", "username").isEmpty(),
                 "Server error was given");
     }
-    @Test @Order(2) @DisplayName("Create Bad Game")
+    @Test @DisplayName("Create Bad Game")
     public void createBadGame() throws Exception {
         assertThrows(Exception.class, ()->GamesService.createGame(null),
                 "Created game with name null");
@@ -29,7 +26,7 @@ public class GamesTests {
                 "Created game with empty name");
     }
 
-    @Test @Order(3) @DisplayName("Join Game")
+    @Test @DisplayName("Join Game")
     public void joinGame() throws Exception{
         int gameID = GamesService.createGame("name");
         assertTrue(GamesService.joinGame(gameID, "WHITE", "username").isEmpty(),
@@ -37,7 +34,7 @@ public class GamesTests {
         assertTrue(GamesService.joinGame(gameID, "BLACK", "username").isEmpty(),
                 "Returned a failing response when joining valid game as black (white is filled)");
     }
-    @Test @Order(4) @DisplayName("Join Bad Game")
+    @Test @DisplayName("Join Bad Game")
     public void joinBadGame() throws Exception{
         int gameID = GamesService.createGame("name");
         assertFalse(GamesService.joinGame(gameID, "RED", "username").isEmpty(),
@@ -52,7 +49,7 @@ public class GamesTests {
                 "Successfully joined game with null username");
     }
 
-    @Test @Order(5) @DisplayName("Get Games")
+    @Test @DisplayName("Get Games")
     public void getGames() throws Exception{
         assertEquals(0, GamesService.getGames().length,
                 "Games list is not empty to start");
@@ -63,7 +60,7 @@ public class GamesTests {
                 "Games List length is not 3");
     }
 
-    @Test @Order(6) @DisplayName("Clear")
+    @Test @DisplayName("Clear")
     public void clear() throws Exception{
         GamesService.createGame("name");
         GamesService.clear();

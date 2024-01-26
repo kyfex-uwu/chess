@@ -5,13 +5,14 @@ import model.LoginData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import server.Server;
 import services.AuthService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthTests {
-    @BeforeEach
-    public void setup() throws DataAccessException{
+    @BeforeEach @AfterAll
+    public static void setup() throws DataAccessException{
         AuthService.clear();
     }
 
@@ -19,7 +20,7 @@ public class AuthTests {
         assertTrue(AuthService.registerUser(new UserData(username, password, email)), "Could not register user");
     }
 
-    @Test @Order(1) @DisplayName("Register")
+    @Test @DisplayName("Register")
     public void register() throws Exception{
         assertFalse(AuthService.login(new LoginData("username", "password")).isPresent(),
                 "Got a token even though login info should not exist yet");
@@ -27,14 +28,18 @@ public class AuthTests {
         assertTrue(AuthService.login(new LoginData("username", "password")).isPresent(),
                 "No token given for valid login credentials");
     }
-    @Test @Order(2) @DisplayName("Bad Register")
+    @Test @DisplayName("Bad Register")
     public void badRegister() throws Exception{
         registerUser("username", "password", "email");
         assertFalse(AuthService.registerUser(new UserData("username", "password2", "email2")),
                 "Registered user with duplicate username");
+
+        assertThrows(Server.InvalidRequestException.class,
+                ()->AuthService.registerUser(new UserData(null, "password2", "email2")),
+                "Registered user with bad data");
     }
 
-    @Test @Order(3) @DisplayName("Login")
+    @Test @DisplayName("Login")
     public void login() throws Exception{
         registerUser("username", "password", "email");
 
@@ -45,8 +50,12 @@ public class AuthTests {
         assertTrue(token2.isPresent(), "No token given for valid login credentials");
         assertNotEquals(token.get(), token2.get(), "Tokens returned were the same");
     }
-    @Test @Order(4) @DisplayName("Bad Login")
+    @Test @DisplayName("Bad Login")
     public void badLogin() throws Exception{
+        assertThrows(Server.InvalidRequestException.class,
+                ()->AuthService.login(new LoginData(null, "password2")),
+                "Logged in user with bad data");
+
         assertFalse(AuthService.login(new LoginData("username", "password")).isPresent(),
                 "Got a token, even though login info hasn't been registered");
 
@@ -61,7 +70,7 @@ public class AuthTests {
     }
 
     //token cannot be null or empty string
-    @Test @Order(5) @DisplayName("Validate Token")
+    @Test @DisplayName("Validate Token")
     public void validateToken() throws Exception{
         registerUser("username", "password", "email");
 
@@ -69,7 +78,7 @@ public class AuthTests {
         assertTrue(token.isPresent(), "No token given for valid login credentials");
         assertTrue(AuthService.validateToken(token.get()), "Token could not be validated");
     }
-    @Test @Order(6) @DisplayName("Validate Bad Token")
+    @Test @DisplayName("Validate Bad Token")
     public void validateBadToken() throws Exception{
         assertFalse(AuthService.validateToken("a"), "Invalid token was validated");
 
@@ -81,7 +90,7 @@ public class AuthTests {
         assertFalse(AuthService.validateToken(token.get()),"Validated expired token");
     }
 
-    @Test @Order(7) @DisplayName("Logout")
+    @Test @DisplayName("Logout")
     public void logout() throws Exception{
         registerUser("username", "password", "email");
 
@@ -92,7 +101,7 @@ public class AuthTests {
         assertFalse(AuthService.validateToken(token.get()), "Validated expired token");
     }
 
-    @Test @Order(8) @DisplayName("Get User From Token")
+    @Test @DisplayName("Get User From Token")
     public void getUserFromToken() throws Exception{
         registerUser("username", "password", "email");
 
@@ -108,12 +117,12 @@ public class AuthTests {
                 "User data does not match"
         );
     }
-    @Test @Order(9) @DisplayName("Get User From Bad Token")
+    @Test @DisplayName("Get User From Bad Token")
     public void getUserFromBadToken() throws Exception{
         assertNull(AuthService.getUserFromToken("a"), "User retrieved from bad token");
     }
 
-    @Test @Order(10) @DisplayName("Clear")
+    @Test @DisplayName("Clear")
     public void clear() throws Exception{
         registerUser("username","password","email");
 

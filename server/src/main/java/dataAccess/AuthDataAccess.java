@@ -13,6 +13,8 @@ public class AuthDataAccess {
         DatabaseManager.execStatement("DELETE FROM users");
     }
     public static UserData getUser(String username) throws DataAccessException{
+        if(username==null||username.isEmpty()) throw new DataAccessException("invalid username");
+
         AtomicReference<UserData> toReturn = new AtomicReference<>();
         DatabaseManager.execQuery("SELECT * FROM users WHERE username=?", query->{
             query.setString(1,username);
@@ -25,6 +27,8 @@ public class AuthDataAccess {
         return toReturn.get();
     }
     public static void createUser(UserData userData) throws DataAccessException{
+        if(!userData.isValid()) throw new DataAccessException("invalid data");
+
         DatabaseManager.execStatement(
                 "INSERT INTO users (username, password, email) VALUES (?, ?, ?)", query->{
                     query.setString(1, userData.username());
@@ -33,6 +37,8 @@ public class AuthDataAccess {
                 });
     }
     public static void createToken(AuthData authData) throws DataAccessException{
+        if(!authData.isValid()) throw new DataAccessException("invalid data");
+
         DatabaseManager.execStatement(
                 "INSERT INTO auth (token, username) VALUES (?, ?)", query->{
                     query.setString(1, authData.authToken());
@@ -40,12 +46,16 @@ public class AuthDataAccess {
                 });
     }
     public static void deleteToken(String token) throws DataAccessException{
+        if(token==null||token.isEmpty()) throw new DataAccessException("invalid token");
+
         DatabaseManager.execStatement(
                 "DELETE FROM auth WHERE token=?", query->{
                     query.setString(1, token);
                 });
     }
     public static UserData userFromToken(String token) throws DataAccessException{
+        if(token==null||token.isEmpty()) throw new DataAccessException("invalid token");
+
         AtomicReference<UserData> toReturn = new AtomicReference<>();
 
         DatabaseManager.execQuery("SELECT username from auth WHERE token=?", query->{
