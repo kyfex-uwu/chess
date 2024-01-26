@@ -160,6 +160,8 @@ public class Server {
         });
 
         ExceptionHandler<Exception> e400handler = (e, request, response) -> {
+            e.printStackTrace();
+
             response.status(FailedResponse.BAD_REQ.status);
             response.body(ErrorMessage.error(FailedResponse.BAD_REQ.message));
         };
@@ -167,6 +169,8 @@ public class Server {
         Spark.exception(InvalidRequestException.class, e400handler);
 
         Spark.exception(DataAccessException.class, (e, request, response)->{
+            e.printStackTrace();
+
             response.status(FailedResponse.SERVER_ERROR.status);
             response.body(ErrorMessage.error("Error: "+e.getMessage()));
         });

@@ -1,5 +1,6 @@
 package dataAccess;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -36,14 +37,17 @@ public class DatabaseManager {
 
     public static int execStatement(String statement, SQLSafeConsumer<PreparedStatement> argAdder)
             throws DataAccessException {
-        var connection = getConnection();
+        try(var connection = getConnection()) {
 
-        try {
-            try (var preparedStatement = connection.prepareStatement(statement)) {
-                argAdder.accept(preparedStatement);
-                return preparedStatement.executeUpdate();
+            try {
+                try (var preparedStatement = connection.prepareStatement(statement)) {
+                    argAdder.accept(preparedStatement);
+                    return preparedStatement.executeUpdate();
+                }
+            } catch (SQLException e) {
+                throw new DataAccessException(e);
             }
-        }catch(SQLException e){
+        } catch (SQLException e) {
             throw new DataAccessException(e);
         }
     }
@@ -53,14 +57,17 @@ public class DatabaseManager {
     public static void execQuery(String query, SQLSafeConsumer<PreparedStatement> argAdder,
                                  SQLSafeConsumer<ResultSet> processor)
             throws DataAccessException {
-        var connection = getConnection();
+        try(var connection = getConnection()) {
 
-        try {
-            try (var preparedStatement = connection.prepareStatement(query)) {
-                argAdder.accept(preparedStatement);
-                processor.accept(preparedStatement.executeQuery());
+            try {
+                try (var preparedStatement = connection.prepareStatement(query)) {
+                    argAdder.accept(preparedStatement);
+                    processor.accept(preparedStatement.executeQuery());
+                }
+            } catch (SQLException e) {
+                throw new DataAccessException(e);
             }
-        }catch(SQLException e){
+        } catch (SQLException e) {
             throw new DataAccessException(e);
         }
     }
@@ -97,6 +104,7 @@ public class DatabaseManager {
                  UNIQUE INDEX `gameID_UNIQUE` (`gameID` ASC) VISIBLE);""");
     }
 
+    private static final int maxConnectionTries=10;
     /**
      * Create a connection to the database and sets the catalog based upon the
      * properties specified in db.properties. Connections to the database should
@@ -114,8 +122,8 @@ public class DatabaseManager {
             var conn = DriverManager.getConnection(connectionUrl, user, password);
             conn.setCatalog(databaseName);
             return conn;
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
+        } catch(SQLException e){
+            throw new DataAccessException(e);
         }
     }
 }
