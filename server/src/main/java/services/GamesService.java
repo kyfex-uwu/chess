@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class GamesService {
     //todo: cache
-    public static void clear(){
+    public static void clear() throws DataAccessException {
         GamesDataAccess.clear();
     }
 

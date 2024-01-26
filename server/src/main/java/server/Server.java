@@ -10,8 +10,8 @@ import spark.ExceptionHandler;
 import spark.Spark;
 
 public class Server {
-    private static final String jsonEmpty = "{}";
-    private static final Gson GSON = new GsonBuilder()
+    public static final String jsonEmpty = "{}";
+    public static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(ChessBoard.class, new ChessBoard.ChessBoardSerializer())
             .create();
 

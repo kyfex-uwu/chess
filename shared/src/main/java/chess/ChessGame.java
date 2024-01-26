@@ -1,5 +1,9 @@
 package chess;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
 import java.util.Collection;
 
 /**
@@ -134,5 +138,21 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return this.board;
+    }
+
+    //--
+
+    public static ChessGame deserialize(String str) throws JsonParseException {
+        try {
+            var obj = JsonParser.parseString(str).getAsJsonObject();
+            var toReturn = new ChessGame();
+
+            toReturn.currTeam = obj.get("currTeam").getAsString().equals("WHITE")?TeamColor.WHITE:TeamColor.BLACK;
+            toReturn.board = ChessBoard.deserialize(obj.get("board").getAsJsonObject());
+
+            return toReturn;
+        }catch(Exception e){
+            throw new JsonParseException("Could not parse");
+        }
     }
 }

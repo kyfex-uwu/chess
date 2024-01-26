@@ -13,6 +13,13 @@ public class GameData implements Data{
         this.gameName=gameName;
         this.game = new ChessGame();
     }
+    public GameData(int gameID, String gameName, String whiteUsername, String blackUsername, ChessGame game){
+        this.gameID=gameID;
+        this.whiteUsername=whiteUsername;
+        this.blackUsername=blackUsername;
+        this.gameName=gameName;
+        this.game = game;
+    }
     public boolean isValid() {
         return Data.isValid(gameName);
     }

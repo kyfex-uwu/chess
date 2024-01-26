@@ -89,6 +89,9 @@ public class DatabaseManager {
         execStatement("CREATE TABLE IF NOT EXISTS "+ """
                 `games` (
                  `gameID` INT NOT NULL,
+                 `name` VARCHAR(32) NOT NULL,
+                 `white` VARCHAR(16),
+                 `black` VARCHAR(16),
                  `game` JSON NOT NULL,
                  PRIMARY KEY (`gameID`),
                  UNIQUE INDEX `gameID_UNIQUE` (`gameID` ASC) VISIBLE);""");
