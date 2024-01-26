@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
-import static chess.ChessRenderer.renderGame;
-
 public class Main {
     private static Collection<ChessMove> movesToShow = List.of();
     private static ChessPosition positionToShow = null;
@@ -23,7 +21,7 @@ public class Main {
             if(positionToShow!=null){
                 builder.setPositions(movesToShow, positionToShow);
             }
-            renderGame(game, builder.facingWhite(game.getTeamTurn().whiteOrBlack(true,false)).build());
+            ChessRenderer.renderGame(game, builder.facingWhite(game.getTeamTurn().whiteOrBlack(true,false)).build());
             System.out.println();
             String line = scanner.nextLine();
 

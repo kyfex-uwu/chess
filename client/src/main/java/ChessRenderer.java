@@ -1,10 +1,11 @@
-package chess;
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-
-import static chess.ChessRenderer.CLColor.*;
 
 /**
  * Everything needed to render a chess game.
@@ -173,7 +174,7 @@ public class ChessRenderer {
     public static void renderGame(ChessGame game, RenderData data){
         for(int yCounter=0;yCounter<8;yCounter++){
             int y=data.facingWhite?yCounter:7-yCounter;
-            setColor(CLEAR, CLEAR);
+            CLColor.setColor(CLColor.CLEAR, CLColor.CLEAR);
             if(!canShowColor) System.out.println("   "+"+-------".repeat(8)+"+");
 
             for(int i=0;i<3;i++) {
@@ -191,10 +192,10 @@ public class ChessRenderer {
 
                     if(!canShowColor) System.out.print("|");
 
-                    setColor(currPiece==null?
-                                    CLEAR:
-                                    currPiece.getTeamColor().whiteOrBlack(WHITE,BLACK),
-                            x%2==y%2?GRAY:DARK_GRAY);
+                    CLColor.setColor(currPiece==null?
+                                    CLColor.CLEAR:
+                                    currPiece.getTeamColor().whiteOrBlack(CLColor.WHITE,CLColor.BLACK),
+                            x%2==y%2?CLColor.GRAY:CLColor.DARK_GRAY);
                     String strToPrint;
                     if(currPiece!=null) {
                         strToPrint = " " +
@@ -204,7 +205,7 @@ public class ChessRenderer {
                         strToPrint="       ";
                     }
                     if(isHighlighted||isOrigin){
-                        var highlightColor=isOrigin?HIGHLIGHT:HIGHLIGHT2;
+                        var highlightColor=isOrigin?CLColor.HIGHLIGHT:CLColor.HIGHLIGHT2;
                         var overlayLine = highlight.substring(i*8,i*8+7)+" ";
                         var chars = strToPrint.toCharArray();
                         strToPrint="";
@@ -223,7 +224,7 @@ public class ChessRenderer {
                         }
                     }
                     System.out.print(strToPrint);
-                    setColor(CLEAR, CLEAR);
+                    CLColor.setColor(CLColor.CLEAR, CLColor.CLEAR);
 
                     if(xCounter==7)
                         System.out.println(canShowColor?"":"|");
@@ -238,8 +239,8 @@ public class ChessRenderer {
         }
         System.out.print("\n\n   ");
 
-        var color = game.getTeamTurn().whiteOrBlack(WHITE,BLACK);
-        setColor(color,color==WHITE?GRAY:DARK_GRAY);
+        var color = game.getTeamTurn().whiteOrBlack(CLColor.WHITE,CLColor.BLACK);
+        CLColor.setColor(color,color==CLColor.WHITE?CLColor.GRAY:CLColor.DARK_GRAY);
 
         if(game.isInCheckmate(game.getTeamTurn())){
             System.out.print("Checkmate! "+game.getTeamTurn().opposite()+" wins");
@@ -250,7 +251,7 @@ public class ChessRenderer {
             if(game.isInCheck(game.getTeamTurn()))
                 System.out.print(" (Check)");
         }
-        setColor(CLEAR, CLEAR);
+        CLColor.setColor(CLColor.CLEAR, CLColor.CLEAR);
         System.out.println();
     }
 }
