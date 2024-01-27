@@ -2,13 +2,18 @@ package serviceTests;
 
 import dataAccess.DataAccessException;
 import org.junit.jupiter.api.*;
+import services.AuthService;
 import services.GamesService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GamesTests {
-    @BeforeEach @AfterAll
-    public static void setup() throws DataAccessException {
+    @BeforeEach
+    public void setup() throws DataAccessException{
+        GamesService.clear();
+    }
+    @AfterAll
+    public static void finish() throws DataAccessException{
         GamesService.clear();
     }
 
