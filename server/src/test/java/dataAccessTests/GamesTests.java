@@ -4,10 +4,15 @@ import chess.ChessGame;
 import dataAccess.DataAccessException;
 import dataAccess.GamesDataAccess;
 import org.junit.jupiter.api.*;
+import services.AuthService;
 
 public class GamesTests {
-    @BeforeEach @AfterAll
-    public static void setup() throws DataAccessException {
+    @BeforeEach
+    public void setup() throws DataAccessException{
+        GamesDataAccess.clear();
+    }
+    @AfterAll
+    public static void finish() throws DataAccessException{
         GamesDataAccess.clear();
     }
 

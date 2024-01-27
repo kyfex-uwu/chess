@@ -6,10 +6,15 @@ import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import services.AuthService;
 
 public class AuthTests {
-    @BeforeEach @AfterAll
-    public static void setup() throws DataAccessException {
+    @BeforeEach
+    public void setup() throws DataAccessException{
+        AuthDataAccess.clear();
+    }
+    @AfterAll
+    public static void finish() throws DataAccessException{
         AuthDataAccess.clear();
     }
 

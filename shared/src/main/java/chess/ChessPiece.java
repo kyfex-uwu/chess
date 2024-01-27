@@ -59,7 +59,7 @@ public class ChessPiece {
             var collection = new ArrayList<List<Offset>>();
             for (Offset offset : offsets) {
                 List<Offset> list = new ArrayList<>();
-                for (int j = 1; j < (eightFlag?8:1); j++) {
+                for (int j = 1; j <= (eightFlag?7:1); j++) {
                     list.add(offset.mult(j));
                 }
                 collection.add(list);
