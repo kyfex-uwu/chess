@@ -56,7 +56,7 @@ public class ChessPosition {
     }
 
     public String toString(){
-        return ""+(char)(this.column+96)+this.row;
+        return String.valueOf((char)('a'+this.column-1))+this.row;
     }
     public boolean equals(Object other){
         return other instanceof ChessPosition otherPos &&

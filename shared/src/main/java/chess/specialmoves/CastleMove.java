@@ -38,6 +38,6 @@ public class CastleMove extends ChessMove {
     }
 
     public String toString(){
-        return this.side.toString()+" "+this.color+" "+super.toString();
+        return  "castle "+this.color+" "+this.side;
     }
 }

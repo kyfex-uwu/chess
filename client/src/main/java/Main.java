@@ -1,9 +1,8 @@
 import chess.*;
+import rendering.ChessRenderer;
+import rendering.Renderable;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     private static Collection<ChessMove> movesToShow = List.of();
@@ -12,17 +11,21 @@ public class Main {
         var game = new ChessGame();
 
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Color mode? (y)es/(n)o\n" +
-                "(if you're not sure, enable color mode if \u001b[91m this \u001b[0m is red) ");
-        String ans = scanner.nextLine();
-        if(ans.startsWith("y")) ChessRenderer.canShowColor=true;
+
         while (true) {
-            var builder = new ChessRenderer.RenderData.Builder();
+            var builder = new ChessRenderer.RenderData.Builder()
+                    .isBig(false)
+                    .facingWhite(game.getTeamTurn()== ChessGame.TeamColor.WHITE);
             if(positionToShow!=null){
                 builder.setPositions(movesToShow, positionToShow);
             }
-            ChessRenderer.renderGame(game, builder.facingWhite(game.getTeamTurn().whiteOrBlack(true,false)).build());
-            System.out.println();
+            if(game.history.size()>0){
+                builder.setLastMove(game.history.get(game.history.size()-1));
+            }
+            Renderable.render(50, 21, new ArrayList<>(List.of(
+                    new ChessRenderer(game, builder.build())
+            )));
+
             String line = scanner.nextLine();
 
             if(line.startsWith("help")){
@@ -69,6 +72,5 @@ public class Main {
             }
             System.out.println();
         }
-
     }
 }

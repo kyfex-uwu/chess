@@ -1,9 +1,8 @@
 package chess;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -15,6 +14,7 @@ import java.util.Collection;
 public class ChessGame {
     private TeamColor currTeam;
     private ChessBoard board;
+    public final ArrayList<ChessMove> history = new ArrayList<>();
 
     public ChessGame() {
         this.currTeam=TeamColor.WHITE;
@@ -88,6 +88,7 @@ public class ChessGame {
         var piece = this.board.getPiece(move.getStartPosition());
         if(piece.getTeamColor()==this.currTeam&&this.validMoves(move.getStartPosition()).contains(move)){
             move.apply(this.board);
+            this.history.add(move);
         }else{
             //System.out.println(move+" is invalid");
             throw new InvalidMoveException();
@@ -148,7 +149,7 @@ public class ChessGame {
             var toReturn = new ChessGame();
 
             toReturn.currTeam = obj.get("currTeam").getAsString().equals("WHITE")?TeamColor.WHITE:TeamColor.BLACK;
-            toReturn.board = ChessBoard.deserialize(obj.get("board").getAsJsonObject());
+            toReturn.board = Json.deserializeChessBoard(obj.get("board").getAsJsonObject());
 
             return toReturn;
         }catch(Exception e){

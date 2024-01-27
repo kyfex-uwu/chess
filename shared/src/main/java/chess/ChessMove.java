@@ -139,7 +139,7 @@ public class ChessMove {
     }
 
     public String toString(){
-        return this.start+" -> "+this.end+(this.promotionPiece!=null?":"+this.promotionPiece:"");
+        return this.start+" "+this.end+(this.promotionPiece!=null?" "+this.promotionPiece.identifier:"");
     }
     public boolean equals(Object other){
         return other instanceof ChessMove otherMove &&

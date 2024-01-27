@@ -21,4 +21,8 @@ public class EnPassantMove extends ChessMove {
         board.addPiece(this.getEndPosition().addOffset(new ChessPiece.Offset(0,
                 -startPiece.getTeamColor().advDir)), null);
     }
+
+    public String toString(){
+        return "enpassant "+super.toString();
+    }
 }

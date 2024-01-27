@@ -6,7 +6,7 @@ import model.GameData;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static server.Server.GSON;
+import static chess.Json.GSON;
 
 public class GamesDataAccess {
     public static void clear() throws DataAccessException{
