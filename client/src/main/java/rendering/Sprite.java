@@ -15,7 +15,7 @@ public class Sprite {
                     Arrays.stream(line.split("")).map(chr->
                                     new Pixel(removeSpaces&&chr.equals(" ")?
                                             (char)0:
-                                            chr.charAt(0), Renderable.CLColor.CLEAR, null))
+                                            chr.charAt(0), null, null))
                             .toList().toArray(new Pixel[0]))
                     .toList().toArray(new Pixel[0][0]));
         }
@@ -34,13 +34,13 @@ public class Sprite {
                     bSprite[y][x]=builder.pixels[y][x].copy();
             return new Builder(bSprite);
         }
-        public Builder withFGColor(Renderable.CLColor color){
+        public Builder withFGColor(Color color){
             for(var row : this.pixels)
                 for(var pixel : row)
                     pixel.fg=color;
             return this;
         }
-        public Builder withBGColor(Renderable.CLColor color){
+        public Builder withBGColor(Color color){
             for(var row : this.pixels)
                 for(var pixel : row)
                     pixel.bg=color;
@@ -55,7 +55,7 @@ public class Sprite {
         }
     }
     private final Pixel[][] pixels;
-    private Sprite(Pixel[][] pixels){
+    public Sprite(Pixel[][] pixels){
         this.pixels = pixels;
     }
     public void draw(int xPos, int yPos, Pixel[][] screen){

@@ -1,9 +1,13 @@
-package rendering;
+package rendering.renderables;
 
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
+import rendering.Color;
+import rendering.Pixel;
+import rendering.Renderable;
+import rendering.Sprite;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -14,7 +18,7 @@ import java.util.Map;
  * Use renderGame(ChessGame game, RenderData renderData) to draw a game, and
  * RenderData.from to get the renderData
  */
-public class ChessRenderer implements Renderable{
+public class ChessRenderer implements Renderable {
 
     /**
      * Optional data to render a chess game
@@ -86,94 +90,109 @@ public class ChessRenderer implements Renderable{
         }
     }
     private enum HighlightType{
-        MOVE(CLColor.GREEN),
-        ORIGIN(CLColor.YELLOW),
-        TAKE(CLColor.PINK),
-        PAST_MOVE(CLColor.BLUE),
-        MOVE_DEST(CLColor.CYAN);
+        MOVE(new Color(1,5,1), new Color(0,3,0)),
+        ORIGIN(new Color(5,5,1), new Color(3,3,0)),
+        TAKE(new Color(5,1,1), new Color(3,0,0)),
+        PAST_MOVE(new Color(2,2, 5), new Color(1,1, 3)),
+        MOVE_DEST(new Color(1,4,4), new Color(0,3,3));
 
-        public final CLColor color;
-        HighlightType(CLColor color){
+        public final Color bright;
+        public final Color dark;
+        HighlightType(Color bright, Color dark){
+            this.bright=bright;
+            this.dark=dark;
+        }
+    }
+
+    private enum ChessColor{
+        BLACK(new Color(0)),
+        WHITE(new Color(23)),
+        BOARD_BLACK(new Color(10)),
+        BOARD_WHITE(new Color(15));
+
+        public final Color color;
+        ChessColor(Color color){
             this.color=color;
         }
     }
+    private static final Color markerColor = new Color(0);
     private static final Map<ChessPiece.PieceType, Sprite> bigBlackPieces = Map.ofEntries(
             Map.entry(ChessPiece.PieceType.KING,
                     Sprite.Builder.fromStr("""
                            \s + \s
                            ( | )
-                           \\_I_/""").withFGColor(CLColor.BLACK).build()),
+                           \\_I_/""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.QUEEN,
                     Sprite.Builder.fromStr("""
                             .'I'.
                             \\ | /
-                            -----""").withFGColor(CLColor.BLACK).build()),
+                            -----""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.BISHOP,
                     Sprite.Builder.fromStr("""
                             \s o \s
                             \s(+)\s
-                            \s/ \\\s""").withFGColor(CLColor.BLACK).build()),
+                            \s/ \\\s""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.KNIGHT,
                     Sprite.Builder.fromStr("""
                             \s/o^\s
                             \sL/ |
-                            \s/__|""").withFGColor(CLColor.BLACK).build()),
+                            \s/__|""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.ROOK,
                     Sprite.Builder.fromStr("""
                             \s...\s
                             \s| |\s
-                            \s---\s""").withFGColor(CLColor.BLACK).build()),
+                            \s---\s""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.PAWN,
                     Sprite.Builder.fromStr("""
                             \s   \s
                             \s o \s
-                            \s A \s""").withFGColor(CLColor.BLACK).build())
+                            \s A \s""").withFGColor(ChessColor.BLACK.color).build())
     );
     private static final Map<ChessPiece.PieceType, Sprite> bigWhitePieces = Map.ofEntries(
             Map.entry(ChessPiece.PieceType.KING,
                     Sprite.Builder.fromStr("""
                            \s + \s
                            (X|X)
-                           \\#I#/""").withFGColor(CLColor.WHITE).build()),
+                           \\#I#/""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.QUEEN,
                     Sprite.Builder.fromStr("""
                             .iIi.
                             \\###/
-                            =====""").withFGColor(CLColor.WHITE).build()),
+                            =====""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.BISHOP,
                     Sprite.Builder.fromStr("""
                             \s * \s
                             \s(#)\s
-                            \s/=\\\s""").withFGColor(CLColor.WHITE).build()),
+                            \s/=\\\s""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.KNIGHT,
                     Sprite.Builder.fromStr("""
                             \s/*^\s
                             \sL/ |
-                            \s/%%|""").withFGColor(CLColor.WHITE).build()),
+                            \s/%%|""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.ROOK,
                     Sprite.Builder.fromStr("""
                             \s---\s
                             \s|#|\s
-                            \s===\s""").withFGColor(CLColor.WHITE).build()),
+                            \s===\s""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.PAWN,
                     Sprite.Builder.fromStr("""
                             \s   \s
                             \s * \s
-                            \s A \s""").withFGColor(CLColor.WHITE).build())
+                            \s A \s""").withFGColor(ChessColor.WHITE.color).build())
     );
     private static final Sprite bigHighlight;
     static {
         var builder = Sprite.Builder.fromStr("""
                 +=   =+
                 |     |
-                +=   =+""").withFGColor(CLColor.YELLOW);
+                +=   =+""").withFGColor(markerColor);
 
         for(var pixel : builder.getPixels())
             if(pixel.character==0) pixel.clearColor();
-        builder.pixels[0][0].bg = CLColor.YELLOW;
-        builder.pixels[2][0].bg = CLColor.YELLOW;
-        builder.pixels[0][6].bg = CLColor.YELLOW;
-        builder.pixels[2][6].bg = CLColor.YELLOW;
+        builder.pixels[0][0].bg = markerColor;
+        builder.pixels[2][0].bg = markerColor;
+        builder.pixels[0][6].bg = markerColor;
+        builder.pixels[2][6].bg = markerColor;
 
         bigHighlight = builder.build();
     }
@@ -181,73 +200,73 @@ public class ChessRenderer implements Renderable{
             Map.entry(ChessPiece.PieceType.KING,
                     Sprite.Builder.fromStr("""
                            \s+\s
-                           (|)""").withFGColor(CLColor.BLACK).build()),
+                           (|)""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.QUEEN,
                     Sprite.Builder.fromStr("""
                             .!.
-                            \\|/""").withFGColor(CLColor.BLACK).build()),
+                            \\|/""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.BISHOP,
                     Sprite.Builder.fromStr("""
                             \so\s
-                            /+\\""").withFGColor(CLColor.BLACK).build()),
+                            /+\\""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.KNIGHT,
                     Sprite.Builder.fromStr("""
                             /o^
-                            "/|""").withFGColor(CLColor.BLACK).build()),
+                            "/|""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.ROOK,
                     Sprite.Builder.fromStr("""
-                            "-"
-                            |_|""").withFGColor(CLColor.BLACK).build()),
+                            -.-
+                            |_|""").withFGColor(ChessColor.BLACK.color).build()),
             Map.entry(ChessPiece.PieceType.PAWN,
                     Sprite.Builder.fromStr("""
                             \so\s
-                            \sA\s""").withFGColor(CLColor.BLACK).build())
+                            \sA\s""").withFGColor(ChessColor.BLACK.color).build())
     );
     private static final Map<ChessPiece.PieceType, Sprite> smallWhitePieces = Map.ofEntries(
             Map.entry(ChessPiece.PieceType.KING,
                     Sprite.Builder.fromStr("""
                            \s*\s
-                           (#)""").withFGColor(CLColor.WHITE).build()),
+                           (#)""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.QUEEN,
                     Sprite.Builder.fromStr("""
                             .I.
-                            \\X/""").withFGColor(CLColor.WHITE).build()),
+                            \\X/""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.BISHOP,
                     Sprite.Builder.fromStr("""
                             \s*\s
-                            /#\\""").withFGColor(CLColor.WHITE).build()),
+                            /#\\""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.KNIGHT,
                     Sprite.Builder.fromStr("""
                             /*^
-                            "/|""").withFGColor(CLColor.WHITE).build()),
+                            "/|""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.ROOK,
                     Sprite.Builder.fromStr("""
                             =-=
-                            |#|""").withFGColor(CLColor.WHITE).build()),
+                            |#|""").withFGColor(ChessColor.WHITE.color).build()),
             Map.entry(ChessPiece.PieceType.PAWN,
                     Sprite.Builder.fromStr("""
                             \s*\s
-                            \sA\s""").withFGColor(CLColor.WHITE).build())
+                            \sA\s""").withFGColor(ChessColor.WHITE.color).build())
     );
     private static final Sprite smallHighlight;
     static {
         var builder = Sprite.Builder.fromStr("""
                 /   \\
-                \\   /""").withFGColor(CLColor.YELLOW);
+                \\   /""").withFGColor(markerColor);
 
         for(var pixel : builder.getPixels())
             if(pixel.character==0) pixel.clearColor();
-        builder.pixels[0][4].bg = CLColor.YELLOW;
-        builder.pixels[1][0].bg = CLColor.YELLOW;
+        builder.pixels[0][4].bg = markerColor;
+        builder.pixels[1][0].bg = markerColor;
 
         smallHighlight = builder.build();
     }
 
-    private static Sprite highlightWithColor(Sprite sprite, CLColor newColor){
+    private static Sprite highlightWithColor(Sprite sprite, HighlightType type){
         var builder = Sprite.Builder.fromSprite(sprite);
         for(var pixel : builder.getPixels()){
-            if(pixel.fg==CLColor.YELLOW) pixel.fg=newColor;
-            if(pixel.bg==CLColor.YELLOW) pixel.bg=newColor;
+            if(pixel.fg==markerColor) pixel.fg=type.bright;
+            if(pixel.bg==markerColor) pixel.bg=type.dark;
         }
         return builder.build();
     }
@@ -286,8 +305,8 @@ public class ChessRenderer implements Renderable{
                 for(int y2=0;y2<spaceHeight;y2++){
                     for(int x2=0;x2<spaceWidth;x2++){
                         Renderable.overlayPixel(startingX+3+transfX*spaceWidth+x2, startingY+transfY*spaceHeight+y2,
-                                new Pixel((char)0, null, ((transfX%2==transfY%2)==this.data.facingWhite)?
-                                        CLColor.GRAY:CLColor.DARK_GRAY), screen);
+                                new Pixel((char)0, null, (((transfX%2==transfY%2)==this.data.facingWhite)?
+                                        ChessColor.BOARD_WHITE:ChessColor.BOARD_BLACK).color), screen);
 
                     }
                 }
@@ -295,27 +314,27 @@ public class ChessRenderer implements Renderable{
         }
 
         var highlight = this.data.isBig?bigHighlight:smallHighlight;
-        for(var pos : this.data.highlightedPositions)
-            highlightWithColor(highlight, this.game.getBoard().getPiece(pos)==null?
-                    HighlightType.MOVE.color:HighlightType.TAKE.color).draw(
-                    3+startingX+(this.getCol(pos.getColumn()))*spaceWidth,
-                    startingY+(this.getRow(pos.getRow()))*spaceHeight,
-                    screen);
-        if(this.data.highlightedOrigin.isValid())
-            highlightWithColor(highlight, HighlightType.ORIGIN.color).draw(
-                    3+startingX+(this.getCol(this.data.highlightedOrigin.getColumn()))*spaceWidth,
-                    startingY+(this.getRow(this.data.highlightedOrigin.getRow()))*spaceHeight,
-                    screen);
         if(this.data.lastMove!=null){
-            highlightWithColor(highlight, HighlightType.MOVE_DEST.color).draw(
+            highlightWithColor(highlight, HighlightType.MOVE_DEST).draw(
                     3+startingX+(this.getCol(this.data.lastMove.getEndPosition().getColumn()))*spaceWidth,
                     startingY+(this.getRow(this.data.lastMove.getEndPosition().getRow()))*spaceHeight,
                     screen);
-            highlightWithColor(highlight, HighlightType.PAST_MOVE.color).draw(
+            highlightWithColor(highlight, HighlightType.PAST_MOVE).draw(
                     3+startingX+(this.getCol(this.data.lastMove.getStartPosition().getColumn()))*spaceWidth,
                     startingY+(this.getRow(this.data.lastMove.getStartPosition().getRow()))*spaceHeight,
                     screen);
         }
+        for(var pos : this.data.highlightedPositions)
+            highlightWithColor(highlight, this.game.getBoard().getPiece(pos)==null?
+                    HighlightType.MOVE:HighlightType.TAKE).draw(
+                    3+startingX+(this.getCol(pos.getColumn()))*spaceWidth,
+                    startingY+(this.getRow(pos.getRow()))*spaceHeight,
+                    screen);
+        if(this.data.highlightedOrigin.isValid())
+            highlightWithColor(highlight, HighlightType.ORIGIN).draw(
+                    3+startingX+(this.getCol(this.data.highlightedOrigin.getColumn()))*spaceWidth,
+                    startingY+(this.getRow(this.data.highlightedOrigin.getRow()))*spaceHeight,
+                    screen);
 
         for(int i=0;i<8;i++){
             Renderable.overlayPixel(startingX+1, startingY+1+i*spaceHeight,
@@ -336,8 +355,8 @@ public class ChessRenderer implements Renderable{
         }
 
         Sprite.Builder.fromStr(toPrint)
-                .withFGColor(game.getTeamTurn().whiteOrBlack(CLColor.WHITE, CLColor.BLACK))
-                .withBGColor(game.getTeamTurn().whiteOrBlack(CLColor.GRAY, CLColor.DARK_GRAY))
+                .withFGColor(game.getTeamTurn().whiteOrBlack(ChessColor.WHITE, ChessColor.BLACK).color)
+                .withBGColor(game.getTeamTurn().whiteOrBlack(ChessColor.BOARD_WHITE, ChessColor.BOARD_BLACK).color)
                 .build().draw(startingX+2, startingY+spaceHeight*8+2, screen);
     }
 

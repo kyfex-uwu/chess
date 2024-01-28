@@ -1,6 +1,7 @@
 import chess.*;
-import rendering.ChessRenderer;
+import rendering.renderables.ChessRenderer;
 import rendering.Renderable;
+import rendering.renderables.Page;
 
 import java.util.*;
 
@@ -8,9 +9,14 @@ public class Main {
     private static Collection<ChessMove> movesToShow = List.of();
     private static ChessPosition positionToShow = null;
     public static void main(String[] args) {
+        System.out.println("\nIf \u001b[38:5:9m this \u001b[0m is not red, find a console that handles colors pls\n" +
+                //"(if you're on windows, try setting registry key HKEY_CURRENT_USER\\Console\\VirtualTerminalLevel to 1)\n" +
+                "Press Enter to start!");
+
         var game = new ChessGame();
 
         Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
 
         while (true) {
             var builder = new ChessRenderer.RenderData.Builder()
@@ -22,10 +28,13 @@ public class Main {
             if(game.history.size()>0){
                 builder.setLastMove(game.history.get(game.history.size()-1));
             }
-            Renderable.render(50, 21, new ArrayList<>(List.of(
-                    new ChessRenderer(game, builder.build())
+            Renderable.render(120, 30, new ArrayList<>(List.of(
+                    new ChessRenderer(game, builder.build()),
+                    new Page()
             )));
 
+            movesToShow = Collections.emptyList();
+            positionToShow=null;
             String line = scanner.nextLine();
 
             if(line.startsWith("help")){
@@ -70,7 +79,6 @@ public class Main {
             }else{
                 System.out.println("command not recognized, type \"help\" to see all commands");
             }
-            System.out.println();
         }
     }
 }

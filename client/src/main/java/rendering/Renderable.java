@@ -4,27 +4,6 @@ import java.util.Comparator;
 import java.util.List;
 
 public interface Renderable {
-    enum CLColor{
-        WHITE(97,107),
-        GRAY(37,47),
-        DARK_GRAY(90,100),
-        BLACK(30,40),
-        CLEAR(0,0),
-
-        YELLOW(93,43),
-        GREEN(92,42),
-        PINK(95,45),
-        BLUE(94,44),
-        CYAN(96,46);
-
-        public final int fg;
-        public final int bg;
-        CLColor(int fg, int bg){
-            this.fg=fg;
-            this.bg=bg;
-        }
-    }
-
     static void overlayPixel(int x, int y, Pixel pixel, Pixel[][] screen){
         if(y<0||y>=screen.length||x<0||x>=screen[y].length) return;
 
@@ -51,10 +30,12 @@ public interface Renderable {
 
         for(var row : screen) {
             for (var pixel : row) {
-                System.out.print("\u001b["+pixel.fgInt()+";"+pixel.bgInt()+"m");
+                System.out.print(
+                        (pixel.fg==null?"":"\u001b[38:5:"+pixel.fg.num+"m")+
+                        (pixel.bg==null?"":"\u001b[48:5:"+pixel.bg.num+"m"));
                 System.out.print(pixel.character);
             }
-            System.out.println();
+            System.out.println("\u001b[0;0m");
         }
     }
 

@@ -6,6 +6,8 @@ import com.google.gson.*;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Json {
@@ -94,24 +96,18 @@ public class Json {
     }
 
     //-- ChessMove
+    public static final HashMap<String, Function<String[], ChessMove>> specialMoveDeserializers = new HashMap<>();
     public static ChessMove deserializeChessMove(JsonPrimitive obj) throws JsonParseException {
         try{
             var components = obj.getAsString().split(" ");
-            if(components[0].equals("enpassant")){
-                return new EnPassantMove(
-                        deserializeChessPosition(new JsonPrimitive(components[1])),
-                        deserializeChessPosition(new JsonPrimitive(components[2])),
-                        components.length==4? ChessPiece.PieceType.getType(components[3].charAt(0)):null);
-            }else if(components[0].equals("castle")){
-                return new CastleMove(
-                        ChessGame.TeamColor.valueOf(components[1]),
-                        CastleMove.Side.valueOf(components[2]));
+            if(components[0].startsWith("s")){
+                return specialMoveDeserializers.get(components[0].substring(1)).apply(components);
             }
 
             return new ChessMove(
                     deserializeChessPosition(new JsonPrimitive(components[0])),
                     deserializeChessPosition(new JsonPrimitive(components[1])),
-                    components.length==3? ChessPiece.PieceType.getType(components[2].charAt(0)):null);
+                    components.length==3?ChessPiece.PieceType.getType(components[2].charAt(0)):null);
         }catch(Exception e){
             throw new JsonParseException(e);
         }
