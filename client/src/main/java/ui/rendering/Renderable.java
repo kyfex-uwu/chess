@@ -1,4 +1,6 @@
-package rendering;
+package ui.rendering;
+
+import ui.Config;
 
 import java.util.Comparator;
 import java.util.List;
@@ -14,7 +16,9 @@ public interface Renderable {
                 pixel.bg!=null?pixel.bg:old.bg
         );
     }
-
+    static void render(List<Renderable> toRender){
+        render(Config.screenWidth, Config.screenHeight, toRender);
+    }
     static void render(int width, int height, List<Renderable> toRender){
         System.out.print("\u001b[3J\u001b[2J\u001b[0;0H");
 

@@ -1,4 +1,4 @@
-package rendering;
+package ui.rendering;
 
 public class Color {
     public final int r;

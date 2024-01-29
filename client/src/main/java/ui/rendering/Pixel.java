@@ -1,4 +1,4 @@
-package rendering;
+package ui.rendering;
 
 public class Pixel{
     public char character;

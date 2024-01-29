@@ -1,10 +1,10 @@
-package rendering.renderable;
+package ui.rendering.renderable;
 
-import rendering.Color;
-import rendering.Pixel;
-import rendering.Renderable;
+import ui.rendering.Color;
+import ui.rendering.Pixel;
+import ui.rendering.Renderable;
 
-public class Page implements Renderable {
+public class Background implements Renderable {
     public static final Color backgroundColor = new Color(20,20,20);
     public static final Color outlineColor = new Color(70,70,70);
     public static final Color checkerColor = new Color(30,30,30);

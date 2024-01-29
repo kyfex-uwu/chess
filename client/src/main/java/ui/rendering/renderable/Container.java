@@ -1,7 +1,7 @@
-package rendering.renderable;
+package ui.rendering.renderable;
 
-import rendering.Pixel;
-import rendering.Renderable;
+import ui.rendering.Pixel;
+import ui.rendering.Renderable;
 
 public class Container implements Renderable {
     private final Renderable renderable;

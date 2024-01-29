@@ -1,7 +1,6 @@
-package rendering;
+package ui.rendering;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 public class Sprite {
     public static class Builder{

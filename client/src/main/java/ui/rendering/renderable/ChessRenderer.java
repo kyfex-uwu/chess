@@ -1,14 +1,14 @@
-package rendering.renderable;
+package ui.rendering.renderable;
 
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import chess.specialmoves.EnPassantMove;
-import rendering.Color;
-import rendering.Pixel;
-import rendering.Renderable;
-import rendering.Sprite;
+import ui.rendering.Color;
+import ui.rendering.Pixel;
+import ui.rendering.Renderable;
+import ui.rendering.Sprite;
 
 import java.util.Collection;
 import java.util.Collections;
