@@ -53,7 +53,7 @@ public class Sprite {
             return new Sprite(this.pixels);
         }
     }
-    private final Pixel[][] pixels;
+    public final Pixel[][] pixels;
     public Sprite(Pixel[][] pixels){
         this.pixels = pixels;
     }

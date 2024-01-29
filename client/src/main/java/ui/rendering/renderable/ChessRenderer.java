@@ -105,7 +105,7 @@ public class ChessRenderer implements Renderable {
         }
     }
 
-    private enum ChessColor{
+    public enum ChessColor{
         BLACK(new Color(0,0,0)),
         WHITE(new Color(255,255,255)),
         BOARD_BLACK(new Color(77, 56, 44)),
