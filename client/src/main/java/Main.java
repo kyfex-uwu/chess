@@ -1,7 +1,8 @@
 import chess.*;
-import rendering.renderables.ChessRenderer;
+import chess.specialmoves.DoublePawnMove;
+import rendering.renderable.ChessRenderer;
 import rendering.Renderable;
-import rendering.renderables.Page;
+import rendering.renderable.Page;
 
 import java.util.*;
 
@@ -9,8 +10,10 @@ public class Main {
     private static Collection<ChessMove> movesToShow = List.of();
     private static ChessPosition positionToShow = null;
     public static void main(String[] args) {
-        System.out.println("\nIf \u001b[38:5:9m this \u001b[0m is not red, find a console that handles colors pls\n" +
-                //"(if you're on windows, try setting registry key HKEY_CURRENT_USER\\Console\\VirtualTerminalLevel to 1)\n" +
+        System.out.println("\u001b[0m");
+        System.out.println("\nIf \u001b[38;2;200;0;0m this \u001b[0m is not red, make sure your terminal can display colors\n" +
+                "If you don't see a checker pattern here -> ▀▄▀▄, make sure your terminal can display unicode characters " +
+                "(if you're on windows, try the command \"chcp 65001\", it temporarily enables unicode characters)\n" +
                 "Press Enter to start!");
 
         var game = new ChessGame();
@@ -20,7 +23,7 @@ public class Main {
 
         while (true) {
             var builder = new ChessRenderer.RenderData.Builder()
-                    .isBig(false)
+                    .isBig(true)
                     .facingWhite(game.getTeamTurn()== ChessGame.TeamColor.WHITE);
             if(positionToShow!=null){
                 builder.setPositions(movesToShow, positionToShow);
@@ -45,6 +48,7 @@ public class Main {
                 try {
                     var start=new ChessPosition(line.charAt(6) - 48, line.charAt(5) - 96);
                     movesToShow = game.validMoves(start);
+                    if(movesToShow==null) movesToShow = Collections.emptyList();
                     positionToShow = start;
                 }catch(Exception e){
                     movesToShow = Collections.emptyList();

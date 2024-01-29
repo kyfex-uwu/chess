@@ -16,8 +16,8 @@ public interface Renderable {
     }
 
     static void render(int width, int height, List<Renderable> toRender){
-        System.out.println("-".repeat(width));
-        System.out.println("\u001b[2J");
+        System.out.print("\u001b[3J\u001b[2J\u001b[0;0H");
+
         toRender.sort(Comparator.comparingInt(Renderable::getOrder));
 
         var screen = new Pixel[height][width];
@@ -30,12 +30,12 @@ public interface Renderable {
 
         for(var row : screen) {
             for (var pixel : row) {
-                System.out.print(
-                        (pixel.fg==null?"":"\u001b[38:5:"+pixel.fg.num+"m")+
-                        (pixel.bg==null?"":"\u001b[48:5:"+pixel.bg.num+"m"));
-                System.out.print(pixel.character);
+
+                if(pixel.fg!=null) System.out.print("\u001b[38;2;"+pixel.fg.r+";"+pixel.fg.g+";"+pixel.fg.b+"m");
+                if(pixel.bg!=null) System.out.print("\u001b[48;2;"+pixel.bg.r+";"+pixel.bg.g+";"+pixel.bg.b+"m");
+                System.out.print(pixel.character+"\u001b[0m");
             }
-            System.out.println("\u001b[0;0m");
+            System.out.println("\u001b[0m");
         }
     }
 
