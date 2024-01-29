@@ -4,6 +4,7 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 import chess.InvalidMoveException;
+import ui.Config;
 import ui.rendering.Renderable;
 import ui.rendering.renderable.ChessRenderer;
 import ui.rendering.renderable.Container;
@@ -28,19 +29,19 @@ public class GameScene extends Scene{
 
     }
 
+    private ChessRenderer.RenderData.Builder builder = new ChessRenderer.RenderData.Builder()
+            .isBig(Config.displayBig);
     @Override
     public void onLine(String[] args) {
-        var builder = new ChessRenderer.RenderData.Builder()
-                .isBig(true)
-                .facingWhite(this.game.getTeamTurn()== ChessGame.TeamColor.WHITE);
+        this.builder.facingWhite(this.game.getTeamTurn()== ChessGame.TeamColor.WHITE);
         if(this.positionToShow!=null){
-            builder.setPositions(this.movesToShow, this.positionToShow);
+            this.builder.setPositions(this.movesToShow, this.positionToShow);
         }
         if(this.game.history.size()>0){
-            builder.setLastMove(this.game.history.get(this.game.history.size()-1));
+            this.builder.setLastMove(this.game.history.get(this.game.history.size()-1));
         }
         Renderable.render(new ArrayList<>(List.of(
-                new Container(new ChessRenderer(game, builder.build()), 59, 27),
+                new Container(new ChessRenderer(this.game, this.builder.build()), 59, 27),
                 new Background()
         )));
 

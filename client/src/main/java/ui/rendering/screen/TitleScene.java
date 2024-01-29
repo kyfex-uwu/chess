@@ -1,41 +1,44 @@
 package ui.rendering.screen;
 
+import ui.Main;
 import ui.rendering.Color;
+import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.Sprite;
 import ui.rendering.renderable.Background;
+import ui.rendering.renderable.Button;
 import ui.rendering.renderable.ChessRenderer;
-import ui.rendering.renderable.Container;
 import ui.rendering.renderable.SpriteRenderer;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 public class TitleScene extends Scene{
     private static final Sprite logo;
     static {
         var builder = Sprite.Builder.fromStr("""
-                ╔═════╗╔═╗b╔═╗ ╔════╗╔═════╗bbb╔═══╗b╔═╗b╔═╗╔═════╗╔═════╗╔═╗b╔═╗╔═════╗╔═════╗
+                ╔═════╗╔═╗b╔═╗▄╔════╗╔═════╗bb▄╔═══╗▄╔═╗▄╔═╗╔═════╗╔═════╗╔═╗b╔═╗╔═════╗╔═════╗
                 ╚═══╗ ║║ ║b║ ║║ ═══╗╝╚═╗ ╔═╝bb║  ═  ║║  ╚╝ ║║ ╔═╗ ║╚═╗ ╔═╝║ ╚═╝ ║║  ═╦═╝║  ═  ║
-                ╔╗bb║ ║║ ║b║ ║╚═══╗ ║bb║ ║bbbb║ ╔═╗ ║║ ╔╗  ║║ ║b║ ║bb║ ║bb║ ╔═╗ ║║ ╔═╝bb║  ═╗═╝
+                ╔╗▄b║ ║║ ║b║ ║╚═══╗ ║bb║ ║bbbb║ ╔═╗ ║║ ╔╗  ║║ ║b║ ║bb║ ║bb║ ╔═╗ ║║ ╔═╝bb║  ═╗═╝
                 ║ ╚═╝ ║║ ╚═╝ ║╔═══╝ ║bb║ ║bbbb║ ║b║ ║║ ║b║ ║║ ╚═╝ ║bb║ ║bb║ ║b║ ║║ ╚═══╗║ ║╗ ╚╗
-                b╚═══╝bb╚═══╝b╚════╝bbb╚═╝bbbb╚═╝b╚═╝╚═╝b╚═╝╚═════╝bb╚═╝bb╚═╝b╚═╝╚═════╝╚═╝b╚═╝
-                b╔════╗╔═╗b╔═╗▄▄▄▄▄▄▄▄b╔════╗b╔════╗bbb╔════╗╔═╗bbbbb▄██▄ ╔═════╗╔═╗b╔═╗╔═════╗
-                ║  ╔══╝║ ╚═╝ ║▄▀▀▀▀▀▀▀║ ═══╗╝║ ═══╗╝bb║  ╔══╝║ ║bbbbb▀██▀ ║  ═╦═╝║  ╚╝ ║╚═╗ ╔═╝
+                ▀╚═══╝▀▀╚═══╝▀╚════╝▀bb╚═╝bbbb╚═╝b╚═╝╚═╝b╚═╝╚═════╝bb╚═╝bb╚═╝b╚═╝╚═════╝╚═╝▀╚═╝
+                ▄╔════╗╔═╗b╔═╗▄▄▄▄▄▄▄▄▄╔════╗▄╔════╗bb▄╔════╗╔═╗bbbbb▄██▄ ╔═════╗╔═╗▄╔═╗╔═════╗
+                ║  ╔══╝║ ╚═╝ ║▄▀▀▀▀▀▀▀║ ═══╗╝║ ═══╗╝bb║  ╔══╝║ ║bbbbb▀▀▀▀ ║  ═╦═╝║  ╚╝ ║╚═╗ ╔═╝
                 ║ ║bbbb║ ╔═╗ ║▄▀▄▀▄bbb╚═══╗ ║╚═══╗ ║bb║ ║    ║ ║bbbbb▄██▄ ║ ╔═╝bb║ ╔╗  ║bb║ ║bb
-                ║  ╚══╗║ ║b║ ║▄▀▄▄▄▄▄▄╔═══╝ ║╔═══╝ ║bb║  ╚══╗║ ╚═══╗▀████▀║ ╚═══╗║ ║b║ ║bb║ ║bb
-                b╚════╝╚═╝b╚═╝▀▀▀▀▀▀▀▀╚════╝b╚════╝bbbb╚════╝╚═════╝▀▀▀▀▀▀╚═════╝╚═╝b╚═╝bb╚═╝bb"""
+                ║  ╚══╗║ ║b║ ║▄▀▄▄▄▄▄▄╔═══╝ ║╔═══╝ ║bb║  ╚══╗║ ╚═══╗▀▀▀▀▀▀║ ╚═══╗║ ║▀║ ║bb║ ║bb
+                ▀╚════╝╚═╝b╚═╝▀▀▀▀▀▀▀▀╚════╝▀╚════╝▀bb▀╚════╝╚═════╝▀▀▀▀▀▀╚═════╝╚═╝b╚═╝bb╚═╝bb"""
                     .replaceAll("b", String.valueOf((char)0)), false);
         var colors = Arrays.stream("""
-                1111111222 222 3333334444444   55555 666 66677777778888888999 9990000000aaaaaaa
+                1111111222 22233333334444444  5555555666666677777778888888999 9990000000aaaaaaa
                 1111111222 22233333334444444  555555566666667777777888888899999990000000aaaaaaa
-                11  111222 2223333333  444    55555556666666777 777  888  999999900000  aaaaaaa
+                111 111222 2223333333  444    55555556666666777 777  888  999999900000  aaaaaaa
                 111111122222223333333  444    555 555666 6667777777  888  999 9990000000aaaaaaa
-                 11111  22222 333333   444    555 555666 6667777777  888  999 9990000000aaa aaa
-                 bbbbbbccc ccc         dddddd eeeeee   ffffffggg          hhhhhhhiii iiimmmmmmm
+                111111122222223333333  444    555 555666 6667777777  888  999 9990000000aaaaaaa
+                bbbbbbbccc ccc        dddddddeeeeeee  fffffffggg          hhhhhhhiiiiiiimmmmmmm
                 bbbbbbbccccccc        dddddddeeeeeee  fffffffggg          hhhhhhhiiiiiiimmmmmmm
                 bbb    ccccccc        dddddddeeeeeee  fff    ggg          hhhhh  iiiiiii  mmm \s
-                bbbbbbbccc ccc        dddddddeeeeeee  fffffffggggggg      hhhhhhhiii iii  mmm \s
-                 bbbbbbccc ccc        dddddd eeeeee    ffffffggggggg      hhhhhhhiii iii  mmm \s"""
+                bbbbbbbccc ccc        dddddddeeeeeee  fffffffggggggg      hhhhhhhiiiiiii  mmm \s
+                bbbbbbbccc ccc        dddddddeeeeeee  fffffffggggggg      hhhhhhhiii iii  mmm \s"""
                 .split("\n")).map(String::toCharArray).toList().toArray(new char[0][0]);
 
         var redFG=new Color(255,61,19);
@@ -80,8 +83,14 @@ public class TitleScene extends Scene{
                         bg=brownBG;
                         break;
                 }
-                builder.pixels[y][x].fg=fg;
-                builder.pixels[y][x].bg=bg;
+
+                if(builder.pixels[y][x].character=='▄'||builder.pixels[y][x].character=='▀'){
+                    builder.pixels[y][x].fg = bg;
+                    builder.pixels[y][x].bg = null;
+                }else {
+                    builder.pixels[y][x].fg = fg;
+                    builder.pixels[y][x].bg = bg;
+                }
             }
         }
 
@@ -114,10 +123,35 @@ public class TitleScene extends Scene{
             }
         }
 
+        var pawnShadMap = Arrays.stream("""
+                011110
+                032230
+                011110
+                122221
+                111111""".split("\n")).map(String::toCharArray).toList().toArray(new char[0][0]);
+        var shadow = new Color(
+                ChessRenderer.ChessColor.WHITE.color.r-70,
+                ChessRenderer.ChessColor.WHITE.color.g-70,
+                ChessRenderer.ChessColor.WHITE.color.b-70
+        );
         for(int y=0;y<5;y++){
             for(int x=0;x<6;x++){
-                if(builder.pixels[y+5][x+52].character!=0)
-                    builder.pixels[y+5][x+52].fg = ChessRenderer.ChessColor.WHITE.color;
+                if(builder.pixels[y+5][x+52].character!=0) {
+                    switch(pawnShadMap[y][x]){
+                        case '1':
+                            builder.pixels[y + 5][x + 52].fg = ChessRenderer.ChessColor.WHITE.color;
+                            break;
+                        case '2':
+                            builder.pixels[y + 5][x + 52].fg = ChessRenderer.ChessColor.WHITE.color;
+                            builder.pixels[y + 5][x + 52].bg = shadow;
+                            break;
+                        case '3':
+                            builder.pixels[y + 5][x + 52].fg = shadow;
+                            builder.pixels[y + 5][x + 52].bg = null;
+                            break;
+
+                    }
+                }
             }
         }
 
@@ -126,7 +160,34 @@ public class TitleScene extends Scene{
     @Override
     public void init() {
         this.toRender.add(new Background());
-        this.toRender.add(new SpriteRenderer(logo, 10).setPos(3,3));
+        this.toRender.add(new SpriteRenderer(logo, 10){
+            @Override
+            public void render(Pixel[][] screen) {
+                this.setPos((screen[0].length-logo.pixels[0].length)/2, 2);
+                super.render(screen);
+            }
+        });
+        this.toRender.add(new Button("Config", 12, 5){
+            @Override
+            public void render(Pixel[][] screen) {
+                this.setPos(4, screen.length-7);
+                super.render(screen);
+            }
+        });
+        this.toRender.add(new Button("Log In", 12, 5){
+            @Override
+            public void render(Pixel[][] screen) {
+                this.setPos(screen[0].length-14, screen.length-7);
+                super.render(screen);
+            }
+        });
+        this.toRender.add(new Button("Play", 12, 5){
+            @Override
+            public void render(Pixel[][] screen) {
+                this.setPos((screen[0].length-12)/2, screen.length-7);
+                super.render(screen);
+            }
+        });
     }
 
     @Override
@@ -136,6 +197,13 @@ public class TitleScene extends Scene{
 
     @Override
     public void onLine(String[] args) {
+        if(args.length>=1)
+            switch(args[0].toLowerCase(Locale.ROOT)){
+                case "config":
+                    Main.changeScene(new ConfigScene());
+                    Main.rerender();
+                    return;
+            }
         Renderable.render(this.toRender);
     }
 }

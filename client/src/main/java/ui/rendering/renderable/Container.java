@@ -23,6 +23,7 @@ public class Container implements Renderable {
     public void render(Pixel[][] screen) {
         var subScreen = new Pixel[this.h][this.w];
         this.renderable.render(subScreen);
+
         for(int y=0;y<this.h;y++){
             for(int x=0;x<this.w;x++){
                 Renderable.overlayPixel(x+this.x,y+this.y,subScreen[y][x], screen);

@@ -9,6 +9,9 @@ public class Color {
         this.g=Math.min(Math.max(g,0),255);
         this.b=Math.min(Math.max(b,0),255);
     }
+    public Color copy(){
+        return new Color(this.r, this.g, this.b);
+    }
 
     public boolean equals(Object other){
         if(other instanceof Color otherColor)

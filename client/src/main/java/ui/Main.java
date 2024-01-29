@@ -10,6 +10,7 @@ public class Main {
     private static Scene currScene = new TitleScene();
     private static final Scanner scanner = new Scanner(System.in);
     private static boolean quitBool=false;
+    private static boolean rerender=false;
 
     public static void changeScene(Scene newScene){
         currScene.uninit();
@@ -18,6 +19,9 @@ public class Main {
     }
     public static void quit(){
         quitBool=true;
+    }
+    public static void rerender(){
+        rerender=true;
     }
 
     public static void main(String[] args) {
@@ -28,11 +32,15 @@ public class Main {
                 "Press Enter to start!");
 
         Scanner scanner = new Scanner(System.in);
-        scanner.nextLine();
 
         currScene.init();
         while (true) {
-            currScene.onLine(scanner.nextLine().split(" "));
+            if(rerender){
+                currScene.onLine(new String[0]);
+                rerender=false;
+            }else {
+                currScene.onLine(scanner.nextLine().split(" "));
+            }
             if(quitBool) break;
         }
 
