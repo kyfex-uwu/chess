@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 public class ChessMove {
     private final ChessPosition start;
     private final ChessPosition end;
-    private final ChessPiece.PieceType promotionPiece;
+    private ChessPiece.PieceType promotionPiece;
 
     private static final boolean TESTING=false;
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
@@ -106,7 +106,8 @@ public class ChessMove {
      * @return new {@code ChessMove}
      */
     public ChessMove withPromotionPiece(ChessPiece.PieceType type){
-        return new ChessMove(this.start, this.end, type);
+        this.promotionPiece = type;
+        return this;
     }
 
     private Consumer<ChessBoard> hackApply;
