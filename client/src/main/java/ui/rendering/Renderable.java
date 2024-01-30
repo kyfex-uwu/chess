@@ -34,7 +34,6 @@ public abstract class Renderable {
 
         for(var row : screen) {
             for (var pixel : row) {
-
                 if(pixel.fg!=null) System.out.print("\u001b[38;2;"+pixel.fg.r+";"+pixel.fg.g+";"+pixel.fg.b+"m");
                 if(pixel.bg!=null) System.out.print("\u001b[48;2;"+pixel.bg.r+";"+pixel.bg.g+";"+pixel.bg.b+"m");
                 System.out.print(pixel.character+"\u001b[0m");
@@ -47,9 +46,12 @@ public abstract class Renderable {
 
     protected int x;
     protected int y;
+    private final int order;
+    public Renderable(int order){ this.order=order; }
+    public Renderable(){ this(0); }
     public abstract void render(Pixel[][] screen);
 
-    public int getOrder(){ return 0; }
+    public int getOrder(){ return this.order; }
     public <T extends Renderable> T setPos(int x, int y) {
         this.x=x;
         this.y=y;

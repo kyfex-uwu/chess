@@ -4,29 +4,74 @@ import ui.Config;
 import ui.rendering.Color;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
+import ui.rendering.Sprite;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class Nineslice extends Renderable {
+    public enum Style{
+        NAV_PANEL("""
+            \s.▄.\s
+             █ █\s
+             ˙▀˙\s""", Config.Palette.BUTTON_OUTLINE, Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT),
+        PANEL("""
+                \s┏━┓\s
+                 ┃ ┃\s
+                 ┗━┛\s""", Config.Palette.BUTTON_OUTLINE, Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT),
+        DIALOG("""
+                \s+-+\s
+                 | |\s
+                 +-+\s""", Config.Palette.DIALOG_OUTLINE, Config.Palette.DIALOG_MAIN, Config.Palette.DIALOG_TEXT);
+        public final Nineslice nineslice;
+        Style(String pattern, Color fg, Color bg, Color text){
+            this.nineslice = new Nineslice(pattern, fg, bg, text);
+        }
+
+        static{
+            Config.Palette.onPaletteChange(()->{
+                Style.NAV_PANEL.nineslice.setColors(Config.Palette.BUTTON_OUTLINE,
+                        Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT);
+                Style.PANEL.nineslice.setColors(Config.Palette.BUTTON_OUTLINE,
+                        Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT);
+                Style.DIALOG.nineslice.setColors(Config.Palette.DIALOG_OUTLINE,
+                        Config.Palette.DIALOG_MAIN, Config.Palette.DIALOG_TEXT);
+            });
+        }
+    }
+
     private int w;
     private int h;
+    private String message;
     private Color fg;
     private Color bg;
-    private final char[][] pattern;
-    public Nineslice(String pattern){
+    private Color text;
+    private char[][] pattern;
+    public Nineslice(String pattern, Color fg, Color bg, Color text){
         this.pattern=Arrays.stream(pattern.split("\n")).map(String::toCharArray).toList().toArray(new char[0][0]);
+        this.setColors(fg, bg, text);
     }
-    public Nineslice setColors(Color fg, Color bg){
+    public void setColors(Color fg, Color bg, Color text){
         this.fg=fg;
         this.bg=bg;
-        return this;
+        this.text=text;
     }
 
     public void render(Pixel[][] screen, int x, int y, int w, int h){
+        this.render(screen, x, y, w, h, "");
+    }
+    public void render(Pixel[][] screen, int x, int y, int w, int h, String message){
         this.setPos(x, y);
         this.w=w;
         this.h=h;
+        this.message=message;
+
         this.render(screen);
+
+        this.setPos(0,0);
+        this.w=0;
+        this.h=0;
+        this.message=null;
     }
     @Override
     public void render(Pixel[][] screen) {
@@ -46,6 +91,13 @@ public class Nineslice extends Renderable {
                         this.fg, this.bg
                 ), screen);
             }
+        }
+        if(this.message!=null&&!this.message.isEmpty()) {
+            var messageLines = this.message.split("\n");
+            var messageW = Arrays.stream(messageLines).map(String::length).max(Comparator.comparingInt(o -> o)).get();
+            Sprite.Builder.fromStr(this.message).withFGColor(this.text).build().draw(
+                    this.x + (this.w - messageW) / 2,
+                    this.y + (this.h - messageLines.length) / 2, screen);
         }
     }
 }

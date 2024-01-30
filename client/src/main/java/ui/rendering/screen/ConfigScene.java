@@ -2,34 +2,28 @@ package ui.rendering.screen;
 
 import ui.ArgConsumer;
 import ui.Config;
-import ui.Main;
 import ui.rendering.Color;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.Sprite;
 import ui.rendering.renderable.Background;
-import ui.rendering.renderable.Button;
 import ui.rendering.renderable.Nineslice;
 
 import java.util.Map;
 
 public class ConfigScene extends Scene{
-    private static final Nineslice nineslice = new Nineslice("""
-            \s┏━┓\s
-             ┃ ┃\s
-             ┗━┛\s""");
     private static final Nineslice paletteNineslice = new Nineslice("""
             \s▄▄▄\s
             \s▀ ▄\s
-            \s▀▀▀\s""");
+            \s▀▀▀\s""", Config.Palette.BUTTON_OUTLINE, Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT);
     private static final Sprite.Builder bigPawn = Sprite.Builder.fromStr("""
             \s ()
             \s_/\\_
             /____\\""", true);
     static{
         Config.Palette.onPaletteChange(()->{
-            nineslice.setColors(Config.Palette.BUTTON_OUTLINE, Config.Palette.BUTTON_MAIN);
-            paletteNineslice.setColors(Config.Palette.BUTTON_OUTLINE, Config.Palette.BUTTON_MAIN);
+            paletteNineslice.setColors(Config.Palette.BUTTON_OUTLINE,
+                    Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT);
         });
     }
     private static Color hueToColor(int hue){
@@ -62,35 +56,28 @@ public class ConfigScene extends Scene{
     @Override
     public void init() {
         this.toRender.add(new Background());
-        this.toRender.add(new Button("Back", 12, 5){
+        this.toRender.add(new Renderable(10) {
             @Override
             public void render(Pixel[][] screen) {
-                this.setPos(screen[0].length/2-1-12, screen.length-7);
-                super.render(screen);
+                //nav buttons
+                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
+                        screen[0].length/2-1-12, screen.length-7, 12, 5, "Back");
+                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
+                        screen[0].length/2+1, screen.length-7, 12, 5, "Save");
             }
         });
-        this.toRender.add(new Button("Save", 12, 5){
+        this.toRender.add(new Renderable(9) {
             @Override
             public void render(Pixel[][] screen) {
-                this.setPos(screen[0].length/2+1, screen.length-7);
-                super.render(screen);
-            }
-        });
-
-        this.toRender.add(new Renderable() {
-            @Override
-            public void render(Pixel[][] screen) {
-                nineslice.render(screen, 5, 5, 13, 5);
-                Sprite.Builder.fromStr("┬  ├"+Config.screenWidth()+"┤\n" +
-                        Config.screenHeight()+"\n" +
-                        "┴").build().draw(7,6,screen);
+                //size
+                Nineslice.Style.PANEL.nineslice.render(screen, 5, 5, 13, 5);
+                Sprite.Builder.fromStr("┬  ├"+ConfigScene.this.unsavedConfig.screenWidth+"┤\n" +
+                        ConfigScene.this.unsavedConfig.screenHeight+"\n" +
+                        "┴").withFGColor(Config.Palette.BUTTON_TEXT).build().draw(7,6,screen);
                 Sprite.Builder.fromStr("Size").withFGColor(Config.Palette.BUTTON_TEXT).build()
                         .draw(11,8,screen);
-            }
-        });
-        this.toRender.add(new Renderable() {
-            @Override
-            public void render(Pixel[][] screen) {
+
+                //palettes
                 int startingX=(screen[0].length-13)/2;
                 paletteNineslice.render(screen, startingX, 5,13, 5);
                 for(int i=1;i<12;i++){
@@ -105,42 +92,55 @@ public class ConfigScene extends Scene{
                     Renderable.overlayPixel(startingX+1, 9-i, new Pixel((char)0,
                             hueToColor(i*2+27), hueToColor(i*2+26)), screen);
                 }
-
                 Sprite.Builder.fromStr("Palette").withFGColor(Config.Palette.BUTTON_TEXT).build()
                         .draw(startingX+3, 7, screen);
-
                 Sprite.Builder.fromStr("▄▀")
                         .withFGColor(Config.Palette.BOARD_BLACK)
                         .withBGColor(Config.Palette.BOARD_WHITE)
                         .build().draw(startingX+2, 8, screen);
                 Renderable.overlayPixel(startingX+4, 8, new Pixel('▀',
                         Config.Palette.PIECE_WHITE,Config.Palette.PIECE_BLACK), screen);
-            }
-        });
-        this.toRender.add(new Renderable() {
-            @Override
-            public void render(Pixel[][] screen) {
-                int startingX=screen[0].length-5-17;
-                nineslice.render(screen, startingX, 5, 17, 5);
-                bigPawn.withFGColor(Config.displayBig()?
+
+                //board size
+                startingX=screen[0].length-5-17;
+                Nineslice.Style.PANEL.nineslice.render(screen, startingX, 5, 17, 5);
+                bigPawn.withFGColor(ConfigScene.this.unsavedConfig.displayBig?
                                 Config.Palette.PIECE_WHITE:Config.Palette.BUTTON_OUTLINE)
                         .build().draw(startingX+9, 6, screen);
-                Sprite.Builder.fromStr("o\nA").withFGColor(Config.displayBig()?
+                Sprite.Builder.fromStr("o\nA").withFGColor(ConfigScene.this.unsavedConfig.displayBig?
                                 Config.Palette.BUTTON_OUTLINE:Config.Palette.PIECE_WHITE)
                         .build().draw(startingX+7, 7, screen);
                 Sprite.Builder.fromStr("Board\nSize").withFGColor(Config.Palette.BUTTON_TEXT).build()
                         .draw(startingX+2,6,screen);
             }
         });
-        this.toRender.add(new Renderable() {
+        this.toRender.add(new Renderable(8) {
             @Override
             public void render(Pixel[][] screen) {
                 switch(currEditing){
                     case "size":
+                        Nineslice.Style.DIALOG.nineslice.render(screen, 10, 13,
+                                screen[0].length-20, 3,"Set size: 'size [width>=90] [height>=25]'");
                         break;
                     case "palette":
+                        var width=screen[0].length-20;
+                        var names = Config.palettes.keySet();
+                        var namesString = "";
+                        boolean isOdd=true;
+                        for(var name : names){
+                            namesString+=name;
+                            if(isOdd) namesString+=" ".repeat((width-3)/2-name.length());
+                            else namesString+="\n";
+                            isOdd=!isOdd;
+                        }
+                        Nineslice.Style.DIALOG.nineslice.render(screen, 9, 13,
+                                width, 3+(names.size()+1)/2,
+                                "Set palette: 'palette [palette identifier]'\n"+namesString);
                         break;
                     case "boardsize":
+                        Nineslice.Style.DIALOG.nineslice.render(screen, 9, 13,
+                                screen[0].length-20, 3,
+                                "Set board size: 'boardsize [big|small]'\n");
                         break;
                 }
             }
@@ -156,36 +156,42 @@ public class ConfigScene extends Scene{
             "back", args -> {
                 this.changeScene(new TitleScene());
             },
-
-            "size", args -> {
-                this.currEditing="size";
-                try{ this.setDims(args[0], args[1]); }catch(Exception ignored){}
-            },
-            "palette", args -> {
-                this.currEditing="palette";
-            },
-            "boardsize", args -> {
-                this.currEditing="boardsize";
-            },
-
             "save", args -> {
                 Config.setInst(this.unsavedConfig.build());
             },
             "reset", args -> {
                 Config.setInst(Config.dfault);
                 this.unsavedConfig = new Config.Builder();
+            },
+
+            "size", args -> {
+                this.currEditing="size";
+                try{
+                    if(this.setDims(args[0], args[1]))
+                        this.currEditing="";
+                }catch(Exception ignored){}
+            },
+            "palette", args -> {
+                this.currEditing="palette";
+                try{
+                    if(Config.palettes.containsKey(args[0])){
+                        this.unsavedConfig.currPalette=args[0];
+                        this.currEditing="";
+                    }
+                }catch(Exception ignored){}
+            },
+            "boardsize", args -> {
+                this.currEditing="boardsize";
+                try{
+                    if(args[0].equals("big")||args[0].equals("small")){
+                        this.unsavedConfig.displayBig=args[0].equals("big");
+                        this.currEditing="";
+                    }
+                }catch(Exception ignored){}
             }
     ));
     @Override
     public void onLine(String[] args) {
-        switch(this.currEditing){
-            case "size":
-                break;
-            case "palette":
-                break;
-            case "boardsize":
-                break;
-        }
         this.consumer.tryConsumeArgs(args);
 
         if(this.shouldRender)

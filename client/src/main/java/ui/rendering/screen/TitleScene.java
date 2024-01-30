@@ -2,18 +2,14 @@ package ui.rendering.screen;
 
 import ui.ArgConsumer;
 import ui.Config;
-import ui.Main;
 import ui.rendering.Color;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.Sprite;
 import ui.rendering.renderable.Background;
-import ui.rendering.renderable.Button;
-import ui.rendering.renderable.SpriteRenderer;
+import ui.rendering.renderable.Nineslice;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class TitleScene extends Scene{
@@ -165,32 +161,21 @@ public class TitleScene extends Scene{
     @Override
     public void init() {
         this.toRender.add(new Background());
-        this.toRender.add(new SpriteRenderer(logo, 10){
+        this.toRender.add(new Renderable(9) {
             @Override
             public void render(Pixel[][] screen) {
-                this.setPos((screen[0].length-logo.pixels[0].length)/2, 2);
-                super.render(screen);
+                logo.draw((screen[0].length-logo.pixels[0].length)/2, 2, screen);
             }
         });
-        this.toRender.add(new Button("Config", 12, 5){
+        this.toRender.add(new Renderable(10) {
             @Override
             public void render(Pixel[][] screen) {
-                this.setPos(4, screen.length-7);
-                super.render(screen);
-            }
-        });
-        this.toRender.add(new Button("Log In", 12, 5){
-            @Override
-            public void render(Pixel[][] screen) {
-                this.setPos(screen[0].length-16, screen.length-7);
-                super.render(screen);
-            }
-        });
-        this.toRender.add(new Button("Play", 12, 5){
-            @Override
-            public void render(Pixel[][] screen) {
-                this.setPos((screen[0].length-12)/2, screen.length-7);
-                super.render(screen);
+                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
+                        4, screen.length-7, 12, 5, "Config");
+                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
+                        screen[0].length-16, screen.length-7, 12, 5, "Log In");
+                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
+                        (screen[0].length-12)/2, screen.length-7, 12, 5, "Play");
             }
         });
     }
