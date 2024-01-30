@@ -18,4 +18,9 @@ public class Color {
             return otherColor.r==this.r&&otherColor.g==this.g&&otherColor.b==this.b;
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "r="+this.r+", g="+this.g+", b="+this.b;
+    }
 }

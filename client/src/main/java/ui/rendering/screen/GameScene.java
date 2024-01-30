@@ -7,7 +7,6 @@ import chess.InvalidMoveException;
 import ui.Config;
 import ui.rendering.Renderable;
 import ui.rendering.renderable.ChessRenderer;
-import ui.rendering.renderable.Container;
 import ui.rendering.renderable.Background;
 
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ public class GameScene extends Scene{
     }
 
     private ChessRenderer.RenderData.Builder builder = new ChessRenderer.RenderData.Builder()
-            .isBig(Config.displayBig);
+            .isBig(Config.displayBig());
     @Override
     public void onLine(String[] args) {
         this.builder.facingWhite(this.game.getTeamTurn()== ChessGame.TeamColor.WHITE);
@@ -41,7 +40,7 @@ public class GameScene extends Scene{
             this.builder.setLastMove(this.game.history.get(this.game.history.size()-1));
         }
         Renderable.render(new ArrayList<>(List.of(
-                new Container(new ChessRenderer(this.game, this.builder.build()), 59, 27),
+                new ChessRenderer(this.game, this.builder.build()),
                 new Background()
         )));
 
@@ -72,7 +71,7 @@ public class GameScene extends Scene{
                 startPos = new ChessPosition(args[1].charAt(1) - 48, args[1].charAt(0) - 96);
             }catch(Exception e){ System.out.println("Invalid start position"); return; }
             try {
-                endPos = new ChessPosition(args[2].charAt(1) - 48, args[1].charAt(0) - 96);
+                endPos = new ChessPosition(args[1].charAt(1) - 48, args[1].charAt(0) - 96);
             }catch(Exception e){ System.out.println("Invalid end position"); return; }
 
             Collection<ChessMove> moves=game.validMoves(startPos);

@@ -18,7 +18,7 @@ public class Sprite {
                             .toList().toArray(new Pixel[0]))
                     .toList().toArray(new Pixel[0][0]));
         }
-        public static Builder fromStr(String string){ return fromStr(string, true); }
+        public static Builder fromStr(String string){ return fromStr(string, false); }
         public static Builder fromSprite(Sprite sprite){
             Pixel[][] bSprite = new Pixel[sprite.pixels.length][sprite.pixels[0].length];
             for(int y=0;y<sprite.pixels.length;y++)

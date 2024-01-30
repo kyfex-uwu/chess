@@ -4,19 +4,12 @@ import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.Sprite;
 
-public class SpriteRenderer implements Renderable {
+public class SpriteRenderer extends Renderable {
     private final Sprite sprite;
     private final int order;
-    private int x;
-    private int y;
     public SpriteRenderer(Sprite sprite, int order){
         this.sprite=sprite;
         this.order=order;
-    }
-    public SpriteRenderer setPos(int x, int y){
-        this.x=x;
-        this.y=y;
-        return this;
     }
     @Override
     public void render(Pixel[][] screen) {

@@ -5,8 +5,8 @@ import ui.Config;
 import java.util.Comparator;
 import java.util.List;
 
-public interface Renderable {
-    static void overlayPixel(int x, int y, Pixel pixel, Pixel[][] screen){
+public abstract class Renderable {
+    public static void overlayPixel(int x, int y, Pixel pixel, Pixel[][] screen){
         if(y<0||y>=screen.length||x<0||x>=screen[y].length) return;
 
         var old=screen[y][x];
@@ -16,10 +16,10 @@ public interface Renderable {
                 pixel.bg!=null?pixel.bg:old.bg
         );
     }
-    static void render(List<Renderable> toRender){
-        render(Config.screenWidth, Config.screenHeight, toRender);
+    public static void render(List<Renderable> toRender){
+        render(Config.screenWidth(), Config.screenHeight(), toRender);
     }
-    static void render(int width, int height, List<Renderable> toRender){
+    public static void render(int width, int height, List<Renderable> toRender){
         System.out.print("\u001b[3J\u001b[2J\u001b[0;0H");
 
         toRender.sort(Comparator.comparingInt(Renderable::getOrder));
@@ -45,6 +45,14 @@ public interface Renderable {
 
     //--
 
-    void render(Pixel[][] screen);
-    int getOrder();
+    protected int x;
+    protected int y;
+    public abstract void render(Pixel[][] screen);
+
+    public int getOrder(){ return 0; }
+    public <T extends Renderable> T setPos(int x, int y) {
+        this.x=x;
+        this.y=y;
+        return (T) this;
+    }
 }

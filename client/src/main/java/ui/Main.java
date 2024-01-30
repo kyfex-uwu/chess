@@ -4,6 +4,7 @@ import chess.*;
 import ui.rendering.screen.Scene;
 import ui.rendering.screen.TitleScene;
 
+import java.sql.Array;
 import java.util.*;
 
 public class Main {
@@ -32,6 +33,7 @@ public class Main {
                 "Press Enter to start!");
 
         Scanner scanner = new Scanner(System.in);
+        Config.setInst(Config.dfault);
 
         currScene.init();
         while (true) {
