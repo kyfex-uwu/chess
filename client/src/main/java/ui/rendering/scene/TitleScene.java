@@ -1,7 +1,9 @@
-package ui.rendering.screen;
+package ui.rendering.scene;
 
 import ui.ArgConsumer;
 import ui.Config;
+import ui.Online;
+import ui.PlayData;
 import ui.rendering.Color;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
@@ -9,6 +11,7 @@ import ui.rendering.Sprite;
 import ui.rendering.renderable.Background;
 import ui.rendering.renderable.Nineslice;
 
+import javax.swing.*;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -160,24 +163,33 @@ public class TitleScene extends Scene{
     }
     @Override
     public void init() {
+        super.init();
         this.toRender.add(new Background());
+        this.toRender.add(new Renderable(11) {
+            @Override
+            public void render(Pixel[][] screen) {
+                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
+                        4, screen.length-7, 12, 5, "Config");
+                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
+                        screen[0].length-16-(PlayData.loggedIn()?1:0), screen.length-7,
+                        12+(PlayData.loggedIn()?1:0), 5, (PlayData.loggedIn()?"Log Out":"Log In"));
+                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
+                        (screen[0].length-12)/2, screen.length-7, 12, 5, "Play");
+            }
+        });
         this.toRender.add(new Renderable(9) {
             @Override
             public void render(Pixel[][] screen) {
                 logo.draw((screen[0].length-logo.pixels[0].length)/2, 2, screen);
             }
         });
-        this.toRender.add(new Renderable(10) {
-            @Override
-            public void render(Pixel[][] screen) {
-                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
-                        4, screen.length-7, 12, 5, "Config");
-                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
-                        screen[0].length-16, screen.length-7, 12, 5, "Log In");
-                Nineslice.Style.NAV_PANEL.nineslice.render(screen,
-                        (screen[0].length-12)/2, screen.length-7, 12, 5, "Play");
-            }
-        });
+
+        var command = "";
+        if(PlayData.loggedIn())
+            command="logout: Logs out";
+        else
+            command="login: Opens the login screen";
+        this.consumer.helpCommand=this.consumer.helpCommand.replace("login/logout",command);
     }
 
     @Override
@@ -187,19 +199,32 @@ public class TitleScene extends Scene{
 
     private boolean shouldRender=true;
     private final ArgConsumer consumer = new ArgConsumer(Map.of(
-            "config", args -> {
-                this.changeScene(new ConfigScene());
-            },
+            "config", args -> this.changeScene(new ConfigScene()),
             "login", args -> {
-                this.changeScene(new LoginScene());
+                if(!PlayData.loggedIn())
+                    this.changeScene(new LoginScene());
             },
-            "play", args -> {
-                this.changeScene(new PlayMenuScene());
-            }
+            "logout", args -> {
+                if(PlayData.loggedIn())
+                    Online.request(Online.ReqMethod.DELETE, "session", null, Online.EmptyData.class)
+                            .ifSuccess(e->{
+                                PlayData.selfData=null;
+                                PlayData.currAuth=null;
+                                TitleScene.this.changeScene(new TitleScene());
+                            }).ifError(errorMessage -> {
+                                TitleScene.this.dialogMessage = "Error: failed to log out";
+                            });
+            },
+            "play", args -> this.changeScene(new PlayMenuScene())
+    ),ArgConsumer.helpCommandMaker(
+            "play", "Opens the play menu, to start or resume a game",
+            "login/logout", null,
+            "config", "Opens the config screen"
     ));
     @Override
     public void onLine(String[] args) {
         this.consumer.tryConsumeArgs(args);
+        if(this.consumer.shouldShowHelp) this.dialogMessage = this.consumer.helpCommand;
 
         super.onLine(args);
     }

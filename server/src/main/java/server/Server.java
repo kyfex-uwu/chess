@@ -15,7 +15,8 @@ public class Server {
         ALREADY_TAKEN(403, "already taken"),
         NOT_AUTH(401, "not authorized"),
         BAD_REQ(400,"bad request"),
-        SERVER_ERROR(500, "something went wrong, please try again");
+        NOT_FOUND(404,"not found"),
+        SERVER_ERROR(500, "something went wrong :(");
         public final int status;
         public final String message;
         FailedResponse(int status, String message){
@@ -153,6 +154,26 @@ public class Server {
 
             res.status(200);
             return Json.jsonEmpty;
+        });
+
+        //--
+
+        Spark.get("/user/:username", (req, res) -> {
+            var hRes= AuthService.validateHeader(req);
+            if(hRes.isPresent()){
+                res.status(hRes.get().status);
+                return ErrorMessage.error(hRes.get().message);
+            }
+
+            var user = AuthService.getUserFromName(req.params(":username"));
+            if(user==null){
+                res.status(FailedResponse.NOT_FOUND.status);
+                return ErrorMessage.error(FailedResponse.NOT_FOUND.message);
+            }
+
+            res.status(200);
+
+            return Json.GSON.toJson(new UserData(user.username(),"","",user.pfp()));
         });
 
         ExceptionHandler<Exception> e400handler = (e, request, response) -> {

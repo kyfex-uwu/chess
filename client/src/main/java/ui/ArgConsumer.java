@@ -1,11 +1,14 @@
 package ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public class ArgConsumer {
     public abstract static class ArgPasser implements Consumer<String[]> {
+        //does not work!!
         private final ArgConsumer next;
         private final Runnable onRun;
         public ArgPasser(Runnable onRun, ArgConsumer next){
@@ -25,13 +28,35 @@ public class ArgConsumer {
     }
 
     private final Map<String, Consumer<String[]>> consumers;
-    public ArgConsumer(Map<String, Consumer<String[]>> args){
-        this.consumers = args;
+    public String helpCommand;
+    public boolean shouldShowHelp=false;
+    public static LinkedHashMap<String, String> helpCommandMaker(String... strings){
+        var toReturn = new LinkedHashMap<String, String>();
+        for(int i=0;i<strings.length;i+=2)
+            toReturn.put(strings[i], strings[i+1]);
+        return toReturn;
     }
-    public ConsumerResponseType tryConsumeArgs(String argsUnsplit){
-        return this.tryConsumeArgs(argsUnsplit.split(" "));
+    public ArgConsumer(Map<String, Consumer<String[]>> args, String helpCommand){
+        args=new HashMap<>(args);
+        if(!args.containsKey("help")) args.put("help",args2 -> this.shouldShowHelp=true);
+        this.consumers = args;
+        this.helpCommand = helpCommand;
+    }
+    public ArgConsumer(Map<String, Consumer<String[]>> args, Map<String, String> helpMap){
+        this(args, "commands:\n"+String.join("\n",helpMap.entrySet().stream()
+                .map(entry->" - "+entry.getKey()+(entry.getValue()==null?"":": "+entry.getValue())).toList()));
+    }
+    private static Map<String, String> helpCommandTo(Map<String, Consumer<String[]>> args){
+        Map<String, String> mapToGive = new HashMap<>();
+        for(var key : args.keySet())
+            mapToGive.put(key, null);
+        return mapToGive;
+    }
+    public ArgConsumer(Map<String, Consumer<String[]>> args){
+        this(args,helpCommandTo(args));
     }
     public ConsumerResponseType tryConsumeArgs(String[] args){
+        this.shouldShowHelp=false;
         if(args.length<1||args[0].isEmpty()) return ConsumerResponseType.NONE_FOUND;
 
         ArrayList<String> maybeKeys = new ArrayList<>();

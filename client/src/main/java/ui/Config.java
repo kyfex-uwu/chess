@@ -52,6 +52,7 @@ public class Config {
     }
 
     public static class Palette{
+        public static final Color NULL = new Color(0,0,0);
         public static Color BG_MAIN;
         public static Color BG_CHECKER;
         public static Color BG_OUTLINE;

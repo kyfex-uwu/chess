@@ -96,8 +96,8 @@ public record UserData(String username, String password, String email, String pf
             for(int x=0;x<6;x++)
                 toReturn+=charMap[y][x];
         return toReturn+
-                String.valueOf(((char)('a'+(int)(Math.random()*6)))).repeat(18)+
-                String.valueOf(((char)('m'+(int)(Math.random()*6)))).repeat(18);
+                String.valueOf(((char)('m'+(int)(Math.random()*6)))).repeat(18)+
+                String.valueOf(((char)('a'+(int)(Math.random()*6)))).repeat(18);
     }
 
     public UserData(String username, String password, String email){

@@ -1,5 +1,7 @@
 package ui.rendering;
 
+import ui.Config;
+
 import java.util.Arrays;
 
 public class Sprite {
@@ -32,6 +34,13 @@ public class Sprite {
                 for(int x=0;x<builder.pixels[y].length;x++)
                     bSprite[y][x]=builder.pixels[y][x].copy();
             return new Builder(bSprite);
+        }
+        public static Builder fromDims(int w, int h){
+            Pixel[][] pixels = new Pixel[h][w];
+            for(int y=0;y<h;y++)
+                for(int x=0;x<w;x++)
+                    pixels[y][x]=new Pixel((char)0, Config.Palette.NULL);
+            return new Builder(pixels);
         }
         public Builder withFGColor(Color color){
             for(var row : this.pixels)

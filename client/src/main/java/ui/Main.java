@@ -1,7 +1,7 @@
 package ui;
 
-import ui.rendering.screen.Scene;
-import ui.rendering.screen.TitleScene;
+import ui.rendering.scene.Scene;
+import ui.rendering.scene.TitleScene;
 
 import java.util.*;
 

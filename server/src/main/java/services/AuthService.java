@@ -65,4 +65,10 @@ public class AuthService {
         if(!validateToken(authHeader)) return Optional.of(Server.FailedResponse.NOT_AUTH);
         return Optional.empty();
     }
+
+    //--
+
+    public static UserData getUserFromName(String name) throws DataAccessException {
+        return AuthDataAccess.getUser(name);
+    }
 }

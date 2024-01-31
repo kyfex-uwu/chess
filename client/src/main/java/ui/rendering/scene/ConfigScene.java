@@ -1,4 +1,4 @@
-package ui.rendering.screen;
+package ui.rendering.scene;
 
 import ui.ArgConsumer;
 import ui.Config;
@@ -33,7 +33,6 @@ public class ConfigScene extends Scene{
         return new Color(r, g, b);
     }
 
-    private String currEditing="";
     private Config.Builder unsavedConfig = new Config.Builder();
     private boolean setDims(String wStr, String hStr){
         try{
@@ -49,8 +48,9 @@ public class ConfigScene extends Scene{
     }
     @Override
     public void init() {
+        super.init();
         this.toRender.add(new Background());
-        this.toRender.add(new Renderable(10) {
+        this.toRender.add(new Renderable(11) {
             @Override
             public void render(Pixel[][] screen) {
                 //nav buttons
@@ -108,37 +108,6 @@ public class ConfigScene extends Scene{
                         .draw(startingX+2,6,screen);
             }
         });
-        this.toRender.add(new Renderable(8) {
-            @Override
-            public void render(Pixel[][] screen) {
-                switch(currEditing){
-                    case "size":
-                        Nineslice.Style.DIALOG.nineslice.render(screen, 10, 13,
-                                screen[0].length-20, 3,"Set size: 'size [width>=90] [height>=25]'");
-                        break;
-                    case "palette":
-                        var width=screen[0].length-20;
-                        var names = Config.palettes.keySet();
-                        var namesString = "";
-                        boolean isOdd=true;
-                        for(var name : names){
-                            namesString+=name;
-                            if(isOdd) namesString+=" ".repeat((width-3)/2-name.length());
-                            else namesString+="\n";
-                            isOdd=!isOdd;
-                        }
-                        Nineslice.Style.DIALOG.nineslice.render(screen, 9, 13,
-                                width, 3+(names.size()+1)/2,
-                                "Set palette: 'palette [palette identifier]'\n"+namesString);
-                        break;
-                    case "boardsize":
-                        Nineslice.Style.DIALOG.nineslice.render(screen, 9, 13,
-                                screen[0].length-20, 3,
-                                "Set board size: 'boardsize [big|small]'\n");
-                        break;
-                }
-            }
-        });
     }
 
     @Override
@@ -147,11 +116,10 @@ public class ConfigScene extends Scene{
     }
 
     private final ArgConsumer consumer = new ArgConsumer(Map.of(
-            "back", args -> {
-                this.changeScene(new TitleScene());
-            },
+            "back", args -> this.changeScene(new TitleScene()),
             "save", args -> {
                 Config.setInst(this.unsavedConfig.build());
+                this.dialogMessage="Saved config";
             },
             "reset", args -> {
                 Config.setInst(Config.dfault);
@@ -159,34 +127,36 @@ public class ConfigScene extends Scene{
             },
 
             "size", args -> {
-                this.currEditing="size";
                 try{
-                    if(this.setDims(args[0], args[1]))
-                        this.currEditing="";
+                    this.setDims(args[0], args[1]);
                 }catch(Exception ignored){}
             },
             "palette", args -> {
-                this.currEditing="palette";
                 try{
                     if(Config.palettes.containsKey(args[0])){
                         this.unsavedConfig.currPalette=args[0];
-                        this.currEditing="";
                     }
                 }catch(Exception ignored){}
             },
             "boardsize", args -> {
-                this.currEditing="boardsize";
                 try{
                     if(args[0].equals("big")||args[0].equals("small")){
                         this.unsavedConfig.displayBig=args[0].equals("big");
-                        this.currEditing="";
                     }
                 }catch(Exception ignored){}
             }
+    ), ArgConsumer.helpCommandMaker(
+            "back","Returns to the title screen",
+            "save","Saves and applies your new config",
+            "reset","Resets the config to the default settings",
+            "size [width] [height]","Sets the size of the screen",
+            "palette", "Opens the palette editor",
+            "boardsize [big|small]", "Sets the board size to either big or small"
     ));
     @Override
     public void onLine(String[] args) {
         this.consumer.tryConsumeArgs(args);
+        if(this.consumer.shouldShowHelp) this.dialogMessage = this.consumer.helpCommand;
 
         if(this.shouldRender)
             Renderable.render(this.unsavedConfig.screenWidth, this.unsavedConfig.screenHeight, this.toRender);

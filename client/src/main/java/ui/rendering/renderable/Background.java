@@ -1,11 +1,14 @@
 package ui.rendering.renderable;
 
 import ui.Config;
-import ui.rendering.Color;
+import ui.PlayData;
+import ui.rendering.PFPMaker;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
+import ui.rendering.Sprite;
 
 public class Background extends Renderable {
+    public static Sprite pfp;
     @Override
     public void render(Pixel[][] screen) {
         for(int y=0;y<screen.length;y++){
@@ -28,6 +31,16 @@ public class Background extends Renderable {
                         Config.Palette.BG_OUTLINE:Config.Palette.BG_CHECKER, bgColor);
             }
         }
+
+        if(!PlayData.loggedIn()) pfp=null;
+
+        if(pfp==null){
+            if(PlayData.loggedIn()) {
+                pfp = PFPMaker.pfpToSprite(PlayData.selfData.pfp());
+            }
+        }
+        if(pfp!=null)
+            pfp.draw(screen[0].length-8, 1, screen);
     }
 
     @Override

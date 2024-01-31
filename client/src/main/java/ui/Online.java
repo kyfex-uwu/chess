@@ -43,8 +43,18 @@ public class Online {
             return this;
         }
     }
+    public static class EmptyData implements Data{
+        @Override
+        public boolean isValid() {
+            return true;
+        }
+    }
     public static <T extends Data> Response<T> request(ReqMethod method, String endpoint,
                                                        Data toSend, Class<T> expectedType){
+        if(method==ReqMethod.GET&&toSend!=null){
+            System.out.println("you cant get with body bozo");
+            new Exception().printStackTrace();
+        }
         try{
             // Specify the desired endpoint
             URI uri = new URI(baseUrl+endpoint);
@@ -52,11 +62,13 @@ public class Online {
 
             connection.setRequestMethod(method.method);
             connection.setDoOutput(true);
-            connection.addRequestProperty("Authorization", PlayData.currAuth.authToken());
+            if(PlayData.currAuth!=null)
+                connection.addRequestProperty("Authorization", PlayData.currAuth.authToken());
 
-            try (var outputStream = connection.getOutputStream()) {
-                outputStream.write(Json.GSON.toJson(toSend).getBytes());
-            }
+            if(toSend!=null)
+                try (var outputStream = connection.getOutputStream()) {
+                    outputStream.write(Json.GSON.toJson(toSend).getBytes());
+                }
 
             // Make the request
             connection.connect();

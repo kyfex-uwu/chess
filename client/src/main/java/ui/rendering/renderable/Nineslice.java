@@ -23,10 +23,17 @@ public class Nineslice extends Renderable {
         DIALOG("""
                 \s+-+\s
                  | |\s
-                 +-+\s""", ()->Config.Palette.DIALOG_OUTLINE, ()->Config.Palette.DIALOG_MAIN, ()->Config.Palette.DIALOG_TEXT);
+                 +-+\s""", ()->Config.Palette.DIALOG_OUTLINE, ()->Config.Palette.DIALOG_MAIN, ()->Config.Palette.DIALOG_TEXT),
+        INPUT("""
+            \s/~\\\s
+            \s   \s
+            \s\\~/\s""", ()->Config.Palette.INPUT_ACCENT, ()->Config.Palette.INPUT_MAIN, ()->Config.Palette.INPUT_ACCENT);
         public final Nineslice nineslice;
         Style(String pattern, Supplier<Color> fg, Supplier<Color> bg, Supplier<Color> text){
             this.nineslice = new Nineslice(pattern, fg, bg, text);
+        }
+        static{
+            INPUT.nineslice.floatText(FloatDir.LEFT);
         }
     }
     public enum FloatDir {

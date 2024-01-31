@@ -1,4 +1,4 @@
-package ui.rendering.screen;
+package ui.rendering.scene;
 
 import chess.ChessGame;
 import chess.ChessMove;
@@ -20,6 +20,7 @@ public class GameScene extends Scene{
     private ChessPosition positionToShow = null;
     @Override
     public void init() {
+        super.init();
 
     }
 
