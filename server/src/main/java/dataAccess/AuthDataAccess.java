@@ -22,7 +22,8 @@ public class AuthDataAccess {
             if(!resultSet.next()) return;
             toReturn.set(new UserData(resultSet.getString(1),
                     resultSet.getString(2),
-                    resultSet.getString(3)));
+                    resultSet.getString(3),
+                    resultSet.getString(4)));
         });
         return toReturn.get();
     }
@@ -30,10 +31,11 @@ public class AuthDataAccess {
         if(!userData.isValid()) throw new DataAccessException("invalid data");
 
         DatabaseManager.execStatement(
-                "INSERT INTO users (username, password, email) VALUES (?, ?, ?)", query->{
+                "INSERT INTO users (username, password, email, pfp) VALUES (?, ?, ?, ?)", query->{
                     query.setString(1, userData.username());
                     query.setString(2, encoder.encode(userData.password()));
                     query.setString(3, userData.email());
+                    query.setString(4, userData.pfp());
                 });
     }
     public static void createToken(AuthData authData) throws DataAccessException{

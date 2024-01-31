@@ -8,54 +8,51 @@ import ui.rendering.Sprite;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.function.Supplier;
 
 public class Nineslice extends Renderable {
     public enum Style{
         NAV_PANEL("""
             \s.▄.\s
              █ █\s
-             ˙▀˙\s""", Config.Palette.BUTTON_OUTLINE, Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT),
+             ˙▀˙\s""", ()->Config.Palette.BUTTON_OUTLINE, ()->Config.Palette.BUTTON_MAIN, ()->Config.Palette.BUTTON_TEXT),
         PANEL("""
                 \s┏━┓\s
                  ┃ ┃\s
-                 ┗━┛\s""", Config.Palette.BUTTON_OUTLINE, Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT),
+                 ┗━┛\s""", ()->Config.Palette.BUTTON_OUTLINE, ()->Config.Palette.BUTTON_MAIN, ()->Config.Palette.BUTTON_TEXT),
         DIALOG("""
                 \s+-+\s
                  | |\s
-                 +-+\s""", Config.Palette.DIALOG_OUTLINE, Config.Palette.DIALOG_MAIN, Config.Palette.DIALOG_TEXT);
+                 +-+\s""", ()->Config.Palette.DIALOG_OUTLINE, ()->Config.Palette.DIALOG_MAIN, ()->Config.Palette.DIALOG_TEXT);
         public final Nineslice nineslice;
-        Style(String pattern, Color fg, Color bg, Color text){
+        Style(String pattern, Supplier<Color> fg, Supplier<Color> bg, Supplier<Color> text){
             this.nineslice = new Nineslice(pattern, fg, bg, text);
         }
-
-        static{
-            Config.Palette.onPaletteChange(()->{
-                Style.NAV_PANEL.nineslice.setColors(Config.Palette.BUTTON_OUTLINE,
-                        Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT);
-                Style.PANEL.nineslice.setColors(Config.Palette.BUTTON_OUTLINE,
-                        Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT);
-                Style.DIALOG.nineslice.setColors(Config.Palette.DIALOG_OUTLINE,
-                        Config.Palette.DIALOG_MAIN, Config.Palette.DIALOG_TEXT);
-            });
-        }
+    }
+    public enum FloatDir {
+        LEFT,
+        RIGHT,
+        CENTER
     }
 
     private int w;
     private int h;
     private String message;
-    private Color fg;
-    private Color bg;
-    private Color text;
+    private Supplier<Color> fg;
+    private Supplier<Color> bg;
+    private Supplier<Color> text;
+    private FloatDir floatDir = FloatDir.CENTER;
     private char[][] pattern;
-    public Nineslice(String pattern, Color fg, Color bg, Color text){
+    public Nineslice(String pattern, Supplier<Color> fg, Supplier<Color> bg, Supplier<Color> text){
         this.pattern=Arrays.stream(pattern.split("\n")).map(String::toCharArray).toList().toArray(new char[0][0]);
         this.setColors(fg, bg, text);
     }
-    public void setColors(Color fg, Color bg, Color text){
+    public void setColors(Supplier<Color> fg, Supplier<Color> bg, Supplier<Color> text){
         this.fg=fg;
         this.bg=bg;
         this.text=text;
     }
+    public Nineslice floatText(FloatDir floatDir){ this.floatDir=floatDir; return this; }
 
     public void render(Pixel[][] screen, int x, int y, int w, int h){
         this.render(screen, x, y, w, h, "");
@@ -88,16 +85,19 @@ public class Nineslice extends Renderable {
 
                 Renderable.overlayPixel(x+this.x, y+this.y, new Pixel(
                         pattern[NSY][NSX],
-                        this.fg, this.bg
+                        this.fg.get(), this.bg.get()
                 ), screen);
             }
         }
         if(this.message!=null&&!this.message.isEmpty()) {
             var messageLines = this.message.split("\n");
             var messageW = Arrays.stream(messageLines).map(String::length).max(Comparator.comparingInt(o -> o)).get();
-            Sprite.Builder.fromStr(this.message).withFGColor(this.text).build().draw(
-                    this.x + (this.w - messageW) / 2,
-                    this.y + (this.h - messageLines.length) / 2, screen);
+            Sprite.Builder.fromStr(this.message).withFGColor(this.text.get()).build().draw(
+                    this.x + switch(this.floatDir){
+                        case LEFT -> 2;
+                        case RIGHT -> this.w-messageW-2;
+                        case CENTER -> (this.w - messageW) / 2;
+                    },this.y + (this.h - messageLines.length) / 2, screen);
         }
     }
 }

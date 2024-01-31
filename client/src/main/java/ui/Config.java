@@ -61,6 +61,8 @@ public class Config {
         public static Color DIALOG_MAIN;
         public static Color DIALOG_TEXT;
         public static Color DIALOG_OUTLINE;
+        public static Color INPUT_MAIN;
+        public static Color INPUT_ACCENT;
         public static Color BOARD_WHITE;
         public static Color BOARD_GRAY;
         public static Color BOARD_BLACK;
@@ -70,23 +72,24 @@ public class Config {
         private final Color[] colors;
         public Palette(Color... colors){ this.colors=colors; }
         public void apply(){
-            BG_MAIN=this.colors[0];
-            BG_CHECKER=this.colors[1];
-            BG_OUTLINE=this.colors[2];
+            int x=0;
 
-            BUTTON_MAIN=this.colors[3];
-            BUTTON_TEXT=this.colors[4];
-            BUTTON_OUTLINE=this.colors[5];
-
-            DIALOG_MAIN=this.colors[6];
-            DIALOG_TEXT=this.colors[7];
-            DIALOG_OUTLINE=this.colors[8];
-
-            BOARD_WHITE=this.colors[9];
-            BOARD_GRAY=this.colors[10];
-            BOARD_BLACK=this.colors[11];
-            PIECE_WHITE=this.colors[12];
-            PIECE_BLACK=this.colors[13];
+            BG_MAIN = this.colors[x]; x++;
+            BG_CHECKER = this.colors[x]; x++;
+            BG_OUTLINE = this.colors[x]; x++;
+            BUTTON_MAIN = this.colors[x]; x++;
+            BUTTON_TEXT = this.colors[x]; x++;
+            BUTTON_OUTLINE = this.colors[x]; x++;
+            DIALOG_MAIN = this.colors[x]; x++;
+            DIALOG_TEXT = this.colors[x]; x++;
+            DIALOG_OUTLINE = this.colors[x]; x++;
+            INPUT_MAIN = this.colors[x]; x++;
+            INPUT_ACCENT = this.colors[x]; x++;
+            BOARD_WHITE = this.colors[x]; x++;
+            BOARD_GRAY = this.colors[x]; x++;
+            BOARD_BLACK = this.colors[x]; x++;
+            PIECE_WHITE = this.colors[x]; x++;
+            PIECE_BLACK = this.colors[x]; x++;
         }
 
         private static final ArrayList<Runnable> paletteChangeConsumers = new ArrayList<>();
@@ -110,6 +113,9 @@ public class Config {
         DIALOG_TEXT
         DIALOG_OUTLINE
 
+        INPUT_MAIN
+        INPUT_ACCENT
+
         BOARD_WHITE
         BOARD_GRAY
         BOARD_BLACK
@@ -129,6 +135,9 @@ public class Config {
                 new Color(255,255,255),
                 new Color(187,201,252),
 
+                new Color(181,238,233),
+                new Color(86, 20, 6),
+
                 new Color(148, 121, 105),
                 new Color(107, 81, 66),
                 new Color(77, 56, 44),
@@ -147,6 +156,9 @@ public class Config {
                 new Color(129,63,229),
                 new Color(255,255,255),
                 new Color(187,201,252),
+
+                new Color(86, 20, 6),
+                new Color(181,238,233),
 
                 new Color(173,150,195),
                 new Color(166,94,137),

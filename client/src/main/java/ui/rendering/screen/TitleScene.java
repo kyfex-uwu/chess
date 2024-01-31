@@ -189,6 +189,12 @@ public class TitleScene extends Scene{
     private final ArgConsumer consumer = new ArgConsumer(Map.of(
             "config", args -> {
                 this.changeScene(new ConfigScene());
+            },
+            "login", args -> {
+                this.changeScene(new LoginScene());
+            },
+            "play", args -> {
+                this.changeScene(new PlayMenuScene());
             }
     ));
     @Override

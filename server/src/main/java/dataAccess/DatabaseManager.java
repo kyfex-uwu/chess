@@ -85,6 +85,7 @@ public class DatabaseManager {
                   `username` VARCHAR(16) NOT NULL,
                   `password` VARCHAR(128) NOT NULL,
                   `email` VARCHAR(320) NOT NULL,
+                  `pfp` VARCHAR(54) NOT NULL,
                   PRIMARY KEY (`username`),
                   UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);""");
         execStatement("CREATE TABLE IF NOT EXISTS "+ """

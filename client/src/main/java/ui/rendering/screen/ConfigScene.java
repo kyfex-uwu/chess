@@ -15,17 +15,11 @@ public class ConfigScene extends Scene{
     private static final Nineslice paletteNineslice = new Nineslice("""
             \s▄▄▄\s
             \s▀ ▄\s
-            \s▀▀▀\s""", Config.Palette.BUTTON_OUTLINE, Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT);
+            \s▀▀▀\s""", ()->Config.Palette.BUTTON_OUTLINE, ()->Config.Palette.BUTTON_MAIN, ()->Config.Palette.BUTTON_TEXT);
     private static final Sprite.Builder bigPawn = Sprite.Builder.fromStr("""
             \s ()
             \s_/\\_
             /____\\""", true);
-    static{
-        Config.Palette.onPaletteChange(()->{
-            paletteNineslice.setColors(Config.Palette.BUTTON_OUTLINE,
-                    Config.Palette.BUTTON_MAIN, Config.Palette.BUTTON_TEXT);
-        });
-    }
     private static Color hueToColor(int hue){
         //33 hues, 11 11 11
         int r=0;

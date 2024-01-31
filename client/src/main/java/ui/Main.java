@@ -1,15 +1,12 @@
 package ui;
 
-import chess.*;
 import ui.rendering.screen.Scene;
 import ui.rendering.screen.TitleScene;
 
-import java.sql.Array;
 import java.util.*;
 
 public class Main {
     private static Scene currScene = new TitleScene();
-    private static final Scanner scanner = new Scanner(System.in);
     private static boolean quitBool=false;
     private static boolean rerender=false;
 
