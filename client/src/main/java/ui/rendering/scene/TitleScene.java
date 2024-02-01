@@ -1,9 +1,6 @@
 package ui.rendering.scene;
 
-import ui.ArgConsumer;
-import ui.Config;
-import ui.Online;
-import ui.PlayData;
+import ui.*;
 import ui.rendering.Color;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
@@ -215,11 +212,13 @@ public class TitleScene extends Scene{
                                 TitleScene.this.dialogMessage = "Error: failed to log out";
                             });
             },
-            "play", args -> this.changeScene(new PlayMenuScene())
+            "play", args -> this.changeScene(new PlayMenuScene()),
+            "quit", args -> Main.quit()
     ),ArgConsumer.helpCommandMaker(
             "play", "Opens the play menu, to start or resume a game",
             "login/logout", null,
-            "config", "Opens the config screen"
+            "config", "Opens the config screen",
+            "quit", "Exits out of the client"
     ));
     @Override
     public void onLine(String[] args) {

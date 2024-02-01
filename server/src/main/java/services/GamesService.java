@@ -54,4 +54,11 @@ public class GamesService {
     public static GameData[] getGames() throws DataAccessException {
         return GamesDataAccess.getGames();
     }
+
+    //--
+
+    public static GameData[] getGamesWithUser(String username) throws DataAccessException, Server.InvalidRequestException {
+        if(username==null||username.isEmpty()) throw new Server.InvalidRequestException();
+        return GamesDataAccess.getGamesWithUser(username);
+    }
 }

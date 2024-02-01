@@ -6,6 +6,7 @@ import model.UserData;
 import ui.ArgConsumer;
 import ui.Online;
 import ui.PlayData;
+import ui.rendering.Color;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.renderable.Background;
@@ -42,9 +43,18 @@ public class RegisterScene extends Scene{
                 Nineslice.Style.INPUT.nineslice.render(screen,
                         halfScreen, 5, halfScreen-6,3, "Email > "+RegisterScene.this.email);
                 Nineslice.Style.INPUT.nineslice.render(screen,
-                        3, 9, halfScreen-6,3, "Password > "+"*".repeat(RegisterScene.this.password.length()));
+                        3, 8, halfScreen-6,3, "Password > "+"*".repeat(RegisterScene.this.password.length()));
                 Nineslice.Style.INPUT.nineslice.render(screen,
-                        halfScreen, 9, halfScreen-6,3, "Confirm Password > "+"*".repeat(RegisterScene.this.password2.length()));
+                        halfScreen, 8, halfScreen-6,3, "Confirm Password > "+"*".repeat(RegisterScene.this.password2.length()));
+
+                if(!RegisterScene.this.password.isEmpty()&&!RegisterScene.this.password.matches(UserData.passwordRegex)){
+                    Renderable.overlayPixel(halfScreen-5,9,
+                            new Pixel('!',new Color(255,255,255),new Color(255,0,0)), screen);
+                }
+                if(!RegisterScene.this.password.equals(RegisterScene.this.password2)){
+                    Renderable.overlayPixel(halfScreen*2-8,9,
+                            new Pixel('!',new Color(255,255,255),new Color(255,0,0)), screen);
+                }
             }
         });
     }
@@ -74,8 +84,8 @@ public class RegisterScene extends Scene{
                                 data, AuthData.class)
                         .ifSuccess(authData -> {
                             PlayData.currAuth = authData;
-                            Online.request(Online.ReqMethod.GET, "user",
-                                            new LoginData(RegisterScene.this.username,""), UserData.class)
+                            Online.request(Online.ReqMethod.GET, "user/"+RegisterScene.this.username,
+                                            null, UserData.class)
                                     .ifSuccess(userData -> {
                                         PlayData.selfData = userData;
                                         RegisterScene.this.dialogMessage = "Registered and logged in!";

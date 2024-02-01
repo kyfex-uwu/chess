@@ -10,6 +10,7 @@ import spark.ExceptionHandler;
 import spark.Spark;
 
 public class Server {
+    //todo: golden board when you checkmate without losing a piece
 
     public enum FailedResponse {
         ALREADY_TAKEN(403, "already taken"),
@@ -119,6 +120,7 @@ public class Server {
             String gameName;
             try{
                 gameName=((JsonObject)body).get("gameName").getAsString();
+                if(!gameName.matches("[\\w ]{3,32}")) throw new Exception("too long");
             }catch(Exception e){
                 res.status(FailedResponse.BAD_REQ.status);
                 return ErrorMessage.error(FailedResponse.BAD_REQ.message);
@@ -158,8 +160,9 @@ public class Server {
 
         //--
 
+        //get specified user data
         Spark.get("/user/:username", (req, res) -> {
-            var hRes= AuthService.validateHeader(req);
+            var hRes=AuthService.validateHeader(req);
             if(hRes.isPresent()){
                 res.status(hRes.get().status);
                 return ErrorMessage.error(hRes.get().message);
@@ -174,6 +177,25 @@ public class Server {
             res.status(200);
 
             return Json.GSON.toJson(new UserData(user.username(),"","",user.pfp()));
+        });
+
+        //get games with user
+        Spark.get("/game/:username", (req, res) -> {
+            var hRes= AuthService.validateHeader(req);
+            if(hRes.isPresent()){
+                res.status(hRes.get().status);
+                return ErrorMessage.error(hRes.get().message);
+            }
+
+            JsonArray array = new JsonArray();
+            for(var data : GamesService.getGamesWithUser(req.params(":username"))) {
+                array.add(Json.GSON.toJsonTree(data));
+            }
+
+            var toReturn = new JsonObject();
+            toReturn.add("games", array);
+            res.status(200);
+            return toReturn;
         });
 
         ExceptionHandler<Exception> e400handler = (e, request, response) -> {

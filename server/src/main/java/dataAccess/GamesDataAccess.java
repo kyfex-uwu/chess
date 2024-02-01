@@ -66,4 +66,28 @@ public class GamesDataAccess {
                 });
         return games.toArray(new GameData[0]);
     }
+
+    //--
+
+    public static GameData[] getGamesWithUser(String username) throws DataAccessException{
+        if(username==null||username.isEmpty()) throw new DataAccessException("invalid username");
+        ArrayList<GameData> games = new ArrayList<>();
+        DatabaseManager.execQuery(
+                "SELECT * FROM games WHERE white=? OR black=?", query->{
+                    query.setString(1, username);
+                    query.setString(2, username);
+                },resultSet -> {
+                    while(resultSet.next()){
+                        var currGame = new GameData(
+                                resultSet.getInt(1),
+                                resultSet.getString(2),
+                                resultSet.getString(3),
+                                resultSet.getString(4),
+                                ChessGame.deserialize(resultSet.getString(5))
+                        );
+                        games.add(currGame);
+                    }
+                });
+        return games.toArray(new GameData[0]);
+    }
 }

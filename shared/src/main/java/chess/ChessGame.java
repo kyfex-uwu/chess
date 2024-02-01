@@ -149,7 +149,7 @@ public class ChessGame {
             var toReturn = new ChessGame();
 
             toReturn.currTeam = obj.get("currTeam").getAsString().equals("WHITE")?TeamColor.WHITE:TeamColor.BLACK;
-            toReturn.board = Json.deserializeChessBoard(obj.get("board").getAsJsonObject());
+            toReturn.board = Json.GSON.fromJson(obj.get("board"), ChessBoard.class);
 
             return toReturn;
         }catch(Exception e){

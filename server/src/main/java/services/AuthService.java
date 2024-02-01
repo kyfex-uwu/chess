@@ -44,7 +44,6 @@ public class AuthService {
 
         var user = AuthDataAccess.getUser(loginData.username());
         if(user!=null&&encoder.matches(loginData.password(), user.password())){
-            //AuthDataAccess.deleteToken(AuthDataAccess.getToken(loginData.username()));
             var token = generateNewToken();
             AuthDataAccess.createToken(new AuthData(token, loginData.username()));
             return Optional.of(token);

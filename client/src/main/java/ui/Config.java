@@ -19,7 +19,7 @@ public class Config {
 
     public static Config inst;
 
-    public static final Config dfault = new Config(120, 30, true, "Default");
+    public static final Config dfault = new Config(120, 29, true, "Default");
     public final int screenWidth;
     public static int screenWidth(){ return inst.screenWidth; }
     public final int screenHeight;
