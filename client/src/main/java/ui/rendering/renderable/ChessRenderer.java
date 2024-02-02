@@ -20,7 +20,7 @@ import java.util.Map;
  * Use renderGame(ChessGame game, RenderData renderData) to draw a game, and
  * RenderData.from to get the renderData
  */
-public class ChessRenderer extends Renderable {
+public class ChessRenderer {
 
     /**
      * Optional data to render a chess game
@@ -63,24 +63,21 @@ public class ChessRenderer extends Renderable {
                 return this;
             }
 
-            public Builder setLastMove(ChessMove move){
-                this.lastMove=move;
-                return this;
-            }
+            public Builder setLastMove(ChessMove move){ this.lastMove=move; return this; }
 
             /**
              * Sets if the board should be rendered with white on bottom (true) or black on botton (false)
              * @param isFacing if white is on bottom
              * @return this, for chaining
              */
-            public Builder facingWhite(boolean isFacing){ this.facingWhite=isFacing; return this;}
+            public Builder facingWhite(boolean isFacing){ this.facingWhite=isFacing; return this; }
 
             /**
              * Sets if the board should be rendered big (height of 3) or small (height of 2)
              * @param isBig if big
              * @return this, for chaining
              */
-            public Builder isBig(boolean isBig){ this.isBig=isBig; return this;}
+            public Builder isBig(boolean isBig){ this.isBig=isBig; return this; }
 
             /**
              * @return a RenderData
@@ -264,35 +261,27 @@ public class ChessRenderer extends Renderable {
 
     //--
 
-    private final ChessGame game;
-    private final RenderData data;
-    public ChessRenderer(ChessGame game, RenderData data){
-        this.game=game;
-        this.data=data;
-    }
-
-    private int getRow(int row){ return this.data.facingWhite?8-row:row-1; }
-    private int getCol(int col){ return this.data.facingWhite?col-1:8-col; }
-    @Override
-    public void render(Pixel[][] screen) {
-        int spaceWidth = this.data.isBig?7:5;
-        int spaceHeight = this.data.isBig?3:2;
+    private static int getRow(int row, RenderData data){ return data.facingWhite?8-row:row-1; }
+    private static int getCol(int col, RenderData data){ return data.facingWhite?col-1:8-col; }
+    public static void render(Pixel[][] screen, ChessGame game, RenderData data) {
+        int spaceWidth = data.isBig?7:5;
+        int spaceHeight = data.isBig?3:2;
 
         for(int y=0;y<8;y++){
             for(int x=0;x<8;x++) {
-                var pieceAt = this.game.getBoard().getPiece(new ChessPosition(8-y,x+1));
+                var pieceAt = game.getBoard().getPiece(new ChessPosition(8-y,x+1));
                 Sprite sprite=pieceAt!=null?
                         pieceAt.getTeamColor().whiteOrBlack(
-                                this.data.isBig?bigWhitePieces:smallWhitePieces,
-                                this.data.isBig?bigBlackPieces:smallBlackPieces).get(pieceAt.getPieceType()):
+                                data.isBig?bigWhitePieces:smallWhitePieces,
+                                data.isBig?bigBlackPieces:smallBlackPieces).get(pieceAt.getPieceType()):
                         Sprite.NULL;
 
-                int transfX=this.data.facingWhite?x:7-x;
-                int transfY=this.data.facingWhite?y:7-y;
+                int transfX=data.facingWhite?x:7-x;
+                int transfY=data.facingWhite?y:7-y;
                 for(int y2=0;y2<spaceHeight;y2++){
                     for(int x2=0;x2<spaceWidth;x2++){
                         Renderable.overlayPixel(3+transfX*spaceWidth+x2, transfY*spaceHeight+y2,
-                                new Pixel(' ', null, (((transfX%2==transfY%2)==this.data.facingWhite)?
+                                new Pixel(' ', null, (((transfX%2==transfY%2)==data.facingWhite)?
                                         Config.Palette.BOARD_WHITE:Config.Palette.BOARD_BLACK)), screen);
 
                     }
@@ -301,31 +290,31 @@ public class ChessRenderer extends Renderable {
             }
         }
 
-        var highlight = this.data.isBig?bigHighlight:smallHighlight;
-        if(this.data.lastMove!=null){
+        var highlight = data.isBig?bigHighlight:smallHighlight;
+        if(data.lastMove!=null){
             highlightWithColor(highlight, HighlightType.MOVE_DEST).draw(
-                    3+(this.getCol(this.data.lastMove.getEndPosition().getColumn()))*spaceWidth,
-                    (this.getRow(this.data.lastMove.getEndPosition().getRow()))*spaceHeight,
+                    3+(getCol(data.lastMove.getEndPosition().getColumn(), data))*spaceWidth,
+                    (getRow(data.lastMove.getEndPosition().getRow(), data))*spaceHeight,
                     screen);
             highlightWithColor(highlight, HighlightType.PAST_MOVE).draw(
-                    3+(this.getCol(this.data.lastMove.getStartPosition().getColumn()))*spaceWidth,
-                    (this.getRow(this.data.lastMove.getStartPosition().getRow()))*spaceHeight,
+                    3+(getCol(data.lastMove.getStartPosition().getColumn(), data))*spaceWidth,
+                    (getRow(data.lastMove.getStartPosition().getRow(), data))*spaceHeight,
                     screen);
         }
-        for(var move : this.data.highlightedPositions)
+        for(var move : data.highlightedPositions)
             highlightWithColor(highlight,
-                    (!(move instanceof EnPassantMove) && this.game.getBoard().getPiece(move.getEndPosition())==null)?
+                    (!(move instanceof EnPassantMove) && game.getBoard().getPiece(move.getEndPosition())==null)?
                             HighlightType.MOVE:
                             HighlightType.TAKE
                     ).draw(
-                            3+(this.getCol(move.getEndPosition().getColumn()))*spaceWidth,
-                            (this.getRow(move.getEndPosition().getRow()))*spaceHeight,
+                            3+(getCol(move.getEndPosition().getColumn(), data))*spaceWidth,
+                            (getRow(move.getEndPosition().getRow(), data))*spaceHeight,
                             screen);
-        if(this.data.highlightedOrigin.isValid())
+        if(data.highlightedOrigin.isValid())
             highlightWithColor(highlight, HighlightType.ORIGIN)
                     .draw(
-                            3+(this.getCol(this.data.highlightedOrigin.getColumn()))*spaceWidth,
-                            (this.getRow(this.data.highlightedOrigin.getRow()))*spaceHeight,
+                            3+(getCol(data.highlightedOrigin.getColumn(), data))*spaceWidth,
+                            (getRow(data.highlightedOrigin.getRow(), data))*spaceHeight,
                             screen);
 
         for(int i=0;i<8;i++){
@@ -341,9 +330,9 @@ public class ChessRenderer extends Renderable {
             }
 
             Renderable.overlayPixel(1, 1+i*spaceHeight,
-                    new Pixel(Character.forDigit((this.data.facingWhite?8-i:i+1),10), null), screen);
+                    new Pixel(Character.forDigit((data.facingWhite?8-i:i+1),10), null), screen);
             Renderable.overlayPixel(3+spaceWidth/2+i*spaceWidth, spaceHeight*8,
-                    new Pixel((char)(this.data.facingWhite?('a'+i):('h'-i)), null), screen);
+                    new Pixel((char)(data.facingWhite?('a'+i):('h'-i)), null), screen);
         }
 
         String toPrint;

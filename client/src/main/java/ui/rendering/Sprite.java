@@ -11,6 +11,7 @@ public class Sprite {
             this.pixels = pixels;
         }
         public static Builder fromStr(String string, boolean removeSpaces){
+            if(string==null||string.isEmpty()) return Sprite.Builder.fromDims(0,0);
             var lines = string.split("\n");
             return new Builder(Arrays.stream(lines).map(line->
                     Arrays.stream(line.split("")).map(chr->
@@ -39,7 +40,7 @@ public class Sprite {
             Pixel[][] pixels = new Pixel[h][w];
             for(int y=0;y<h;y++)
                 for(int x=0;x<w;x++)
-                    pixels[y][x]=new Pixel((char)0, Config.Palette.NULL);
+                    pixels[y][x]=new Pixel((char)0, null);
             return new Builder(pixels);
         }
         public Builder withFGColor(Color color){

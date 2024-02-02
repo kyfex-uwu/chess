@@ -5,6 +5,7 @@ import chess.specialmoves.EnPassantMove;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.function.Function;
@@ -126,10 +127,16 @@ public class Json {
     }
 
     //-- ChessPosition
+    public static ChessPosition deserializeChessPosition(String str) throws ParseException{
+        try{
+            return new ChessPosition(str.charAt(0)-'a'+1, str.charAt(1)-'1'+1);
+        }catch(Exception e){
+            throw new ParseException(str+" could not parse", 0);
+        }
+    }
     public static ChessPosition deserializeChessPosition(JsonPrimitive obj) throws JsonParseException {
         try{
-            var str=obj.getAsString();
-            return new ChessPosition('a'-str.charAt(0)+1, '1'-str.charAt(2)+1);
+            return deserializeChessPosition(obj.getAsString());
         }catch(Exception e){
             throw new JsonParseException(e);
         }

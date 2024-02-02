@@ -2,10 +2,10 @@ package ui;
 
 import ui.rendering.Color;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.Writer;
+import java.util.*;
 
 public class Config {
     public static Config getInst() { return inst; }
@@ -28,6 +28,45 @@ public class Config {
     public static boolean displayBig(){ return inst.displayBig; }
     public final String currPalette;
     public static String currPalette(){ return inst.currPalette; }
+
+    public static void init() {
+        Config.setInst(Config.dfault);
+        try {
+            FileInputStream propsInput = new FileInputStream(Main.configFileName);
+            Properties prop = new Properties();
+            prop.load(propsInput);
+
+            var newConfig = new Config.Builder();
+            newConfig.screenWidth = Math.max(Integer.parseInt(prop.getProperty("screenWidth")), 90);
+            newConfig.screenHeight = Math.max(Integer.parseInt(prop.getProperty("screenHeight")), 25);
+            newConfig.displayBig = Boolean.parseBoolean(prop.getProperty("displayBig"));
+            newConfig.currPalette = prop.getProperty("currPalette");
+            if(newConfig.currPalette==null) newConfig.currPalette="Default";
+            Config.setInst(newConfig.build());
+        }catch(Exception e){
+            Config.setInst(Config.dfault);
+        }
+    }
+    public static boolean save(){
+        try {
+            Properties prop = new Properties();
+            try {
+                FileInputStream propsInput = new FileInputStream(Main.configFileName);
+                prop.load(propsInput);
+            }catch(Exception ignored){} //todo: replace this with a check
+
+            try (Writer inputStream = new FileWriter(Main.configFileName)) {
+                prop.setProperty("screenWidth", String.valueOf(inst.screenWidth));
+                prop.setProperty("screenHeight", String.valueOf(inst.screenHeight));
+                prop.setProperty("displayBig", String.valueOf(inst.displayBig));
+                prop.setProperty("currPalette", inst.currPalette);
+
+                prop.store(inputStream, "v1");
+            }
+
+            return true;
+        }catch(Exception e){ return false; }
+    }
 
     public static class Builder{
         public int screenWidth;
@@ -52,7 +91,6 @@ public class Config {
     }
 
     public static class Palette{
-        public static final Color NULL = new Color(0,0,0);
         public static Color BG_MAIN;
         public static Color BG_CHECKER;
         public static Color BG_OUTLINE;

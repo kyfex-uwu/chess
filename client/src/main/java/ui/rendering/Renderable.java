@@ -7,13 +7,13 @@ import java.util.List;
 
 public abstract class Renderable {
     public static void overlayPixel(int x, int y, Pixel pixel, Pixel[][] screen){
-        if(y<0||y>=screen.length||x<0||x>=screen[y].length) return;
+        if(y<0||y>=screen.length||x<0||x>=screen[y].length||pixel==null) return;
 
         var old=screen[y][x];
         screen[y][x]=new Pixel(
                 pixel.character!=0?pixel.character:old.character,
-                pixel.fg!=null?pixel.fg:old.fg,
-                pixel.bg!=null?pixel.bg:old.bg
+                pixel.fg!=null?pixel.fg:old==null?null:old.fg,
+                pixel.bg!=null?pixel.bg:old==null?null:old.bg
         );
     }
     public static void render(List<Renderable> toRender){

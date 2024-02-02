@@ -5,6 +5,8 @@ import chess.ChessPosition;
 import chess.Json;
 import com.google.gson.JsonParser;
 import model.GameData;
+import ui.ArgConsumer;
+import ui.Config;
 import ui.Online;
 import ui.PlayData;
 import ui.rendering.Pixel;
@@ -14,6 +16,7 @@ import ui.rendering.renderable.Background;
 import ui.rendering.renderable.Nineslice;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class PlayMenuScene extends Scene{
     private ArrayList<GameData> games = new ArrayList<>();
@@ -43,7 +46,7 @@ public class PlayMenuScene extends Scene{
             @Override
             public void render(Pixel[][] screen) {
                 Nineslice.Style.PANEL.nineslice.render(screen,
-                        2, 1, 36, PlayMenuScene.this.games.size()+4);
+                        2, 1, 36, PlayMenuScene.this.games.size()+2);
                 Sprite.Builder.fromStr(String.join("\n",PlayMenuScene.this.games.stream().map(data->{
                     var toReturn = data.gameName;
 
@@ -62,14 +65,34 @@ public class PlayMenuScene extends Scene{
 
                     if(toReturn.length()>32) toReturn=toReturn.substring(0,29)+"...";
                     return toReturn;
-                }).toList())).build().draw(3,2,screen);
+                }).toList())).withFGColor(Config.Palette.BUTTON_TEXT).build().draw(3,2,screen);
+                Sprite.Builder.fromDims(1,PlayMenuScene.this.games.size())
+                        .withFGColor(Config.Palette.BUTTON_OUTLINE).build().draw(3,2,screen);
+
+                Nineslice.Style.PANEL.nineslice.render(screen, screen[0].length-18,screen.length-4,
+                        16,3,"Local Play");
             }
         });
         super.init();
     }
 
+    private final ArgConsumer consumer = new ArgConsumer(Map.of(
+            "back", args -> this.changeScene(new TitleScene()),
+            "localplay", args -> this.changeScene(new GameScene())
+    ),ArgConsumer.helpCommandMaker(
+            "back", "Returns to the title screen",
+            "localplay", "Starts a game locally"
+    ));
     @Override
     public void uninit() {
 
+    }
+
+    @Override
+    public void onLine(String[] args){
+        this.consumer.tryConsumeArgs(args);
+        if(this.consumer.shouldShowHelp) this.dialogMessage = this.consumer.helpCommand;
+        
+        super.onLine(args);
     }
 }

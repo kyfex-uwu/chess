@@ -6,6 +6,8 @@ import ui.rendering.scene.TitleScene;
 import java.util.*;
 
 public class Main {
+    static final String configFileName = "JACC_config";
+
     private static Scene currScene = new TitleScene();
     private static boolean quitBool=false;
     private static boolean rerender=false;
@@ -29,9 +31,10 @@ public class Main {
                 "(if you're on windows, try the command \"chcp 65001\", it temporarily enables unicode characters)\n" +
                 "Press Enter to start!");
 
-        Scanner scanner = new Scanner(System.in);
-        Config.setInst(Config.dfault);
+        Config.init();
+        PlayData.init();
 
+        Scanner scanner = new Scanner(System.in);
         currScene.init();
         while (true) {
             if(rerender){

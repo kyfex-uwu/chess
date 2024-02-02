@@ -119,7 +119,7 @@ public class ConfigScene extends Scene{
             "back", args -> this.changeScene(new TitleScene()),
             "save", args -> {
                 Config.setInst(this.unsavedConfig.build());
-                this.dialogMessage="Saved config";
+                this.dialogMessage=Config.save()?"Saved config":"Failed to save";
             },
             "reset", args -> {
                 Config.setInst(Config.dfault);
