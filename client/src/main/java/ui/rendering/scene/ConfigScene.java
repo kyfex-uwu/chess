@@ -38,7 +38,7 @@ public class ConfigScene extends Scene{
         try{
             var w = Integer.decode(wStr);
             var h = Integer.decode(hStr);
-            if(w>=90&&h>=25){
+            if(w>=120&&h>=29){
                 this.unsavedConfig.screenWidth=w;
                 this.unsavedConfig.screenHeight=h;
                 return true;
@@ -132,11 +132,23 @@ public class ConfigScene extends Scene{
                 }catch(Exception ignored){}
             },
             "palette", args -> {
-                try{
-                    if(Config.palettes.containsKey(args[0])){
-                        this.unsavedConfig.currPalette=args[0];
+                if(args.length==0){
+                    var names = Config.palettes.keySet();
+                    var namesString = "";
+                    int maxWidth = 0;
+                    for(var name : names) maxWidth = Math.max(maxWidth, name.length());
+                    int index=1;
+                    for(var name : names){
+                        namesString+=name;
+                        if(index%4!=0) namesString+=" ".repeat(maxWidth-name.length());
+                        else namesString+="\n";
+                        index++;
                     }
-                }catch(Exception ignored){}
+
+                    this.dialogMessage = "Set palette: 'palette [palette identifier]'\n"+namesString;
+                }else if(Config.palettes.containsKey(args[0])){
+                    this.unsavedConfig.currPalette=args[0];
+                }
             },
             "boardsize", args -> {
                 try{

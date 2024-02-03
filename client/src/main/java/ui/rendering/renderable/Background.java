@@ -2,7 +2,6 @@ package ui.rendering.renderable;
 
 import ui.Config;
 import ui.PlayData;
-import ui.rendering.PFPMaker;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.Sprite;

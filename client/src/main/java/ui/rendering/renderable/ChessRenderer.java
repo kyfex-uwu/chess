@@ -58,8 +58,8 @@ public class ChessRenderer {
              * @return this, for chaining
              */
             public Builder setPositions(Collection<ChessMove> movesToShow, ChessPosition positionToShow){
-                this.highlightedPositions = movesToShow;
-                this.highlightedOrigin =positionToShow;
+                this.highlightedPositions = movesToShow==null?Collections.emptySet():movesToShow;
+                this.highlightedOrigin = positionToShow==null?new ChessPosition(0,0):positionToShow;
                 return this;
             }
 
@@ -334,21 +334,5 @@ public class ChessRenderer {
             Renderable.overlayPixel(3+spaceWidth/2+i*spaceWidth, spaceHeight*8,
                     new Pixel((char)(data.facingWhite?('a'+i):('h'-i)), null), screen);
         }
-
-        String toPrint;
-        if(game.isInCheckmate(game.getTeamTurn())){
-            toPrint=" Checkmate! "+game.getTeamTurn().opposite()+" wins ";
-        }else if(game.isInStalemate(game.getTeamTurn())){
-            toPrint=" Stalemate ";
-        }else{
-            toPrint=" "+game.getTeamTurn() + "'s move ";
-            if(game.isInCheck(game.getTeamTurn()))
-                toPrint+="(Check) ";
-        }
-
-        Sprite.Builder.fromStr(toPrint, false)
-                .withFGColor(game.getTeamTurn().whiteOrBlack(Config.Palette.PIECE_WHITE, Config.Palette.PIECE_BLACK))
-                .withBGColor(game.getTeamTurn().whiteOrBlack(Config.Palette.BOARD_WHITE, Config.Palette.BOARD_BLACK))
-                .build().draw(1, spaceHeight*8+2, screen);
     }
 }

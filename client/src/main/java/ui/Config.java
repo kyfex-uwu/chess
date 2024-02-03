@@ -37,8 +37,8 @@ public class Config {
             prop.load(propsInput);
 
             var newConfig = new Config.Builder();
-            newConfig.screenWidth = Math.max(Integer.parseInt(prop.getProperty("screenWidth")), 90);
-            newConfig.screenHeight = Math.max(Integer.parseInt(prop.getProperty("screenHeight")), 25);
+            newConfig.screenWidth = Math.max(Integer.parseInt(prop.getProperty("screenWidth")), 120);
+            newConfig.screenHeight = Math.max(Integer.parseInt(prop.getProperty("screenHeight")), 29);
             newConfig.displayBig = Boolean.parseBoolean(prop.getProperty("displayBig"));
             newConfig.currPalette = prop.getProperty("currPalette");
             if(newConfig.currPalette==null) newConfig.currPalette="Default";
@@ -61,7 +61,7 @@ public class Config {
                 prop.setProperty("displayBig", String.valueOf(inst.displayBig));
                 prop.setProperty("currPalette", inst.currPalette);
 
-                prop.store(inputStream, "v1");
+                prop.store(inputStream, Main.confingVer);
             }
 
             return true;
@@ -107,6 +107,7 @@ public class Config {
         public static Color BOARD_BLACK;
         public static Color PIECE_WHITE;
         public static Color PIECE_BLACK;
+        public static Color BOARD_TEXT;
 
         private final Color[] colors;
         public Palette(Color... colors){ this.colors=colors; }
@@ -129,6 +130,7 @@ public class Config {
             BOARD_BLACK = this.colors[x]; x++;
             PIECE_WHITE = this.colors[x]; x++;
             PIECE_BLACK = this.colors[x]; x++;
+            BOARD_TEXT = this.colors[x]; x++;
         }
 
         private static final ArrayList<Runnable> paletteChangeConsumers = new ArrayList<>();
@@ -160,6 +162,7 @@ public class Config {
         BOARD_BLACK
         PIECE_WHITE
         PIECE_BLACK
+        BOARD_TEXT
          */
         palettes.put("Default", new Palette(
                 new Color(20,20,20),
@@ -181,7 +184,8 @@ public class Config {
                 new Color(107, 81, 66),
                 new Color(77, 56, 44),
                 new Color(255,255,255),
-                new Color(0,0,0)
+                new Color(0,0,0),
+                new Color(200, 200, 200)
         ));
         palettes.put("Light", new Palette(
                 new Color(125,120,130),
@@ -204,7 +208,8 @@ public class Config {
                 new Color(73,52,94),
 
                 new Color(255,255,255),
-                new Color(32, 32, 32)
+                new Color(32, 32, 32),
+                new Color(255,255,255)
         ));
     }
 }

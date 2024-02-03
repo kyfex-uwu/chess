@@ -7,6 +7,7 @@ import java.util.*;
 
 public class Main {
     static final String configFileName = "JACC_config";
+    static final String confingVer = "v1";
 
     private static Scene currScene = new TitleScene();
     private static boolean quitBool=false;

@@ -78,7 +78,10 @@ public class PlayMenuScene extends Scene{
 
     private final ArgConsumer consumer = new ArgConsumer(Map.of(
             "back", args -> this.changeScene(new TitleScene()),
-            "localplay", args -> this.changeScene(new GameScene())
+            "localplay", args ->{
+                this.changeScene(new GameScene(new GameData(-1, "Local Game"),
+                        "Ooga", "Booga", false));
+            }
     ),ArgConsumer.helpCommandMaker(
             "back", "Returns to the title screen",
             "localplay", "Starts a game locally"

@@ -48,7 +48,7 @@ public class PlayData {
                 prop.setProperty("token", currAuth.authToken());
                 prop.setProperty("username", currAuth.username());
 
-                prop.store(inputStream, "v1");
+                prop.store(inputStream, Main.confingVer);
             }
         }catch(Exception ignored){ }
     }

@@ -1,4 +1,4 @@
-package ui.rendering;
+package ui.rendering.renderable;
 
 import ui.rendering.Color;
 import ui.rendering.Pixel;

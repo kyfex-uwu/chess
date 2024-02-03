@@ -129,7 +129,7 @@ public class Json {
     //-- ChessPosition
     public static ChessPosition deserializeChessPosition(String str) throws ParseException{
         try{
-            return new ChessPosition(str.charAt(0)-'a'+1, str.charAt(1)-'1'+1);
+            return new ChessPosition(str.charAt(1)-'1'+1, str.charAt(0)-'a'+1);
         }catch(Exception e){
             throw new ParseException(str+" could not parse", 0);
         }
