@@ -52,18 +52,25 @@ public class Online {
     }
     public static <T extends Data> Response<T> request(ReqMethod method, String endpoint,
                                                        Data toSend, Class<T> expectedType){
+        return request(method, endpoint, Json.GSON.toJson(toSend), expectedType);
+    }
+    public static Response<String> request(ReqMethod method, String endpoint, Data toSend){
+        return request(method, endpoint, Json.GSON.toJson(toSend));
+    }
+    public static <T extends Data> Response<T> request(ReqMethod method, String endpoint,
+                                                       String toSend, Class<T> expectedType){
         var toReturn = request(method, endpoint, toSend);
         if(toReturn.data!=null){
             try{
                 return new Response<>(Json.GSON.fromJson(toReturn.data, expectedType));
             }catch(Exception e){
-                return new Response<>(new Response.ErrorMessage("Could not process server error"));
+                return new Response<>(new Response.ErrorMessage("Could not parse server response json"));
             }
         }else{
             return new Response<>(toReturn.errorMessage);
         }
     }
-    public static Response<String> request(ReqMethod method, String endpoint, Data toSend){
+    public static Response<String> request(ReqMethod method, String endpoint, String toSend){
         if(method==ReqMethod.GET&&toSend!=null){
             System.out.println("you cant get with body bozo");
             new Exception().printStackTrace();
@@ -80,7 +87,7 @@ public class Online {
 
             if(toSend!=null)
                 try (var outputStream = connection.getOutputStream()) {
-                    outputStream.write(Json.GSON.toJson(toSend).getBytes());
+                    outputStream.write(toSend.getBytes());
                 }
 
             // Make the request
@@ -93,16 +100,16 @@ public class Online {
                             Response.ErrorMessage.class));
                 }catch(Exception ignored){}
 
-                return new Response<>(new Response.ErrorMessage("Could not process server error"));
+                return new Response<>(new Response.ErrorMessage("Could not parse server error json"));
             }
 
             // Output the response body
             try (InputStream respBody = connection.getInputStream()) {
                 try{
-                    return new Response<>( new String(respBody.readAllBytes()));
+                    return new Response<>(new String(respBody.readAllBytes()));
                 }catch(Exception ignored){}
 
-                return new Response<>(new Response.ErrorMessage("Could not parse server response"));
+                return new Response<>(new Response.ErrorMessage("Could not parse server response string"));
             }
         }catch(Exception e){
             e.printStackTrace();

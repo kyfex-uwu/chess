@@ -85,7 +85,7 @@ public class RegisterScene extends Scene{
                         .ifSuccess(authData -> {
                             PlayData.currAuth = authData;
                             Online.request(Online.ReqMethod.GET, "user/"+RegisterScene.this.username,
-                                            null, UserData.class)
+                                            (String)null, UserData.class)
                                     .ifSuccess(userData -> {
                                         PlayData.selfData = userData;
                                         RegisterScene.this.dialogMessage = "Registered and logged in!";

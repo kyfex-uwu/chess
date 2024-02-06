@@ -28,7 +28,7 @@ public class PlayData {
 
             currAuth = new AuthData(token, username);
             Online.request(Online.ReqMethod.GET, "user/"+username,
-                            null, UserData.class)
+                            (String)null, UserData.class)
                     .ifSuccess(userData -> {
                         selfData = userData;
                     }).ifError(error -> {
@@ -44,9 +44,10 @@ public class PlayData {
                 prop.load(propsInput);
             }catch(Exception ignored){} //todo: replace this with a check
 
+
             try (Writer inputStream = new FileWriter(Main.configFileName)) {
-                prop.setProperty("token", currAuth.authToken());
-                prop.setProperty("username", currAuth.username());
+                prop.setProperty("token", currAuth==null?null:currAuth.authToken());
+                prop.setProperty("username", currAuth==null?null:currAuth.username());
 
                 prop.store(inputStream, Main.confingVer);
             }

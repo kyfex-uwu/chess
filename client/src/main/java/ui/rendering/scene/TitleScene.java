@@ -203,10 +203,11 @@ public class TitleScene extends Scene{
             },
             "logout", args -> {
                 if(PlayData.loggedIn())
-                    Online.request(Online.ReqMethod.DELETE, "session", null, Online.EmptyData.class)
+                    Online.request(Online.ReqMethod.DELETE, "session", (String)null, Online.EmptyData.class)
                             .ifSuccess(e->{
                                 PlayData.selfData=null;
                                 PlayData.currAuth=null;
+                                PlayData.save();
                                 TitleScene.this.changeScene(new TitleScene());
                             }).ifError(errorMessage -> {
                                 TitleScene.this.dialogMessage = "Error: failed to log out";

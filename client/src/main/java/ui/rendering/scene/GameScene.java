@@ -24,6 +24,9 @@ public class GameScene extends Scene{
     private final Sprite blackPFP;
     private boolean facingWhite;
     private final boolean stickInDirection;
+    public GameScene(GameData data){
+        this(data, "Player", "Player", true);
+    }
     public GameScene(GameData data, String player1, String player2, boolean stickInDirection){
         super();
         this.data=data;
@@ -38,6 +41,10 @@ public class GameScene extends Scene{
                     catch(ParseException e){ this.dialogMessage="Invalid end position"; }
 
                     Collection<ChessMove> moves=this.data.game.validMoves(start);
+                    if(moves==null){
+                        GameScene.this.dialogMessage="Illegal move";
+                        return;
+                    }
                     ChessPosition finalEnd = end;
                     var move = moves.stream().filter(maybeMove ->
                             maybeMove.getEndPosition().equals(finalEnd)).findFirst();
@@ -77,32 +84,33 @@ public class GameScene extends Scene{
                 this.facingWhite=true;
             }else{
                 Online.request(Online.ReqMethod.GET, "user/"+data.whiteUsername,
-                                null, UserData.class)
-                        .ifSuccess(userData -> {
-                            this.blackUser = userData;
-                        }).ifError(error -> {
-                            this.blackUser = new UserData("Opponent", "", "");
-                        });
-            }
-        }else{
-            this.whiteUser = new UserData(player1, "", "");
-        }
-        if(data.blackUsername!=null){
-            if(PlayData.selfData!=null&&data.blackUsername.equals(PlayData.selfData.username())){
-                this.blackUser=PlayData.selfData;
-                this.facingWhite=false;
-            }else{
-                Online.request(Online.ReqMethod.GET, "user/"+data.blackUsername,
-                                null, UserData.class)
+                                (String)null, UserData.class)
                         .ifSuccess(userData -> {
                             this.whiteUser = userData;
                         }).ifError(error -> {
                             this.whiteUser = new UserData("Opponent", "", "");
                         });
             }
-        }else{
-            this.blackUser = new UserData(player2, "", "");
         }
+
+        if(data.blackUsername!=null){
+            if(PlayData.selfData!=null&&data.blackUsername.equals(PlayData.selfData.username())){
+                this.blackUser=PlayData.selfData;
+                this.facingWhite=false;
+            }else{
+                Online.request(Online.ReqMethod.GET, "user/"+data.blackUsername,
+                                (String)null, UserData.class)
+                        .ifSuccess(userData -> {
+                            this.blackUser = userData;
+                        }).ifError(error -> {
+                            this.blackUser = new UserData("Opponent", "", "");
+                        });
+            }
+        }
+
+        if(this.whiteUser==null) this.whiteUser = new UserData(player1, "", "");
+        if(this.blackUser==null) this.blackUser = new UserData(player2, "", "");
+
         this.whitePFP = PFPMaker.pfpToSprite(this.whiteUser.pfp());
         this.blackPFP = PFPMaker.pfpToSprite(this.blackUser.pfp());
     }

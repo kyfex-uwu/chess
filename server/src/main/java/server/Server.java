@@ -120,7 +120,7 @@ public class Server {
             String gameName;
             try{
                 gameName=((JsonObject)body).get("gameName").getAsString();
-                if(!gameName.matches("[\\w ]{3,32}")) throw new Exception("too long");
+                if(!gameName.matches("[\\w ]{3,32}")) throw new Exception("wrong size");
             }catch(Exception e){
                 res.status(FailedResponse.BAD_REQ.status);
                 return ErrorMessage.error(FailedResponse.BAD_REQ.message);

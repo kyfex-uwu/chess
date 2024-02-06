@@ -70,8 +70,8 @@ public class LoginScene extends Scene{
                             PlayData.currAuth = authData;
                             LoginScene.this.dialogMessage = "Logged in!";
                             PlayData.save();
-                            Online.request(Online.ReqMethod.GET, "user/"+LoginScene.this.username,
-                                            null, UserData.class)
+                            Online.request(Online.ReqMethod.GET, "user"+LoginScene.this.username,
+                                            (String)null, UserData.class)
                                     .ifSuccess(userData -> {
                                         PlayData.selfData = userData;
                                     }).ifError(error -> {
