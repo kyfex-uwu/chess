@@ -25,9 +25,10 @@ public class GameScene extends Scene{
     private boolean facingWhite;
     private final boolean stickInDirection;
     public GameScene(GameData data){
-        this(data, "Player", "Player", true);
+        this(data, new UserData("Player","",""),
+                new UserData("Player","",""), true);
     }
-    public GameScene(GameData data, String player1, String player2, boolean stickInDirection){
+    public GameScene(GameData data, UserData player1, UserData player2, boolean stickInDirection){
         super();
         this.data=data;
 
@@ -108,8 +109,8 @@ public class GameScene extends Scene{
             }
         }
 
-        if(this.whiteUser==null) this.whiteUser = new UserData(player1, "", "");
-        if(this.blackUser==null) this.blackUser = new UserData(player2, "", "");
+        if(this.whiteUser==null) this.whiteUser = player1;
+        if(this.blackUser==null) this.blackUser = player2;
 
         this.whitePFP = PFPMaker.pfpToSprite(this.whiteUser.pfp());
         this.blackPFP = PFPMaker.pfpToSprite(this.blackUser.pfp());
@@ -142,6 +143,9 @@ public class GameScene extends Scene{
                 int startingY=(screen.length-lastY+1)/2;
                 Sprite.Builder.fromStr(GameScene.this.data.gameName).withFGColor(Config.Palette.BOARD_TEXT)
                         .build().draw(startingX, startingY-2, screen);
+                if(GameScene.this.data.gameID!=-1)
+                    Sprite.Builder.fromStr(GameScene.this.data.gameID+"").withFGColor(Config.Palette.BOARD_GRAY)
+                            .build().draw(startingX, startingY-1, screen);
                 for(int y=0;y<=lastY;y++) {
                     for (int x = 0; x<=lastX;x++){
                         Renderable.overlayPixel(startingX+x, startingY+y, tempScreen[y][x], screen);

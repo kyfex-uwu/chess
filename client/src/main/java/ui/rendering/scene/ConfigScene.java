@@ -9,7 +9,9 @@ import ui.rendering.Sprite;
 import ui.rendering.renderable.Background;
 import ui.rendering.renderable.Nineslice;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ConfigScene extends Scene{
     private static final Nineslice paletteNineslice = new Nineslice("""
@@ -106,6 +108,26 @@ public class ConfigScene extends Scene{
                         .build().draw(startingX+7, 7, screen);
                 Sprite.Builder.fromStr("Board\nSize").withFGColor(Config.Palette.BUTTON_TEXT).build()
                         .draw(startingX+2,6,screen);
+            }
+        });
+
+        this.toRender.add(new Renderable(100) {
+            @Override
+            public void render(Pixel[][] screen) {
+                if(ConfigScene.this.unsavedConfig.currPalette.equals(Config.currPalette())) return;
+
+                var newPalette = Config.palettes.get(ConfigScene.this.unsavedConfig.currPalette);
+                var currPalette = Config.palettes.get(Config.currPalette());
+                for (var row : screen) {
+                    for (var pixel : row) {
+                        for(int i=0;i<currPalette.colors.length;i++) {
+                            if (pixel.fg == currPalette.colors[i])
+                                pixel.fg = newPalette.colors[i];
+                            if(pixel.bg==currPalette.colors[i])
+                                pixel.bg = newPalette.colors[i];
+                        }
+                    }
+                }
             }
         });
     }

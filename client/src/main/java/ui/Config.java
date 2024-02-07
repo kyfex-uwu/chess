@@ -109,7 +109,7 @@ public class Config {
         public static Color PIECE_BLACK;
         public static Color BOARD_TEXT;
 
-        private final Color[] colors;
+        public final Color[] colors;
         public Palette(Color... colors){ this.colors=colors; }
         public void apply(){
             int x=0;
