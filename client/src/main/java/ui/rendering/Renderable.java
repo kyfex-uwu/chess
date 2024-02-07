@@ -20,7 +20,7 @@ public abstract class Renderable {
         render(Config.screenWidth(), Config.screenHeight(), toRender);
     }
     public static void render(int width, int height, List<Renderable> toRender){
-        System.out.print("\u001b[3J\u001b[2J\u001b[0;0H");
+        var toPrint = new StringBuilder("\u001b[3J\u001b[2J\u001b[0;0H");
 
         toRender.sort(Comparator.comparingInt(Renderable::getOrder));
 
@@ -34,12 +34,14 @@ public abstract class Renderable {
 
         for(var row : screen) {
             for (var pixel : row) {
-                if(pixel.fg!=null) System.out.print("\u001b[38;2;"+pixel.fg.r+";"+pixel.fg.g+";"+pixel.fg.b+"m");
-                if(pixel.bg!=null) System.out.print("\u001b[48;2;"+pixel.bg.r+";"+pixel.bg.g+";"+pixel.bg.b+"m");
-                System.out.print(pixel.character+"\u001b[0m");
+                if(pixel.fg!=null) toPrint.append("\u001b[38;2;"+pixel.fg.r+";"+pixel.fg.g+";"+pixel.fg.b+"m");
+                if(pixel.bg!=null) toPrint.append("\u001b[48;2;"+pixel.bg.r+";"+pixel.bg.g+";"+pixel.bg.b+"m");
+                toPrint.append(pixel.character+"\u001b[0m");
             }
-            System.out.println("\u001b[0m");
+            toPrint.append("\u001b[0m\n");
         }
+
+        System.out.print(toPrint);
     }
 
     //--

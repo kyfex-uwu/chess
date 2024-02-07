@@ -35,7 +35,7 @@ public class PlayMenuScene extends Scene{
             public void render(Pixel[][] screen) {
                 Nineslice.Style.PANEL.nineslice.render(screen,
                         2, 1, 36, PlayMenuScene.this.myGames.size()+2);
-                Sprite.Builder.fromStr(String.join((CharSequence) "\n",PlayMenuScene.this.myGames.stream().map(data->{
+                Sprite.Builder.fromStr(String.join("\n",PlayMenuScene.this.myGames.stream().map(data->{
                     var toReturn = data.gameName;
 
                     ChessGame.TeamColor myTeam=null;
@@ -358,10 +358,20 @@ public class PlayMenuScene extends Scene{
             "join", args -> {
                 if(args.length==0) return;
                 try{
-                    int index=this.browsingIndex+Integer.parseInt(args[1],36);
+                    int index=this.browsingIndex+Integer.parseInt(args[0],36);
                     if(index<0||index>=this.browsableGames.size()) return;
 
-                    //this.browsableGames.get(index)
+                    var game = this.browsableGames.get(index);
+                    Online.request(Online.ReqMethod.PUT, "game",
+                            new JoinGameData(game.whiteUsername==null?"WHITE":"BLACK", game.gameID))
+                            .ifSuccess(s -> {
+                                if(game.whiteUsername==null) game.whiteUsername = PlayData.selfData.username();
+                                else game.blackUsername = PlayData.selfData.username();
+
+                                this.changeScene(new GameScene(game));
+                            }).ifError(errorMessage -> {
+                                PlayMenuScene.this.dialogMessage="Could not join game";
+                            });
                 }catch(Exception ignored){}
             }
     ),ArgConsumer.helpCommandMaker(
