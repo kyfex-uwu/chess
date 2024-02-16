@@ -5,8 +5,6 @@ import chess.specialmoves.DoublePawnMove;
 import chess.specialmoves.EnPassantMove;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Represents a single chess piece

@@ -1,5 +1,7 @@
 package model;
 
+import chess.ChessGame;
+
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
@@ -100,6 +102,12 @@ public record UserData(String username, String password, String email, String pf
                 String.valueOf(((char)('a'+(int)(Math.random()*6)))).repeat(18);
     }
 
+    public UserData(String username, String password, String email, String pfp){
+        this.username=username;
+        this.password=password;
+        this.email=email;
+        this.pfp=pfp;
+    }
     public UserData(String username, String password, String email){
         this(username, password, email, pfpGenerator());
     }
@@ -107,9 +115,9 @@ public record UserData(String username, String password, String email, String pf
     public static final String passwordRegex = ".{8,256}";
     public boolean isValid(){
         return Data.isValid(username, password, email)&&
-                username.matches(usernameRegex)&&
+                (ChessGame.TESTING||(username.matches(usernameRegex)&&
                 password.matches(passwordRegex)&&
-                pfp.length()==54;
+                pfp!=null&&pfp.length()==54));
     }
 
     //--

@@ -8,7 +8,6 @@ import ui.rendering.Sprite;
 import ui.rendering.renderable.Background;
 import ui.rendering.renderable.Nineslice;
 
-import javax.swing.*;
 import java.util.Arrays;
 import java.util.Map;
 

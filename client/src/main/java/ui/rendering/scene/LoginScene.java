@@ -4,7 +4,6 @@ import model.AuthData;
 import model.LoginData;
 import model.UserData;
 import ui.ArgConsumer;
-import ui.Config;
 import ui.Online;
 import ui.PlayData;
 import ui.rendering.Pixel;

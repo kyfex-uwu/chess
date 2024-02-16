@@ -1,7 +1,5 @@
 package chess;
 
-import chess.specialmoves.CastleMove;
-import chess.specialmoves.EnPassantMove;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;

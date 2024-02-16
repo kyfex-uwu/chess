@@ -3,7 +3,7 @@ package ui;
 import ui.rendering.scene.Scene;
 import ui.rendering.scene.TitleScene;
 
-import java.util.*;
+import java.util.Scanner;
 
 public class Main {
     static final String configFileName = "JACC_config";

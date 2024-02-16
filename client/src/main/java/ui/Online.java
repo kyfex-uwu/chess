@@ -1,13 +1,11 @@
 package ui;
 
 import chess.Json;
-import com.google.gson.JsonParser;
 import model.Data;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.util.Base64;
 import java.util.function.Consumer;
 
 public class Online {

@@ -3,7 +3,6 @@ package ui;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import ui.rendering.scene.LoginScene;
 
 import java.io.FileInputStream;
 import java.io.FileWriter;

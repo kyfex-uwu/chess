@@ -5,7 +5,10 @@ import ui.rendering.Color;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class Config {
     public static Config getInst() { return inst; }
@@ -36,7 +39,7 @@ public class Config {
             Properties prop = new Properties();
             prop.load(propsInput);
 
-            var newConfig = new Config.Builder();
+            var newConfig = new Builder();
             newConfig.screenWidth = Math.max(Integer.parseInt(prop.getProperty("screenWidth")), 120);
             newConfig.screenHeight = Math.max(Integer.parseInt(prop.getProperty("screenHeight")), 29);
             newConfig.displayBig = Boolean.parseBoolean(prop.getProperty("displayBig"));

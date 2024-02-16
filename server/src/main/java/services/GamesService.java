@@ -1,14 +1,11 @@
 package services;
 
 import chess.ChessGame;
-import dataAccess.AuthDataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.GamesDataAccess;
 import model.GameData;
 import server.Server;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Optional;
 
 public class GamesService {

@@ -1,7 +1,5 @@
 package ui.rendering;
 
-import ui.Config;
-
 import java.util.Arrays;
 
 public class Sprite {
@@ -11,7 +9,7 @@ public class Sprite {
             this.pixels = pixels;
         }
         public static Builder fromStr(String string, boolean removeSpaces){
-            if(string==null||string.isEmpty()) return Sprite.Builder.fromDims(0,0);
+            if(string==null||string.isEmpty()) return Builder.fromDims(0,0);
             var lines = string.split("\n");
             return new Builder(Arrays.stream(lines).map(line->
                     Arrays.stream(line.split("")).map(chr->

@@ -1,9 +1,7 @@
 package dataAccess;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 public class DatabaseManager {
     private static final String databaseName;

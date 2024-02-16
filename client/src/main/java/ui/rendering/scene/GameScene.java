@@ -10,12 +10,13 @@ import ui.PlayData;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.Sprite;
-import ui.rendering.renderable.ChessRenderer;
 import ui.rendering.renderable.Background;
+import ui.rendering.renderable.ChessRenderer;
 import ui.rendering.renderable.PFPMaker;
 
 import java.text.ParseException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 
 public class GameScene extends Scene{
     private UserData whiteUser;

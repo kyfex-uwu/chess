@@ -1,7 +1,6 @@
 package passoffTests.chessTests.chessExtraCredit;
 
 import chess.*;
-import chess.specialmoves.CastleMove;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

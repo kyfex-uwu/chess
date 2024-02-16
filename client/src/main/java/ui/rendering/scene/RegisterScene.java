@@ -1,7 +1,6 @@
 package ui.rendering.scene;
 
 import model.AuthData;
-import model.LoginData;
 import model.UserData;
 import ui.ArgConsumer;
 import ui.Online;

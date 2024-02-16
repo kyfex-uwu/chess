@@ -10,7 +10,8 @@ import server.Server;
 import spark.Request;
 
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Base64;
+import java.util.Optional;
 
 public class AuthService {
     // https://stackoverflow.com/a/56628391/14000178

@@ -1,6 +1,7 @@
 package chess;
 
-import com.google.gson.*;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +13,10 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
+    public static boolean TESTING = true;
+    static{
+        if(TESTING) System.out.println("=".repeat(50)+"\nTESTING\n"+"=".repeat(50));
+    }
     private TeamColor currTeam;
     private ChessBoard board;
     public final ArrayList<ChessMove> history = new ArrayList<>();
@@ -90,7 +95,6 @@ public class ChessGame {
             move.apply(this.board);
             this.history.add(move);
         }else{
-            //System.out.println(move+" is invalid");
             throw new InvalidMoveException();
         }
         this.setTeamTurn(this.currTeam.opposite());

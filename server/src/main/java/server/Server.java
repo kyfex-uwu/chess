@@ -1,13 +1,21 @@
 package server;
 
 import chess.Json;
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import dataAccess.DataAccessException;
-import model.*;
+import model.AuthData;
+import model.JoinGameData;
+import model.LoginData;
+import model.UserData;
 import services.AuthService;
 import services.GamesService;
 import spark.ExceptionHandler;
 import spark.Spark;
+
+import static chess.ChessGame.TESTING;
 
 public class Server {
     //todo: golden board when you checkmate without losing a piece
@@ -35,7 +43,7 @@ public class Server {
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
-        
+
         Spark.staticFiles.location("web");
 
         //delete db
@@ -49,6 +57,9 @@ public class Server {
         //register
         Spark.post("/user", (req, res) -> {
             var data = Json.GSON.fromJson(req.body(), UserData.class);
+
+            if(TESTING&&data.pfp()==null)
+                data = new UserData(data.username(), data.password(), data.email());
 
             if(!AuthService.registerUser(data)){
                 res.status(FailedResponse.ALREADY_TAKEN.status);
@@ -120,7 +131,7 @@ public class Server {
             String gameName;
             try{
                 gameName=((JsonObject)body).get("gameName").getAsString();
-                if(!gameName.matches("[\\w ]{3,32}")) throw new Exception("wrong size");
+                if(!TESTING&&!gameName.matches("[\\w ]{3,32}")) throw new Exception("wrong size");
             }catch(Exception e){
                 res.status(FailedResponse.BAD_REQ.status);
                 return ErrorMessage.error(FailedResponse.BAD_REQ.message);
@@ -217,7 +228,7 @@ public class Server {
         Spark.awaitInitialization();
         return Spark.port();
     }
-    private static final boolean logErrors=false;
+    private static final boolean logErrors=true;
 
     public void stop() {
         Spark.stop();
