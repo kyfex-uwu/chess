@@ -13,7 +13,7 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
-    public static boolean TESTING = true;
+    public static boolean TESTING = false;
     static{
         if(TESTING) System.out.println("=".repeat(50)+"\nTESTING\n"+"=".repeat(50));
     }

@@ -46,6 +46,8 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
+        Spark.webSocket("/connect", WebsocketHandler.class);
+
         //delete db
         Spark.delete("/db", (req, res) -> {
             AuthService.clear();
@@ -161,9 +163,9 @@ public class Server {
                     res.status(gameJoin.get().status);
                     return ErrorMessage.error(gameJoin.get().message);
                 }
-            }else{//watching
-
             }
+
+            //watch
 
             res.status(200);
             return Json.jsonEmpty;

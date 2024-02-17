@@ -3,6 +3,7 @@ package ui.rendering.scene;
 import model.AuthData;
 import model.UserData;
 import ui.ArgConsumer;
+import ui.Config;
 import ui.Online;
 import ui.PlayData;
 import ui.rendering.Color;
@@ -87,6 +88,7 @@ public class RegisterScene extends Scene{
                                             (String)null, UserData.class)
                                     .ifSuccess(userData -> {
                                         PlayData.selfData = userData;
+                                        PlayData.save();
                                         RegisterScene.this.dialogMessage = "Registered and logged in!";
                                     }).
                                     ifError(error -> {

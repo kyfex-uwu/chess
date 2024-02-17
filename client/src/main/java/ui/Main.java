@@ -34,9 +34,11 @@ public class Main {
 
         Config.init();
         PlayData.init();
+        currScene.init();
 
         Scanner scanner = new Scanner(System.in);
-        currScene.init();
+        scanner.nextLine();
+        rerender=true;
         while (true) {
             if(rerender){
                 currScene.onLine(new String[0]);

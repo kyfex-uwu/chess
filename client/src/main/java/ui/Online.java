@@ -9,7 +9,8 @@ import java.net.URI;
 import java.util.function.Consumer;
 
 public class Online {
-    private static final String baseUrl = "http://localhost:6000/";
+    public static final String baseUrl = "localhost:6000/";
+    private static final String scheme = "http://";
     public enum ReqMethod{
         GET("GET"),
         POST("POST"),
@@ -75,7 +76,7 @@ public class Online {
         }
         try{
             // Specify the desired endpoint
-            URI uri = new URI(baseUrl+endpoint);
+            URI uri = new URI(scheme+baseUrl+endpoint);
             HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
 
             connection.setRequestMethod(method.method);

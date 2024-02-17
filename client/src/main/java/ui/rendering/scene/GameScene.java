@@ -3,10 +3,7 @@ package ui.rendering.scene;
 import chess.*;
 import model.GameData;
 import model.UserData;
-import ui.ArgConsumer;
-import ui.Config;
-import ui.Online;
-import ui.PlayData;
+import ui.*;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.Sprite;
@@ -29,7 +26,7 @@ public class GameScene extends Scene{
         this(data, new UserData("Player","",""),
                 new UserData("Player","",""), true);
     }
-    public GameScene(GameData data, UserData player1, UserData player2, boolean stickInDirection){
+    public GameScene(GameData data, UserData player1, UserData player2, boolean isOnline){
         super();
         this.data=data;
 
@@ -79,7 +76,7 @@ public class GameScene extends Scene{
                 "back", "Returns to the setup scene"
         ));
 
-        this.stickInDirection=stickInDirection;
+        this.stickInDirection=isOnline;
         if(data.whiteUsername!=null){
             if(PlayData.selfData!=null&&data.whiteUsername.equals(PlayData.selfData.username())) {
                 this.whiteUser = PlayData.selfData;
@@ -108,6 +105,11 @@ public class GameScene extends Scene{
                             this.blackUser = new UserData("Opponent", "", "");
                         });
             }
+        }
+
+        if(isOnline){
+            //websocket init
+            WebsocketManager.init();
         }
 
         if(this.whiteUser==null) this.whiteUser = player1;
