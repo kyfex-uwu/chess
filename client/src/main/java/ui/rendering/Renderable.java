@@ -29,7 +29,7 @@ public abstract class Renderable {
             for(int i=0;i<row.length;i++)
                 row[i]=new Pixel(' ');
 
-        for(var renderable : toRender)
+        for(var renderable : List.copyOf(toRender))
             renderable.render(screen);
 
         for(var row : screen) {

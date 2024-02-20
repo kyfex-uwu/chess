@@ -5,6 +5,7 @@ import model.GameData;
 import ui.rendering.scene.GameScene;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.IdentifyCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import javax.websocket.*;
@@ -19,9 +20,12 @@ public class WebsocketManager {
     public static WebsocketManager inst;
 
     public static boolean init(){
+        if(!PlayData.loggedIn()) return false;
+
         inst = null;
         try {
             inst = new WebsocketManager();
+            sendMessage(new IdentifyCommand(PlayData.currAuth.authToken()));
             return true;
         }catch(Exception e){
             return false;
@@ -71,8 +75,9 @@ public class WebsocketManager {
                 var scene = Main.getScene();
                 if(scene instanceof GameScene gameScene){
                     gameScene.data = new GameData(gameScene.data.gameID, gameScene.data.gameName,
-                            gameScene.data.whiteUsername, gameScene.data.blackUsername, loadGameMessage.game);
-                    Main.rerender();
+                            gameScene.data.whiteUsername, gameScene.data.blackUsername, gameScene.data.watchers,
+                            loadGameMessage.game);
+                    Main.getScene().onLine(new String[0]);
                 }
             }
         }

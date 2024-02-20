@@ -58,11 +58,20 @@ public class GamesService {
         if(username==null||username.isEmpty()) throw new Server.InvalidRequestException();
         return GamesDataAccess.getGamesWithUser(username);
     }
-    public static GameData getGameById(int id) throws DataAccessException {
-        return GamesDataAccess.getGame(id);
+    public static GameData getGameById(int id, boolean withWatchers) throws DataAccessException {
+        return GamesDataAccess.getGame(id, withWatchers);
     }
 
     public static void updateGame(int gameID, ChessGame game) throws DataAccessException{
         GamesDataAccess.updateGame(gameID, game);
+    }
+    public static Optional<Server.FailedResponse> watchGame(int gameID, String username)
+            throws DataAccessException{
+        if(username==null||username.isEmpty()) return Optional.of(Server.FailedResponse.BAD_REQ);
+        var game = GamesDataAccess.getGame(gameID);
+        if(game==null) return Optional.of(Server.FailedResponse.BAD_REQ);
+
+        GamesDataAccess.watchGame(gameID, username);
+        return Optional.empty();
     }
 }

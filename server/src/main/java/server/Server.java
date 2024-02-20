@@ -163,6 +163,12 @@ public class Server {
                     res.status(gameJoin.get().status);
                     return ErrorMessage.error(gameJoin.get().message);
                 }
+            }else{
+                var gameWatch = GamesService.watchGame(data.gameID(), username);
+                if (gameWatch.isPresent()) {
+                    res.status(gameWatch.get().status);
+                    return ErrorMessage.error(gameWatch.get().message);
+                }
             }
 
             //watch

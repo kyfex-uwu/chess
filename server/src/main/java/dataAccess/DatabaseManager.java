@@ -98,6 +98,7 @@ public class DatabaseManager {
                  `name` VARCHAR(32) NOT NULL,
                  `white` VARCHAR(16),
                  `black` VARCHAR(16),
+                 `watchers` LONGTEXT,
                  `game` JSON NOT NULL,
                  PRIMARY KEY (`gameID`),
                  UNIQUE INDEX `gameID_UNIQUE` (`gameID` ASC) VISIBLE);""");

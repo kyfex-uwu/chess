@@ -4,6 +4,7 @@ import chess.ChessGame;
 import model.GameData;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static chess.Json.GSON;
@@ -32,7 +33,8 @@ public class GamesDataAccess {
                 });
         if(result==0) throw new DataAccessException("no game found");
     }
-    public static GameData getGame(int id) throws DataAccessException{
+    public static GameData getGame(int id) throws DataAccessException{ return getGame(id, false); }
+    public static GameData getGame(int id, boolean withWatchers) throws DataAccessException{
         AtomicReference<GameData> toReturn = new AtomicReference<>();
         DatabaseManager.execQuery(
                 "SELECT * FROM games WHERE gameID=?", query->{
@@ -44,7 +46,8 @@ public class GamesDataAccess {
                             resultSet.getString(2),
                             resultSet.getString(3),
                             resultSet.getString(4),
-                            ChessGame.deserialize(resultSet.getString(5))
+                            withWatchers?resultSet.getString(4):"",
+                            ChessGame.deserialize(resultSet.getString(6))
                     ));
                 });
         return toReturn.get();
@@ -59,7 +62,8 @@ public class GamesDataAccess {
                                 resultSet.getString(2),
                                 resultSet.getString(3),
                                 resultSet.getString(4),
-                                ChessGame.deserialize(resultSet.getString(5))
+                                List.of(),
+                                ChessGame.deserialize(resultSet.getString(6))
                         );
                         games.add(currGame);
                     }
@@ -83,7 +87,8 @@ public class GamesDataAccess {
                                 resultSet.getString(2),
                                 resultSet.getString(3),
                                 resultSet.getString(4),
-                                ChessGame.deserialize(resultSet.getString(5))
+                                List.of(),
+                                ChessGame.deserialize(resultSet.getString(6))
                         );
                         games.add(currGame);
                     }
@@ -96,6 +101,23 @@ public class GamesDataAccess {
                 "UPDATE games SET game = ? WHERE gameID = ?", query->{
                     query.setString(1, GSON.toJson(game));
                     query.setInt(2, gameID);
+                });
+    }
+    public static void watchGame(int id, String username) throws DataAccessException{
+        if(username==null||username.isEmpty()) throw new DataAccessException("invalid username");
+
+        DatabaseManager.execQuery(
+                "SELECT watchers FROM games WHERE gameID = ?", query -> {
+                    query.setInt(1, id);
+                },resultSet -> {
+                    if(!resultSet.next()) throw new DataAccessException("no game found");
+
+                    var watchers = resultSet.getString(1);
+                    DatabaseManager.execStatement(
+                            "UPDATE games SET watchers=? WHERE gameID=?", query -> {
+                                query.setString(1, watchers+","+username);
+                                query.setInt(2, id);
+                            });
                 });
     }
 }
