@@ -69,7 +69,7 @@ public class WebsocketHandler {
                     send(connectedUsers.get(game.whiteUsername),toSend);
                     send(connectedUsers.get(game.blackUsername),toSend);
                     for(var username : game.watchers)
-                        send(connectedUsers.get(username),toSend);
+                        send(connectedUsers.get(username), toSend);
                 }catch(Exception e){
                     sendWithId(user, new ErrorMessage("something went wrong"), id);
                 }

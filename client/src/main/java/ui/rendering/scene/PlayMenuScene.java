@@ -39,12 +39,28 @@ public class PlayMenuScene extends Scene{
                     var toReturn = data.gameName;
 
                     ChessGame.TeamColor myTeam=null;
-                    if(data.whiteUsername!=null&&!data.whiteUsername.equals(PlayData.currAuth.username())){
-                        toReturn+=" vs " + data.whiteUsername;
-                        myTeam= ChessGame.TeamColor.BLACK;
-                    }else if(data.blackUsername!=null&&!data.blackUsername.equals(PlayData.currAuth.username())){
-                        toReturn+=" vs " + data.blackUsername;
-                        myTeam= ChessGame.TeamColor.WHITE;
+                    if(data.whiteUsername==null&&data.blackUsername!=null){
+                        if(data.blackUsername.equals(PlayData.currAuth.username())){
+                            myTeam = ChessGame.TeamColor.BLACK;
+                        }else{
+                            toReturn+=": "+data.blackUsername;
+                        }
+                    }else if(data.whiteUsername!=null&&data.blackUsername==null){
+                        if(data.whiteUsername.equals(PlayData.currAuth.username())){
+                            myTeam = ChessGame.TeamColor.WHITE;
+                        }else{
+                            toReturn+=": "+data.whiteUsername;
+                        }
+                    }else if(data.whiteUsername!=null&&data.blackUsername!=null){
+                        if(data.whiteUsername.equals(PlayData.currAuth.username())){
+                            myTeam = ChessGame.TeamColor.WHITE;
+                            toReturn+=" vs "+data.blackUsername;
+                        }else if(data.blackUsername.equals(PlayData.currAuth.username())){
+                            myTeam = ChessGame.TeamColor.BLACK;
+                            toReturn+=" vs "+data.whiteUsername;
+                        }else{
+                            toReturn+=": "+data.whiteUsername+" vs "+data.whiteUsername;
+                        }
                     }
 
                     if(data.game.getTeamTurn()==myTeam)
@@ -371,6 +387,22 @@ public class PlayMenuScene extends Scene{
                                 this.changeScene(new GameScene(game));
                             }).ifError(errorMessage -> {
                                 PlayMenuScene.this.dialogMessage="Could not join game";
+                            });
+                }catch(Exception ignored){}
+            },
+            "watch", args -> {
+                if(args.length==0) return;
+                try{
+                    int index=this.browsingIndex+Integer.parseInt(args[0],36);
+                    if(index<0||index>=this.browsableGames.size()) return;
+
+                    var game = this.browsableGames.get(index);
+                    Online.request(Online.ReqMethod.PUT, "game",
+                                    new JoinGameData("", game.gameID))
+                            .ifSuccess(s -> {
+                                this.changeScene(new GameScene(game));
+                            }).ifError(errorMessage -> {
+                                PlayMenuScene.this.dialogMessage="Could not watch game";
                             });
                 }catch(Exception ignored){}
             }

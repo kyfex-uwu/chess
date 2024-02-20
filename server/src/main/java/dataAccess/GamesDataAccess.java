@@ -16,7 +16,7 @@ public class GamesDataAccess {
     public static void createGame(int id, String name) throws DataAccessException{
         if(name==null||name.isEmpty()) throw new DataAccessException("invalid name");
         DatabaseManager.execStatement(
-                "INSERT INTO games (gameID, name, game) VALUES (?, ?, ?)", query->{
+                "INSERT INTO games (gameID, name, game, watchers) VALUES (?, ?, ?, ',')", query->{
                     query.setInt(1, id);
                     query.setString(2, name);
                     query.setString(3, GSON.toJsonTree(new ChessGame()).toString());
@@ -46,7 +46,7 @@ public class GamesDataAccess {
                             resultSet.getString(2),
                             resultSet.getString(3),
                             resultSet.getString(4),
-                            withWatchers?resultSet.getString(4):"",
+                            withWatchers?resultSet.getString(5):"",
                             ChessGame.deserialize(resultSet.getString(6))
                     ));
                 });
@@ -77,9 +77,10 @@ public class GamesDataAccess {
         if(username==null||username.isEmpty()) throw new DataAccessException("invalid username");
         ArrayList<GameData> games = new ArrayList<>();
         DatabaseManager.execQuery(
-                "SELECT * FROM games WHERE white=? OR black=?", query->{
+                "SELECT * FROM games WHERE white=? OR black=? OR watchers LIKE ?", query->{
                     query.setString(1, username);
                     query.setString(2, username);
+                    query.setString(3, "%,"+username+",%");
                 },resultSet -> {
                     while(resultSet.next()){
                         var currGame = new GameData(
