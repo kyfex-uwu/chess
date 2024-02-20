@@ -13,6 +13,7 @@ public class Main {
     private static boolean quitBool=false;
     private static boolean rerender=false;
 
+    public static Scene getScene(){ return currScene; }
     public static void changeScene(Scene newScene){
         currScene.uninit();
         newScene.init();

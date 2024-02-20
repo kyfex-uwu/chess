@@ -1,8 +1,12 @@
 package server;
 
+import chess.InvalidMoveException;
 import chess.Json;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
+import services.GamesService;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.serverMessages.SuccessMessage;
 import webSocketMessages.userCommands.MakeMoveCommand;
@@ -10,7 +14,6 @@ import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 
 @WebSocket
 public class WebsocketHandler {
@@ -26,19 +29,37 @@ public class WebsocketHandler {
 
     @OnWebSocketMessage
     public void onMessage(Session user, String message) throws IOException {
-        System.out.println(message);
         var values=Json.GSON.fromJson(message, Map.class);
         var type = UserGameCommand.CommandType.valueOf(values.get("commandType").toString());
         var messageObj = Json.GSON.fromJson(message, type.clazz);
 
-        Optional.of(values.get("_messageID").toString()).ifPresentOrElse(id -> {
+        var idObj = values.get("_messageID");
+        if(idObj!=null){
+            int id = Integer.parseInt(idObj.toString());
             if(messageObj instanceof MakeMoveCommand makeMoveObj){
+                try {
+                    var game = GamesService.getGameById(makeMoveObj.gameID);
+                    if(game==null){
+                        sendWithId(user, new ErrorMessage("game not found"), id);
+                        return;
+                    }
 
-                sendWithId(user, new SuccessMessage(true), Integer.parseInt(id));
+                    try {
+                        game.game.makeMove(makeMoveObj.move);
+                        GamesService.updateGame(makeMoveObj.gameID, game.game);
+                    }catch(InvalidMoveException e){
+                        sendWithId(user, new ErrorMessage("invalid move"), id);
+                    }
+
+                    sendWithId(user, new SuccessMessage(true), id);
+                    send(user, new LoadGameMessage(game.game));
+                }catch(Exception e){
+                    sendWithId(user, new ErrorMessage("something went wrong"), id);
+                }
             }
-        }, ()->{
-            //process
-        });
+        }else{
+
+        }
     }
 
     @OnWebSocketError
@@ -46,9 +67,12 @@ public class WebsocketHandler {
 
     }
 
+    private static void send(Session user, ServerMessage message){
+        try{ user.getRemote().sendString(Json.GSON.toJsonTree(message).toString()); }catch(Exception e){ }
+    }
     private static void sendWithId(Session user, ServerMessage message, int id){
         var toSend = Json.GSON.toJsonTree(message);
         toSend.getAsJsonObject().addProperty("_messageID", String.valueOf(id));
-        try{ user.getRemote().sendString(toSend.toString()); }catch(Exception ignored){}
+        try{ user.getRemote().sendString(toSend.toString()); }catch(Exception e){ }
     }
 }

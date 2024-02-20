@@ -32,6 +32,7 @@ public class GameScene extends Scene{
     public GameScene(GameData data, UserData player1, UserData player2, boolean isOnline){
         super();
         this.data=data;
+        this.isOnline=isOnline;
 
         this.consumer = new ArgConsumer(Map.of(
                 "move", args -> {
@@ -42,6 +43,11 @@ public class GameScene extends Scene{
                     try{ end = Json.deserializeChessPosition(args[1]); }
                     catch(ParseException e){ this.dialogMessage="Invalid end position"; }
 
+                    if(this.isOnline&&!this.data.game.getTeamTurn().whiteOrBlack(whiteUser,blackUser).username()
+                            .equals(PlayData.selfData.username())){
+                        GameScene.this.dialogMessage="Not your turn";
+                        return;
+                    }
                     Collection<ChessMove> moves=this.data.game.validMoves(start);
                     if(moves==null){
                         GameScene.this.dialogMessage="Illegal move";
@@ -87,7 +93,6 @@ public class GameScene extends Scene{
                 "back", "Returns to the setup scene"
         ));
 
-        this.isOnline=isOnline;
         if(data.whiteUsername!=null){
             if(PlayData.selfData!=null&&data.whiteUsername.equals(PlayData.selfData.username())) {
                 this.whiteUser = PlayData.selfData;
@@ -128,7 +133,7 @@ public class GameScene extends Scene{
         this.whitePFP = PFPMaker.pfpToSprite(this.whiteUser.pfp());
         this.blackPFP = PFPMaker.pfpToSprite(this.blackUser.pfp());
     }
-    private final GameData data;
+    public GameData data;
 
     private ChessRenderer.RenderData.Builder builder = new ChessRenderer.RenderData.Builder();
     @Override

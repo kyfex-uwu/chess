@@ -90,4 +90,12 @@ public class GamesDataAccess {
                 });
         return games.toArray(new GameData[0]);
     }
+
+    public static void updateGame(int gameID, ChessGame game) throws DataAccessException {
+        DatabaseManager.execStatement(
+                "UPDATE games SET game = ? WHERE gameID = ?", query->{
+                    query.setString(1, GSON.toJson(game));
+                    query.setInt(2, gameID);
+                });
+    }
 }

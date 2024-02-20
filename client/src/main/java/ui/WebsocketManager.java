@@ -1,6 +1,9 @@
 package ui;
 
 import chess.Json;
+import model.GameData;
+import ui.rendering.scene.GameScene;
+import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.UserGameCommand;
 
@@ -8,7 +11,6 @@ import javax.websocket.*;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 @ClientEndpoint
@@ -58,13 +60,22 @@ public class WebsocketManager {
                 values.get("serverMessageType").toString());
         var messageObj = Json.GSON.fromJson(message, type.clazz);
 
-        Optional.of(values.get("_messageID").toString()).ifPresentOrElse(id -> {
-            var waitingMessage = waitingMessages.get(Integer.valueOf(id));
+        var idObj = values.get("_messageID");
+        if(idObj!=null){
+            int id = Integer.parseInt(idObj.toString());
+            var waitingMessage = waitingMessages.get(id);
             waitingMessage.message = messageObj;
             waitingMessage.lock.countDown();
-        }, ()->{
-            //process
-        });
+        }else{
+            if(messageObj instanceof LoadGameMessage loadGameMessage){
+                var scene = Main.getScene();
+                if(scene instanceof GameScene gameScene){
+                    gameScene.data = new GameData(gameScene.data.gameID, gameScene.data.gameName,
+                            gameScene.data.whiteUsername, gameScene.data.blackUsername, loadGameMessage.game);
+                    Main.rerender();
+                }
+            }
+        }
     }
 
     //--

@@ -58,4 +58,11 @@ public class GamesService {
         if(username==null||username.isEmpty()) throw new Server.InvalidRequestException();
         return GamesDataAccess.getGamesWithUser(username);
     }
+    public static GameData getGameById(int id) throws DataAccessException {
+        return GamesDataAccess.getGame(id);
+    }
+
+    public static void updateGame(int gameID, ChessGame game) throws DataAccessException{
+        GamesDataAccess.updateGame(gameID, game);
+    }
 }
