@@ -10,10 +10,13 @@ import ui.rendering.Sprite;
 import ui.rendering.renderable.Background;
 import ui.rendering.renderable.ChessRenderer;
 import ui.rendering.renderable.PFPMaker;
+import webSocketMessages.serverMessages.SuccessMessage;
+import webSocketMessages.userCommands.MakeMoveCommand;
 
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 public class GameScene extends Scene{
     private UserData whiteUser;
@@ -21,7 +24,7 @@ public class GameScene extends Scene{
     private final Sprite whitePFP;
     private final Sprite blackPFP;
     private boolean facingWhite;
-    private final boolean stickInDirection;
+    private final boolean isOnline;
     public GameScene(GameData data){
         this(data, new UserData("Player","",""),
                 new UserData("Player","",""), true);
@@ -49,6 +52,14 @@ public class GameScene extends Scene{
                             maybeMove.getEndPosition().equals(finalEnd)).findFirst();
 
                     try{
+                        if(GameScene.this.isOnline&&move.isPresent()){
+                            var canMove = WebsocketManager.sendMessageWithResponse(
+                                    new MakeMoveCommand(PlayData.currAuth.authToken(), this.data.gameID, move.get()));
+
+                            if(!(canMove instanceof SuccessMessage successMessage) || !successMessage.success)
+                                move = Optional.empty();
+                        }
+
                         if (move.isPresent()) {
                             this.builder.setPositions(null, null);
                             this.data.game.makeMove(move.get());
@@ -76,7 +87,7 @@ public class GameScene extends Scene{
                 "back", "Returns to the setup scene"
         ));
 
-        this.stickInDirection=isOnline;
+        this.isOnline=isOnline;
         if(data.whiteUsername!=null){
             if(PlayData.selfData!=null&&data.whiteUsername.equals(PlayData.selfData.username())) {
                 this.whiteUser = PlayData.selfData;
@@ -108,7 +119,6 @@ public class GameScene extends Scene{
         }
 
         if(isOnline){
-            //websocket init
             WebsocketManager.init();
         }
 
@@ -216,7 +226,7 @@ public class GameScene extends Scene{
         this.consumer.tryConsumeArgs(args);
         if(this.consumer.shouldShowHelp) this.dialogMessage = this.consumer.helpCommand;
 
-        if(!this.stickInDirection) this.facingWhite = this.data.game.getTeamTurn()==ChessGame.TeamColor.WHITE;
+        if(!this.isOnline) this.facingWhite = this.data.game.getTeamTurn()==ChessGame.TeamColor.WHITE;
         this.builder.facingWhite(this.facingWhite);
 
         super.onLine(args);

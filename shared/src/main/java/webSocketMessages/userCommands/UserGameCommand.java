@@ -15,11 +15,16 @@ public class UserGameCommand {
     }
 
     public enum CommandType {
-        JOIN_PLAYER,
-        JOIN_OBSERVER,
-        MAKE_MOVE,
-        LEAVE,
-        RESIGN
+        JOIN_PLAYER(JoinAsPlayerCommand.class),
+        JOIN_OBSERVER(JoinAsObserverCommand.class),
+        MAKE_MOVE(MakeMoveCommand.class),
+        LEAVE(LeaveGameCommand.class),
+        RESIGN(ResignCommand.class);
+
+        public final Class<? extends UserGameCommand> clazz;
+        CommandType(Class<? extends UserGameCommand> clazz){
+            this.clazz=clazz;
+        }
     }
 
     protected CommandType commandType;

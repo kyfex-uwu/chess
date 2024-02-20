@@ -15,6 +15,7 @@ public class Json {
             .registerTypeAdapter(ChessBoard.class, new ChessBoardSerializer())
             .registerTypeAdapter(ChessBoard.class, new ChessBoardDeserializer())
             .registerTypeAdapter(ChessMove.class, new ChessMoveSerializer())
+            .registerTypeAdapter(ChessMove.class, new ChessMoveDeserializer())
             .registerTypeAdapter(ChessPosition.class, new ChessPosSerializer())
             .create();
 
@@ -102,19 +103,23 @@ public class Json {
 
     //-- ChessMove
     public static final HashMap<String, Function<String[], ChessMove>> specialMoveDeserializers = new HashMap<>();
-    public static ChessMove deserializeChessMove(JsonPrimitive obj) throws JsonParseException {
-        try{
-            var components = obj.getAsString().split(" ");
-            if(components[0].startsWith("s")){
-                return specialMoveDeserializers.get(components[0].substring(1)).apply(components);
-            }
+    private static class ChessMoveDeserializer implements JsonDeserializer<ChessMove>{
 
-            return new ChessMove(
-                    deserializeChessPosition(new JsonPrimitive(components[0])),
-                    deserializeChessPosition(new JsonPrimitive(components[1])),
-                    components.length==3?ChessPiece.PieceType.getType(components[2].charAt(0)):null);
-        }catch(Exception e){
-            throw new JsonParseException(e);
+        @Override
+        public ChessMove deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            try{
+                var components = jsonElement.getAsString().split(" ");
+                if(components[0].startsWith("s")){
+                    return specialMoveDeserializers.get(components[0].substring(1)).apply(components);
+                }
+
+                return new ChessMove(
+                        deserializeChessPosition(new JsonPrimitive(components[0])),
+                        deserializeChessPosition(new JsonPrimitive(components[1])),
+                        components.length==3?ChessPiece.PieceType.getType(components[2].charAt(0)):null);
+            }catch(Exception e){
+                throw new JsonParseException(e);
+            }
         }
     }
     private static class ChessMoveSerializer implements JsonSerializer<ChessMove>{

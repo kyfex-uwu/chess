@@ -12,9 +12,16 @@ public class ServerMessage {
     ServerMessageType serverMessageType;
 
     public enum ServerMessageType {
-        LOAD_GAME,
-        ERROR,
-        NOTIFICATION
+        LOAD_GAME(LoadGameMessage.class),
+        ERROR(ErrorMessage.class),
+        NOTIFICATION(NotificationMessage.class),
+        CLIENT_ERROR(ErrorMessage.class),
+        SUCCESS(SuccessMessage.class);
+
+        public final Class<? extends ServerMessage> clazz;
+        ServerMessageType(Class<? extends ServerMessage> clazz){
+            this.clazz=clazz;
+        }
     }
 
     public ServerMessage(ServerMessageType type) {
