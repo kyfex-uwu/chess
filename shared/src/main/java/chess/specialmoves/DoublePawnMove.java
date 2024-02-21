@@ -13,6 +13,10 @@ public class DoublePawnMove extends ChessMove {
         super(startPosition, endPosition, promotionPiece);
     }
 
+    public ChessMove withPromotionPiece(ChessPiece.PieceType type){
+        return new DoublePawnMove(this.getStartPosition(), this.getEndPosition(), type);
+    }
+
     @Override
     public void apply(ChessBoard board) {
         var startPiece=board.getPiece(this.getStartPosition());

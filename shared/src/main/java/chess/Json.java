@@ -4,6 +4,7 @@ import com.google.gson.*;
 
 import java.lang.reflect.Type;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.function.Function;
@@ -14,6 +15,8 @@ public class Json {
     public static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(ChessBoard.class, new ChessBoardSerializer())
             .registerTypeAdapter(ChessBoard.class, new ChessBoardDeserializer())
+            .registerTypeAdapter(ChessGame.class, new ChessGameSerializer())
+            .registerTypeAdapter(ChessGame.class, new ChessGameDeserializer())
             .registerTypeAdapter(ChessMove.class, new ChessMoveSerializer())
             .registerTypeAdapter(ChessMove.class, new ChessMoveDeserializer())
             .registerTypeAdapter(ChessPosition.class, new ChessPosSerializer())
@@ -100,6 +103,53 @@ public class Json {
             }
         }
     }
+
+    //-- ChessGame
+
+    private static class ChessGameSerializer implements JsonSerializer<ChessGame>{
+
+        @Override
+        public JsonElement serialize(ChessGame chessGame, Type type, JsonSerializationContext jsonSerializationContext) {
+            var toReturn = new JsonObject();
+            toReturn.addProperty("currTeam", chessGame.currTeam.name());
+            toReturn.addProperty("board", GSON.toJson(chessGame.board));
+
+            toReturn.addProperty("history", "");
+            return toReturn;
+        }
+    }
+    private static class ChessGameDeserializer implements JsonDeserializer<ChessGame>{
+
+        @Override
+        public ChessGame deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            try {
+                System.out.println(jsonElement);
+                var obj = jsonElement.getAsJsonObject();
+                return new ChessGame(
+                        ChessGame.TeamColor.valueOf(obj.get("currTeam").getAsString()),
+                        GSON.fromJson(obj.get("board"), ChessBoard.class),
+                        new ArrayList<>());
+            }catch (Exception e){
+                e.printStackTrace();
+                throw new JsonParseException("could not parse");
+            }
+        }
+    }
+    /*
+    public static ChessGame deserialize(String str) throws JsonParseException {
+        try {
+            var obj = JsonParser.parseString(str).getAsJsonObject();
+            var toReturn = new ChessGame();
+
+            toReturn.currTeam = obj.get("currTeam").getAsString().equals("WHITE")?TeamColor.WHITE:TeamColor.BLACK;
+            toReturn.board = Json.GSON.fromJson(obj.get("board"), ChessBoard.class);
+
+            return toReturn;
+        }catch(Exception e){
+            throw new JsonParseException("Could not parse");
+        }
+    }
+     */
 
     //-- ChessMove
     public static final HashMap<String, Function<String[], ChessMove>> specialMoveDeserializers = new HashMap<>();

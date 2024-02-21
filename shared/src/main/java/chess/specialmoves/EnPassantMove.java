@@ -20,6 +20,10 @@ public class EnPassantMove extends ChessMove {
         super(startPosition, endPosition, promotionPiece);
     }
 
+    public ChessMove withPromotionPiece(ChessPiece.PieceType type){
+        return new EnPassantMove(this.getStartPosition(), this.getEndPosition(), type);
+    }
+
     @Override
     public void apply(ChessBoard board) {
         var startPiece=board.getPiece(this.getStartPosition());

@@ -110,7 +110,6 @@ public class Online {
                 return new Response<>(new Response.ErrorMessage("Could not parse server response string"));
             }
         }catch(Exception e){
-            e.printStackTrace();
             return new Response<>(new Response.ErrorMessage("Something went wrong"));
         }
     }

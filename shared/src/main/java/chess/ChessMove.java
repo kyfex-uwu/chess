@@ -148,4 +148,8 @@ public class ChessMove {
     public int hashCode(){
         return Objects.hash(this.start, this.end, this.promotionPiece);
     }
+
+    //--
+
+    public static class ReversibleChessMove{}
 }

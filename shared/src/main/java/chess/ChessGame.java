@@ -17,14 +17,19 @@ public class ChessGame {
     static{
         if(TESTING) System.out.println("=".repeat(50)+"\nTESTING\n"+"=".repeat(50));
     }
-    private TeamColor currTeam;
-    private ChessBoard board;
-    public final ArrayList<ChessMove> history = new ArrayList<>();
+    TeamColor currTeam;
+    ChessBoard board;
+    public final ArrayList<ChessMove.ReversibleChessMove> history = new ArrayList<>();
 
     public ChessGame() {
         this.currTeam=TeamColor.WHITE;
         this.board=new ChessBoard();
         this.board.resetBoard();
+    }
+    ChessGame(TeamColor currTeam, ChessBoard board, ArrayList<ChessMove.ReversibleChessMove> history){
+        this.currTeam=currTeam;
+        this.board=board;
+        this.history.addAll(history);
     }
 
     /**
@@ -93,7 +98,7 @@ public class ChessGame {
         var piece = this.board.getPiece(move.getStartPosition());
         if(piece.getTeamColor()==this.currTeam&&this.validMoves(move.getStartPosition()).contains(move)){
             move.apply(this.board);
-            this.history.add(move);
+            //this.history.add(reversibleMove);
         }else{
             throw new InvalidMoveException();
         }
@@ -143,21 +148,5 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return this.board;
-    }
-
-    //--
-
-    public static ChessGame deserialize(String str) throws JsonParseException {
-        try {
-            var obj = JsonParser.parseString(str).getAsJsonObject();
-            var toReturn = new ChessGame();
-
-            toReturn.currTeam = obj.get("currTeam").getAsString().equals("WHITE")?TeamColor.WHITE:TeamColor.BLACK;
-            toReturn.board = Json.GSON.fromJson(obj.get("board"), ChessBoard.class);
-
-            return toReturn;
-        }catch(Exception e){
-            throw new JsonParseException("Could not parse");
-        }
     }
 }

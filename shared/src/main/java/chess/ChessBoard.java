@@ -98,6 +98,7 @@ public class ChessBoard {
     public Collection<ChessMove> validMovesOf(ChessPosition startPosition) {
         var piece=this.getPiece(startPosition);
         if(piece==null) return null;
+
         return piece.pieceMoves(this, startPosition).stream().filter(move->{
             var futureBoard = this.clone();
             move.apply(futureBoard);
@@ -248,6 +249,10 @@ public class ChessBoard {
      */
     public void removeCastlePrivileges(ChessGame.TeamColor color, CastleMove.Side side){
         color.whiteOrBlack(this.whiteCanCastle, this.blackCanCastle)[side== CastleMove.Side.QUEENSIDE?0:1]=false;
+    }
+
+    public void addCastlePrivileges(ChessGame.TeamColor color, CastleMove.Side side){
+        color.whiteOrBlack(this.whiteCanCastle, this.blackCanCastle)[side== CastleMove.Side.QUEENSIDE?0:1]=true;
     }
 
     //--

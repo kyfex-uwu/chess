@@ -225,7 +225,7 @@ public class GameScene extends Scene{
     @Override
     public void onLine(String[] args) {
         if(this.data.game.history.size()>0){
-            this.builder.setLastMove(this.data.game.history.get(this.data.game.history.size()-1));
+            //this.builder.setLastMove(this.data.game.history.get(this.data.game.history.size()-1));
         }
 
         this.consumer.tryConsumeArgs(args);

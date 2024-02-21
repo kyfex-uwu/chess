@@ -47,7 +47,7 @@ public class GamesDataAccess {
                             resultSet.getString(3),
                             resultSet.getString(4),
                             withWatchers?resultSet.getString(5):"",
-                            ChessGame.deserialize(resultSet.getString(6))
+                            GSON.fromJson(resultSet.getString(6), ChessGame.class)
                     ));
                 });
         return toReturn.get();
@@ -63,7 +63,7 @@ public class GamesDataAccess {
                                 resultSet.getString(3),
                                 resultSet.getString(4),
                                 List.of(),
-                                ChessGame.deserialize(resultSet.getString(6))
+                                GSON.fromJson(resultSet.getString(6), ChessGame.class)
                         );
                         games.add(currGame);
                     }
@@ -83,13 +83,14 @@ public class GamesDataAccess {
                     query.setString(3, "%,"+username+",%");
                 },resultSet -> {
                     while(resultSet.next()){
+                        System.out.println(resultSet.getString(6));
                         var currGame = new GameData(
                                 resultSet.getInt(1),
                                 resultSet.getString(2),
                                 resultSet.getString(3),
                                 resultSet.getString(4),
                                 List.of(),
-                                ChessGame.deserialize(resultSet.getString(6))
+                                GSON.fromJson(resultSet.getString(6), ChessGame.class)
                         );
                         games.add(currGame);
                     }
