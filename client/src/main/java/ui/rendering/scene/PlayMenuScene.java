@@ -7,10 +7,7 @@ import com.google.gson.JsonParser;
 import model.GameData;
 import model.JoinGameData;
 import model.UserData;
-import ui.ArgConsumer;
-import ui.Config;
-import ui.Online;
-import ui.PlayData;
+import ui.*;
 import ui.rendering.Color;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
@@ -24,10 +21,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PlayMenuScene extends Scene{
-    private ArrayList<GameData> myGames = new ArrayList<>();
+    public ArrayList<GameData> myGames = new ArrayList<>();
     @Override
     public void init() {
         this.refreshGames();
+        WebsocketManager.init();
 
         this.toRender.add(new Background());
         this.toRender.add(new Renderable(-1) {

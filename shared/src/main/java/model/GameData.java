@@ -12,7 +12,7 @@ public class GameData implements Data{
     public String whiteUsername;
     public String blackUsername;
     public final String gameName;
-    public final ChessGame game;
+    public ChessGame game;
     public final Set<String> watchers = new HashSet<>();
     public GameData(int gameID, String gameName){
         this.gameID=gameID;

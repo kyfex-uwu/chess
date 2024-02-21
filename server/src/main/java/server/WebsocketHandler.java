@@ -65,7 +65,7 @@ public class WebsocketHandler {
                     }
 
                     sendWithId(user, new SuccessMessage(true), id);
-                    var toSend = new LoadGameMessage(game.game);
+                    var toSend = new LoadGameMessage(game.game, game.gameID);
                     send(connectedUsers.get(game.whiteUsername),toSend);
                     send(connectedUsers.get(game.blackUsername),toSend);
                     for(var username : game.watchers)

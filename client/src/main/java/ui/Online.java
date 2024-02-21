@@ -1,6 +1,7 @@
 package ui;
 
 import chess.Json;
+import env.Environment;
 import model.Data;
 
 import java.io.InputStream;
@@ -9,8 +10,6 @@ import java.net.URI;
 import java.util.function.Consumer;
 
 public class Online {
-    public static final String baseUrl = "localhost:6000/";
-    private static final String scheme = "http://";
     public enum ReqMethod{
         GET("GET"),
         POST("POST"),
@@ -76,7 +75,7 @@ public class Online {
         }
         try{
             // Specify the desired endpoint
-            URI uri = new URI(scheme+baseUrl+endpoint);
+            URI uri = new URI(Environment.httpScheme + Environment.baseUrl+endpoint);
             HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
 
             connection.setRequestMethod(method.method);

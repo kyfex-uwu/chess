@@ -1,8 +1,10 @@
 package ui;
 
 import chess.Json;
+import env.Environment;
 import model.GameData;
 import ui.rendering.scene.GameScene;
+import ui.rendering.scene.PlayMenuScene;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.IdentifyCommand;
@@ -16,7 +18,6 @@ import java.util.concurrent.CountDownLatch;
 
 @ClientEndpoint
 public class WebsocketManager {
-    private static final String scheme = "ws://";
     public static WebsocketManager inst;
 
     public static boolean init(){
@@ -78,6 +79,12 @@ public class WebsocketManager {
                             gameScene.data.whiteUsername, gameScene.data.blackUsername, gameScene.data.watchers,
                             loadGameMessage.game);
                     Main.getScene().onLine(new String[0]);
+                }else if(scene instanceof PlayMenuScene playMenuScene){
+                    playMenuScene.myGames.stream().filter(gameData -> gameData.gameID==loadGameMessage.gameID)
+                            .findFirst().ifPresent(gameData -> {
+                                gameData.game = loadGameMessage.game;
+                                Main.getScene().onLine(new String[0]);
+                            });
                 }
             }
         }
@@ -88,7 +95,7 @@ public class WebsocketManager {
     private final Session session;
     private WebsocketManager() throws Exception{
         this.session = ContainerProvider.getWebSocketContainer()
-                .connectToServer(this, URI.create(scheme + Online.baseUrl + "connect"));
+                .connectToServer(this, URI.create(Environment.wsScheme + Environment.baseUrl + "connect"));
         this.session.addMessageHandler(new MessageHandler.Whole<String>() {
             @Override
             public void onMessage(String s) {
