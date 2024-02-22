@@ -195,5 +195,8 @@ public class ChessMove {
                     (this.takenPiece==null?"":this.takenPiece.toCompressedString())+":"+
                     this.moveDataState;
         }
+        public String toAlgNotation(){
+            return "mov"+"a".repeat((int) (Math.random()*3));
+        }
     }
 }

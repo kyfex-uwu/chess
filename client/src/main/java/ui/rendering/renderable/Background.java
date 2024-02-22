@@ -2,6 +2,7 @@ package ui.rendering.renderable;
 
 import ui.Config;
 import ui.PlayData;
+import ui.rendering.Color;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.Sprite;
@@ -44,4 +45,20 @@ public class Background extends Renderable {
 
     @Override
     public int getOrder() { return -100; }
+
+    public static void darken(Pixel[][] screen){
+        for(var y=0;y<screen.length;y++){
+            for(var x=0;x<screen[y].length;x++){
+                screen[y][x] = new Pixel(screen[y][x].character, new Color(
+                        (int) (screen[y][x].fg.r*0.5),
+                        (int) (screen[y][x].fg.g*0.5),
+                        (int) (screen[y][x].fg.b*0.5)
+                ), new Color(
+                        (int) (screen[y][x].bg.r*0.5),
+                        (int) (screen[y][x].bg.g*0.5),
+                        (int) (screen[y][x].bg.b*0.5)
+                ));
+            }
+        }
+    }
 }

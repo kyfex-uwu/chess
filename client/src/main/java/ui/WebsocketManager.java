@@ -5,6 +5,7 @@ import env.Environment;
 import model.GameData;
 import ui.rendering.scene.GameScene;
 import ui.rendering.scene.PlayMenuScene;
+import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.IdentifyCommand;
@@ -43,9 +44,10 @@ public class WebsocketManager {
     private static int currMessageID=0;
     private static final HashMap<Integer, ServerMessageHolder> waitingMessages = new HashMap<>();
     private static class ServerMessageHolder{
-        public ServerMessage message=null;
+        public ServerMessage message=new ErrorMessage("Server took too long to respond");
         public CountDownLatch lock = new CountDownLatch(1);
     }
+    private static final long maxWaitTime = 5000;
     public static ServerMessage sendMessageWithResponse(UserGameCommand command){
         if(inst==null) return new ServerMessage(ServerMessage.ServerMessageType.CLIENT_ERROR);
         try {
@@ -55,6 +57,12 @@ public class WebsocketManager {
             inst.session.getBasicRemote().sendText(toSend.toString());
             var message = new ServerMessageHolder();
             waitingMessages.put(currMessageID, message);
+            new Thread(()->{
+                try {
+                    Thread.sleep(maxWaitTime);
+                }catch(Exception ignored){}
+                message.lock.countDown();
+            }).start();
             message.lock.await();
             return message.message;
         }catch(Exception e){ return new ServerMessage(ServerMessage.ServerMessageType.CLIENT_ERROR); }

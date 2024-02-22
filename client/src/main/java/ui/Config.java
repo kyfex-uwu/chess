@@ -163,6 +163,7 @@ public class Config {
         BOARD_WHITE
         BOARD_GRAY
         BOARD_BLACK
+
         PIECE_WHITE
         PIECE_BLACK
         BOARD_TEXT
@@ -186,9 +187,10 @@ public class Config {
                 new Color(148, 121, 105),
                 new Color(107, 81, 66),
                 new Color(77, 56, 44),
+
                 new Color(255,255,255),
                 new Color(0,0,0),
-                new Color(200, 200, 200)
+                new Color(189, 161, 145)
         ));
         palettes.put("Light", new Palette(
                 new Color(125,120,130),
@@ -206,13 +208,13 @@ public class Config {
                 new Color(86, 20, 6),
                 new Color(181,238,233),
 
-                new Color(173,150,195),
-                new Color(166,94,137),
-                new Color(73,52,94),
+                new Color(143, 122, 163),
+                new Color(118, 93, 143),
+                new Color(99, 70, 128),
 
-                new Color(255,255,255),
-                new Color(32, 32, 32),
-                new Color(255,255,255)
+                new Color(229,207,251),
+                new Color(39, 24, 56),
+                new Color(195, 171, 219)
         ));
     }
 }

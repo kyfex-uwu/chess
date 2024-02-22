@@ -4,6 +4,7 @@ import chess.specialmoves.CastleMove;
 import chess.specialmoves.DoublePawnMove;
 import chess.specialmoves.EnPassantMove;
 import com.google.gson.*;
+import webSocketMessages.userCommands.MakeMoveCommand;
 
 import java.lang.reflect.Type;
 import java.text.ParseException;
@@ -23,6 +24,17 @@ public class Serialization {
             .registerTypeAdapter(ChessGame.class, new ChessGameDeserializer())
             .registerTypeAdapter(ChessMove.class, new ChessMoveSerializer())
             .registerTypeAdapter(ChessPosition.class, new ChessPosSerializer())
+
+            .registerTypeAdapter(MakeMoveCommand.class, (JsonDeserializer<MakeMoveCommand>)
+                    (jsonElement, type, jsonDeserializationContext) -> {
+                        try {
+                            var asObj = jsonElement.getAsJsonObject();
+                            return new MakeMoveCommand(
+                                    asObj.get("authToken").getAsString(),
+                                    asObj.get("gameID").getAsInt(),
+                                    deserializeMove(asObj.get("move").getAsString()));
+                        }catch(Exception e){ throw new JsonParseException(e);}
+                    })
             .create();
 
     public static ChessPiece pieceFromChar(char piece){

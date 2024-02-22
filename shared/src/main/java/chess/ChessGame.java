@@ -53,13 +53,15 @@ public class ChessGame {
      * Enum identifying the 2 possible teams in a chess game
      */
     public enum TeamColor {
-        WHITE(1, 1),
-        BLACK(8, -1);
+        WHITE(1, 1, "White"),
+        BLACK(8, -1, "Black");
         public final int row;
         public final int advDir;
-        TeamColor(int row, int advDir){
+        public final String name;
+        TeamColor(int row, int advDir, String name){
             this.row=row;
             this.advDir=advDir;
+            this.name=name;
         }
 
         /**

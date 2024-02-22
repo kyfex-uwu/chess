@@ -29,14 +29,16 @@ public class ChessRenderer {
         private final Collection<ChessMove> highlightedPositions;
         private final ChessPosition highlightedOrigin;
         private final ChessMove lastMove;
+        private final boolean wasCapture;
         private final boolean isBig;
         private final boolean facingWhite;
         private RenderData(Collection<ChessMove> highlightedPositions,
-                           ChessPosition highlightedOrigin, ChessMove lastMove,
+                           ChessPosition highlightedOrigin, ChessMove lastMove, boolean wasCapture,
                            boolean isBig, boolean facingWhite){
             this.highlightedPositions=highlightedPositions;
             this.highlightedOrigin = highlightedOrigin;
             this.lastMove = lastMove;
+            this.wasCapture=wasCapture;
             this.isBig=isBig;
             this.facingWhite=facingWhite;
         }
@@ -48,8 +50,9 @@ public class ChessRenderer {
             private Collection<ChessMove> highlightedPositions = Collections.emptySet();
             private ChessPosition highlightedOrigin = new ChessPosition(0,0);
             private ChessMove lastMove;
-            private boolean isBig=true;
-            private boolean facingWhite=true;
+            private boolean wasCapture = false;
+            private boolean isBig = true;
+            private boolean facingWhite = true;
 
             /**
              * Sets the positions to be highlighted
@@ -64,6 +67,7 @@ public class ChessRenderer {
             }
 
             public Builder setLastMove(ChessMove move){ this.lastMove=move; return this; }
+            public Builder setCapture(boolean wasCapture){ this.wasCapture=wasCapture; return this; }
 
             /**
              * Sets if the board should be rendered with white on bottom (true) or black on botton (false)
@@ -84,11 +88,11 @@ public class ChessRenderer {
              */
             public RenderData build(){
                 return new RenderData(this.highlightedPositions, this.highlightedOrigin, this.lastMove,
-                        this.isBig, this.facingWhite);
+                        this.wasCapture, this.isBig, this.facingWhite);
             }
         }
     }
-    private enum HighlightType{
+    public enum HighlightType{
         MOVE(new Color(139, 215, 66), new Color(66,156,25)),
         ORIGIN(new Color(215,184,66), new Color(198,150,32)),
         TAKE(new Color(224,104,170), new Color(188,53,89)),
@@ -104,7 +108,7 @@ public class ChessRenderer {
     }
     
     private static final Color markerColor = new Color(0,0,0);
-    private static final Map<ChessPiece.PieceType, Sprite> bigBlackPieces = Map.ofEntries(
+    public static final Map<ChessPiece.PieceType, Sprite> bigBlackPieces = Map.ofEntries(
             Map.entry(ChessPiece.PieceType.KING,
                     Sprite.Builder.fromStr("""
                            \s + \s
@@ -136,7 +140,7 @@ public class ChessRenderer {
                             \s o \s
                             \s A \s""", true).withFGColor(Config.Palette.PIECE_BLACK).build())
     );
-    private static final Map<ChessPiece.PieceType, Sprite> bigWhitePieces = Map.ofEntries(
+    public static final Map<ChessPiece.PieceType, Sprite> bigWhitePieces = Map.ofEntries(
             Map.entry(ChessPiece.PieceType.KING,
                     Sprite.Builder.fromStr("""
                            \s + \s
@@ -168,7 +172,7 @@ public class ChessRenderer {
                             \s * \s
                             \s A \s""", true).withFGColor(Config.Palette.PIECE_WHITE).build())
     );
-    private static final Sprite bigHighlight;
+    public static final Sprite bigHighlight;
     static {
         var builder = Sprite.Builder.fromStr("""
                 +=   =+
@@ -184,7 +188,7 @@ public class ChessRenderer {
 
         bigHighlight = builder.build();
     }
-    private static final Map<ChessPiece.PieceType, Sprite> smallBlackPieces = Map.ofEntries(
+    public static final Map<ChessPiece.PieceType, Sprite> smallBlackPieces = Map.ofEntries(
             Map.entry(ChessPiece.PieceType.KING,
                     Sprite.Builder.fromStr("""
                            \s+\s
@@ -210,7 +214,7 @@ public class ChessRenderer {
                             \so\s
                             \sA\s""", true).withFGColor(Config.Palette.PIECE_BLACK).build())
     );
-    private static final Map<ChessPiece.PieceType, Sprite> smallWhitePieces = Map.ofEntries(
+    public static final Map<ChessPiece.PieceType, Sprite> smallWhitePieces = Map.ofEntries(
             Map.entry(ChessPiece.PieceType.KING,
                     Sprite.Builder.fromStr("""
                            \s*\s
@@ -236,7 +240,7 @@ public class ChessRenderer {
                             \s*\s
                             \sA\s""", true).withFGColor(Config.Palette.PIECE_WHITE).build())
     );
-    private static final Sprite smallHighlight;
+    public static final Sprite smallHighlight;
     static {
         var builder = Sprite.Builder.fromStr("""
                 /   \\
@@ -248,9 +252,30 @@ public class ChessRenderer {
         builder.pixels[1][0].bg = markerColor;
 
         smallHighlight = builder.build();
+
+        //--
+
+        Config.Palette.onPaletteChange(()->{
+            for(var sprite : bigWhitePieces.values())
+                for(var row : sprite.pixels)
+                    for(var pixel : row)
+                        pixel.fg = Config.Palette.PIECE_WHITE;
+            for(var sprite : smallWhitePieces.values())
+                for(var row : sprite.pixels)
+                    for(var pixel : row)
+                        pixel.fg = Config.Palette.PIECE_WHITE;
+            for(var sprite : bigBlackPieces.values())
+                for(var row : sprite.pixels)
+                    for(var pixel : row)
+                        pixel.fg = Config.Palette.PIECE_BLACK;
+            for(var sprite : smallBlackPieces.values())
+                for(var row : sprite.pixels)
+                    for(var pixel : row)
+                        pixel.fg = Config.Palette.PIECE_BLACK;
+        });
     }
 
-    private static Sprite highlightWithColor(Sprite sprite, HighlightType type){
+    public static Sprite highlightWithColor(Sprite sprite, HighlightType type){
         var builder = Sprite.Builder.fromSprite(sprite);
         for(var pixel : builder.getPixels()){
             if(pixel.fg==markerColor) pixel.fg=type.bright;
@@ -292,7 +317,7 @@ public class ChessRenderer {
 
         var highlight = data.isBig?bigHighlight:smallHighlight;
         if(data.lastMove!=null){
-            highlightWithColor(highlight, HighlightType.MOVE_DEST).draw(
+            highlightWithColor(highlight, data.wasCapture?HighlightType.TAKE:HighlightType.MOVE_DEST).draw(
                     3+(getCol(data.lastMove.getEndPosition().getColumn(), data))*spaceWidth,
                     (getRow(data.lastMove.getEndPosition().getRow(), data))*spaceHeight,
                     screen);
@@ -321,12 +346,12 @@ public class ChessRenderer {
             for(int y=0;y<spaceHeight;y++){
                 for(int x=0;x<3;x++){
                     Renderable.overlayPixel(x, i*spaceHeight+y,
-                            new Pixel(' ', Config.Palette.BOARD_WHITE, Config.Palette.BOARD_GRAY), screen);
+                            new Pixel(' ', Config.Palette.BOARD_TEXT, Config.Palette.BOARD_GRAY), screen);
                 }
             }
             for(int x=0;x<spaceWidth;x++){
                 Renderable.overlayPixel(3+i*spaceWidth+x, spaceHeight*8,
-                        new Pixel(' ', Config.Palette.BOARD_WHITE, Config.Palette.BOARD_GRAY), screen);
+                        new Pixel(' ', Config.Palette.BOARD_TEXT, Config.Palette.BOARD_GRAY), screen);
             }
 
             Renderable.overlayPixel(1, 1+i*spaceHeight,

@@ -90,7 +90,6 @@ public class WebsocketHandler {
 
     private static void send(Session user, ServerMessage message){
         if(user==null) return;
-
         try{ user.getRemote().sendString(Serialization.GSON.toJsonTree(message).toString()); }catch(Exception e){ }
     }
     private static void sendWithId(Session user, ServerMessage message, int id){

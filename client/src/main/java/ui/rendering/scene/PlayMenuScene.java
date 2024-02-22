@@ -8,7 +8,6 @@ import model.GameData;
 import model.JoinGameData;
 import model.UserData;
 import ui.*;
-import ui.rendering.Color;
 import ui.rendering.Pixel;
 import ui.rendering.Renderable;
 import ui.rendering.Sprite;
@@ -16,6 +15,7 @@ import ui.rendering.renderable.Background;
 import ui.rendering.renderable.Nineslice;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -89,19 +89,7 @@ public class PlayMenuScene extends Scene{
             public void render(Pixel[][] screen) {
                 if(!PlayMenuScene.this.createMode&&!PlayMenuScene.this.browsing) return;
 
-                for(var y=0;y<screen.length;y++){
-                    for(var x=0;x<screen[y].length;x++){
-                        screen[y][x] = new Pixel(screen[y][x].character, new Color(
-                                (int) (screen[y][x].fg.r*0.5),
-                                (int) (screen[y][x].fg.g*0.5),
-                                (int) (screen[y][x].fg.b*0.5)
-                        ), new Color(
-                                (int) (screen[y][x].bg.r*0.5),
-                                (int) (screen[y][x].bg.g*0.5),
-                                (int) (screen[y][x].bg.b*0.5)
-                        ));
-                    }
-                }
+                Background.darken(screen);
             }
         });
 
@@ -320,7 +308,8 @@ public class PlayMenuScene extends Scene{
             "back", args -> this.createMode=false,
             "name", args -> {
                 if(args.length==0) return;
-                if(args[0].length()>=3&&args[0].length()<=32)
+                var tryName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                if(tryName.length()>=3&&tryName.length()<=32)
                     this.gameName = args[0];
                 else
                     this.dialogMessage = "Wrong size: name must be 3-32 characters";
