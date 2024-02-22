@@ -1,6 +1,6 @@
 package ui;
 
-import chess.Json;
+import chess.Serialization;
 import env.Environment;
 import model.Data;
 
@@ -50,17 +50,17 @@ public class Online {
     }
     public static <T extends Data> Response<T> request(ReqMethod method, String endpoint,
                                                        Data toSend, Class<T> expectedType){
-        return request(method, endpoint, Json.GSON.toJson(toSend), expectedType);
+        return request(method, endpoint, Serialization.GSON.toJson(toSend), expectedType);
     }
     public static Response<String> request(ReqMethod method, String endpoint, Data toSend){
-        return request(method, endpoint, Json.GSON.toJson(toSend));
+        return request(method, endpoint, Serialization.GSON.toJson(toSend));
     }
     public static <T extends Data> Response<T> request(ReqMethod method, String endpoint,
                                                        String toSend, Class<T> expectedType){
         var toReturn = request(method, endpoint, toSend);
         if(toReturn.data!=null){
             try{
-                return new Response<>(Json.GSON.fromJson(toReturn.data, expectedType));
+                return new Response<>(Serialization.GSON.fromJson(toReturn.data, expectedType));
             }catch(Exception e){
                 return new Response<>(new Response.ErrorMessage("Could not parse server response json"));
             }
@@ -93,7 +93,7 @@ public class Online {
 
             if(connection.getResponseCode()/100!=2){
                 try{
-                    return new Response<>(Json.GSON.fromJson(
+                    return new Response<>(Serialization.GSON.fromJson(
                             new String(connection.getErrorStream().readAllBytes()),
                             Response.ErrorMessage.class));
                 }catch(Exception ignored){}

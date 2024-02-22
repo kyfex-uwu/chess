@@ -1,6 +1,6 @@
 package ui;
 
-import chess.Json;
+import chess.Serialization;
 import env.Environment;
 import model.GameData;
 import ui.rendering.scene.GameScene;
@@ -36,7 +36,7 @@ public class WebsocketManager {
     public static boolean sendMessage(UserGameCommand command){
         if(inst==null) return false;
         try {
-            inst.session.getBasicRemote().sendText(Json.GSON.toJson(command));
+            inst.session.getBasicRemote().sendText(Serialization.GSON.toJson(command));
             return true;
         }catch(Exception e){ return false; }
     }
@@ -49,7 +49,7 @@ public class WebsocketManager {
     public static ServerMessage sendMessageWithResponse(UserGameCommand command){
         if(inst==null) return new ServerMessage(ServerMessage.ServerMessageType.CLIENT_ERROR);
         try {
-            var toSend = Json.GSON.toJsonTree(command).getAsJsonObject();
+            var toSend = Serialization.GSON.toJsonTree(command).getAsJsonObject();
             currMessageID++;
             toSend.addProperty("_messageID", String.valueOf(currMessageID));
             inst.session.getBasicRemote().sendText(toSend.toString());
@@ -60,10 +60,10 @@ public class WebsocketManager {
         }catch(Exception e){ return new ServerMessage(ServerMessage.ServerMessageType.CLIENT_ERROR); }
     }
     private static void handleMessage(String message){
-        var values = Json.GSON.fromJson(message, Map.class);
+        var values = Serialization.GSON.fromJson(message, Map.class);
         var type = ServerMessage.ServerMessageType.valueOf(
                 values.get("serverMessageType").toString());
-        var messageObj = Json.GSON.fromJson(message, type.clazz);
+        var messageObj = Serialization.GSON.fromJson(message, type.clazz);
 
         var idObj = values.get("_messageID");
         if(idObj!=null){

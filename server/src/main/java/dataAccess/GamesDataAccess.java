@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static chess.Json.GSON;
+import static chess.Serialization.GSON;
 
 public class GamesDataAccess {
     public static void clear() throws DataAccessException{
@@ -83,7 +83,6 @@ public class GamesDataAccess {
                     query.setString(3, "%,"+username+",%");
                 },resultSet -> {
                     while(resultSet.next()){
-                        System.out.println(resultSet.getString(6));
                         var currGame = new GameData(
                                 resultSet.getInt(1),
                                 resultSet.getString(2),

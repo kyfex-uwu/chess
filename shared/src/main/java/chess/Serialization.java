@@ -1,5 +1,8 @@
 package chess;
 
+import chess.specialmoves.CastleMove;
+import chess.specialmoves.DoublePawnMove;
+import chess.specialmoves.EnPassantMove;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
@@ -7,10 +10,11 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class Json {
+public class Serialization {
     public static final String jsonEmpty = "{}";
     public static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(ChessBoard.class, new ChessBoardSerializer())
@@ -18,29 +22,17 @@ public class Json {
             .registerTypeAdapter(ChessGame.class, new ChessGameSerializer())
             .registerTypeAdapter(ChessGame.class, new ChessGameDeserializer())
             .registerTypeAdapter(ChessMove.class, new ChessMoveSerializer())
-            .registerTypeAdapter(ChessMove.class, new ChessMoveDeserializer())
             .registerTypeAdapter(ChessPosition.class, new ChessPosSerializer())
             .create();
 
+    public static ChessPiece pieceFromChar(char piece){
+        return new ChessPiece(
+                Character.isLowerCase(piece)? ChessGame.TeamColor.WHITE: ChessGame.TeamColor.BLACK,
+                ChessPiece.PieceType.getType(piece));
+    }
+
     //-- ChessBoard
 
-    private static String miscMoveDataToString(boolean[] BDM, boolean[] WDM, boolean[] BC, boolean[] WC){
-        boolean[] allArray = new boolean[BDM.length+WDM.length+BC.length+WC.length];
-        System.arraycopy(BDM, 0, allArray, 0, 8);
-        System.arraycopy(WDM, 0, allArray, 8, 8);
-        System.arraycopy(BC, 0, allArray, 16, 2);
-        System.arraycopy(WC, 0, allArray, 18, 2);
-
-        StringBuilder toReturn= new StringBuilder();
-        for(int i=0;i<allArray.length;i+=4){
-            int n=0;
-            for(int j=0;j<4;j++){
-                n=n*2+(j+i<allArray.length?(allArray[j+i]?1:0):0);
-            }
-            toReturn.append(Integer.toString(n, 16));
-        }
-        return toReturn.toString();
-    }
     private static class ChessBoardSerializer implements JsonSerializer<ChessBoard> {
         @Override
         public JsonElement serialize(ChessBoard chessBoard, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -49,10 +41,7 @@ public class Json {
                     String.valueOf(piece == null ? ' ' : piece.toCompressedString()))
                     .collect(Collectors.joining()));
             toReturn.addProperty("miscMovedData",
-                    miscMoveDataToString(chessBoard.blackDoubleMoved,
-                            chessBoard.whiteDoubleMoved,
-                            chessBoard.blackCanCastle,
-                            chessBoard.whiteCanCastle));
+                    chessBoard.miscMoveDataToString());
 
             return toReturn;
         }
@@ -68,34 +57,10 @@ public class Json {
                 var pieces = obj.get("pieces").getAsString().toCharArray();
                 for (int i = 0; i < 64; i++) {
                     if(pieces[i]==' ') continue;
-                    toReturn.pieces[i] = new ChessPiece(
-                            Character.isLowerCase(pieces[i])? ChessGame.TeamColor.WHITE: ChessGame.TeamColor.BLACK,
-                            ChessPiece.PieceType.getType(pieces[i]));
+                    toReturn.pieces[i] = pieceFromChar(pieces[i]);
                 }
 
-                var miscData = obj.get("miscMovedData").getAsString().toCharArray();
-                var miscDataToBools = new boolean[miscData.length*4];
-                for(int i=0;i< miscData.length;i++){
-                    int num = Integer.valueOf(String.valueOf(miscData[i]),16);
-                    for(int j=0;j<4;j++){
-                        miscDataToBools[i*4+j]=num%2==1;
-                        num/=2;
-                    }
-                }
-                for(int i=0;i<miscDataToBools.length;i++){
-                    var val = miscDataToBools[i];
-                    if(i<8){
-                        toReturn.blackDoubleMoved[i]=val;
-                    }else if(i<16){
-                        toReturn.whiteDoubleMoved[i-8]=val;
-                    }else if(i<18){
-                        toReturn.blackCanCastle[i-16]=val;
-                    }else if(i<20){
-                        toReturn.whiteCanCastle[i-18]=val;
-                    }else{
-                        break;
-                    }
-                }
+                toReturn.applyMoveData(obj.get("miscMovedData").getAsString());
 
                 return toReturn;
             }catch(Exception e){
@@ -105,6 +70,8 @@ public class Json {
     }
 
     //-- ChessGame
+    public static final HashMap<String, BiFunction<String[], ChessBoard, ChessMove.ReversibleChessMove<?>>>
+            specialReversibleMoveDeserializers = new HashMap<>();
 
     private static class ChessGameSerializer implements JsonSerializer<ChessGame>{
 
@@ -112,9 +79,12 @@ public class Json {
         public JsonElement serialize(ChessGame chessGame, Type type, JsonSerializationContext jsonSerializationContext) {
             var toReturn = new JsonObject();
             toReturn.addProperty("currTeam", chessGame.currTeam.name());
-            toReturn.addProperty("board", GSON.toJson(chessGame.board));
+            toReturn.add("board", GSON.toJsonTree(chessGame.board));
 
-            toReturn.addProperty("history", "");
+            var history = new JsonArray();
+            for(var reversibleMove : chessGame.history)
+                history.add(reversibleMove.toString());
+            toReturn.add("history", history);
             return toReturn;
         }
     }
@@ -123,54 +93,50 @@ public class Json {
         @Override
         public ChessGame deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
             try {
-                System.out.println(jsonElement);
                 var obj = jsonElement.getAsJsonObject();
+
+                var board = GSON.fromJson(obj.get("board"), ChessBoard.class);
+
+                var history = new ArrayList<ChessMove.ReversibleChessMove<?>>();
+                var historyObj = obj.get("history").getAsJsonArray();
+                for(int i=historyObj.size()-1;i>=0;i--){
+                    var reversibleMoveArgs = historyObj.get(i).getAsString().split(":");
+                    ChessMove.ReversibleChessMove<?> reversibleChessMove;
+                    if(reversibleMoveArgs[0].startsWith("s")){
+                        reversibleChessMove = specialReversibleMoveDeserializers.get(reversibleMoveArgs[0]
+                                .split(" ")[0].substring(1)).apply(reversibleMoveArgs, board);
+                    }else{
+                        reversibleChessMove=new ChessMove.ReversibleChessMove<>(board,
+                                deserializeMove(reversibleMoveArgs[0]),
+                                reversibleMoveArgs[1].length()>0?pieceFromChar(reversibleMoveArgs[1].charAt(0)):null,
+                                reversibleMoveArgs[2]);
+                    }
+                    reversibleChessMove.onReverse.accept(board);
+                    history.add(reversibleChessMove);
+                }
+
                 return new ChessGame(
                         ChessGame.TeamColor.valueOf(obj.get("currTeam").getAsString()),
                         GSON.fromJson(obj.get("board"), ChessBoard.class),
-                        new ArrayList<>());
+                        history);
             }catch (Exception e){
-                e.printStackTrace();
-                throw new JsonParseException("could not parse");
+                throw new JsonParseException("could not parse", e);
             }
         }
     }
-    /*
-    public static ChessGame deserialize(String str) throws JsonParseException {
-        try {
-            var obj = JsonParser.parseString(str).getAsJsonObject();
-            var toReturn = new ChessGame();
-
-            toReturn.currTeam = obj.get("currTeam").getAsString().equals("WHITE")?TeamColor.WHITE:TeamColor.BLACK;
-            toReturn.board = Json.GSON.fromJson(obj.get("board"), ChessBoard.class);
-
-            return toReturn;
-        }catch(Exception e){
-            throw new JsonParseException("Could not parse");
-        }
-    }
-     */
 
     //-- ChessMove
     public static final HashMap<String, Function<String[], ChessMove>> specialMoveDeserializers = new HashMap<>();
-    private static class ChessMoveDeserializer implements JsonDeserializer<ChessMove>{
-
-        @Override
-        public ChessMove deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            try{
-                var components = jsonElement.getAsString().split(" ");
-                if(components[0].startsWith("s")){
-                    return specialMoveDeserializers.get(components[0].substring(1)).apply(components);
-                }
-
-                return new ChessMove(
-                        deserializeChessPosition(new JsonPrimitive(components[0])),
-                        deserializeChessPosition(new JsonPrimitive(components[1])),
-                        components.length==3?ChessPiece.PieceType.getType(components[2].charAt(0)):null);
-            }catch(Exception e){
-                throw new JsonParseException(e);
-            }
+    public static ChessMove deserializeMove(String move){
+        var components = move.split(" ");
+        if(components[0].startsWith("s")){
+            return specialMoveDeserializers.get(components[0].substring(1)).apply(components);
         }
+
+        return new ChessMove(
+                deserializeChessPosition(new JsonPrimitive(components[0])),
+                deserializeChessPosition(new JsonPrimitive(components[1])),
+                components.length==3?ChessPiece.PieceType.getType(components[2].charAt(0)):null);
     }
     private static class ChessMoveSerializer implements JsonSerializer<ChessMove>{
         @Override
@@ -199,5 +165,13 @@ public class Json {
         public JsonElement serialize(ChessPosition chessPos, Type type, JsonSerializationContext jsonSerializationContext) {
             return new JsonPrimitive(chessPos.toString());
         }
+    }
+
+    //--
+
+    static{
+        CastleMove.initSpecialMove();
+        DoublePawnMove.initSpecialMove();
+        EnPassantMove.initSpecialMove();
     }
 }

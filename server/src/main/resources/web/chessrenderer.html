@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+    <style>
+        html, body {
+          margin: 0;
+          padding: 0;
+        }
+        canvas {
+          display: block;
+        }
+    </style>
+    <meta charset="utf-8" />
+
+  </head>
+  <body>
+    <main>
+    </main>
+    <script>
+        const boards=[
+          {"pieces":"rnb kbnrpp ppp   q     p           P    Np Q    P P PPPPR   KBNR","miscMovedData":"00003"},
+        {"pieces":"rnbqkbnrpp ppp         p           P    Np Q    P P PPPPR   KBNR","miscMovedData":"0000f"},
+        {"pieces":"rnbqkbnrpp ppp         p           P    Np      P P PPPPR  QKBNR","miscMovedData":"0000f"},
+        {"pieces":"rnbqkbnrpp ppp         p         PpP    N       P P PPPPR  QKBNR","miscMovedData":"0000f"},
+        {"pieces":"rnbqkbnrpp ppp         p          pP    N       PPP PPPPR  QKBNR","miscMovedData":"0000f"},
+        {"pieces":"rnbqkbnrpp pppp        B          pP    N       PPP PPPPR  QKBNR","miscMovedData":"0000f"},
+        {"pieces":"rnbqkbnrpp pppp        p          pP    N       PPP PPPPR BQKBNR","miscMovedData":"0000f"},
+        {"pieces":"rnbqkbnrpp ppppp                  pP    N       PPP PPPPR BQKBNR","miscMovedData":"8000f"},
+        {"pieces":"rnbqkbnrpp ppppp                  p     N       PPPPPPPPR BQKBNR","miscMovedData":"0000f"},
+        {"pieces":"rnbqkbnrpp ppppp          p             N       PPPPPPPPR BQKBNR","miscMovedData":"0000f"},
+        {"pieces":"rnbqkbnrpp ppppp          p                     PPPPPPPPRNBQKBNR","miscMovedData":"0040f"},
+        {"pieces":"rnbqkbnrpppppppp                                PPPPPPPPRNBQKBNR","miscMovedData":"0000f"},
+        ]
+        for(const board of boards)
+          board.pieces=board.pieces.match(/.{8}/g).map(row=>row.split(""));
+
+        const images={};
+        function preload(){
+          for(let char of "rnbqkp".split(""))
+            images[char]=loadImage(`https://images.chesscomfiles.com/chess-themes/pieces/neo/150/b${char}.png`);
+          for(let char of "RNBQKP".split(""))
+            images[char]=loadImage(`https://images.chesscomfiles.com/chess-themes/pieces/neo/150/w${char.toLowerCase()}.png`);
+        }
+
+        function setup() {
+          createCanvas(400, 400);
+          noStroke();
+        }
+
+        function mouseClicked(){
+          boardIndex=(boardIndex+1)%boards.length
+        }
+
+        let boardIndex=0;
+        function draw() {
+          background(220);
+          for(let y=0;y<8;y++){
+            for(let x=0;x<8;x++){
+              fill(y%2==x%2?100:50);
+              rect(x*50,y*50,50,50);
+              if(boards[boardIndex].pieces[y][x]!=" ")
+                image(images[boards[boardIndex].pieces[y][x]],x*50,y*50,50,50)
+            }
+          }
+        }
+    </script>
+  </body>
+</html>

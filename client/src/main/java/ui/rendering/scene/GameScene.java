@@ -38,9 +38,9 @@ public class GameScene extends Scene{
                 "move", args -> {
                     ChessPosition start=null;
                     ChessPosition end=null;
-                    try{ start = Json.deserializeChessPosition(args[0]); }
+                    try{ start = Serialization.deserializeChessPosition(args[0]); }
                     catch(ParseException e){ this.dialogMessage="Invalid start position"; }
-                    try{ end = Json.deserializeChessPosition(args[1]); }
+                    try{ end = Serialization.deserializeChessPosition(args[1]); }
                     catch(ParseException e){ this.dialogMessage="Invalid end position"; }
 
                     if(this.isOnline&&!this.data.game.getTeamTurn().whiteOrBlack(whiteUser,blackUser).username()
@@ -79,7 +79,7 @@ public class GameScene extends Scene{
                 },
                 "show", args -> {
                     try {
-                        var start=Json.deserializeChessPosition(args[0]);
+                        var start= Serialization.deserializeChessPosition(args[0]);
                         this.builder.setPositions(this.data.game.validMoves(start), start);
                     }catch(Exception e){
                         this.builder.setPositions(null,null);

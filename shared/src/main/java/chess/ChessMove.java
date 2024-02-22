@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 public class ChessMove {
     private final ChessPosition start;
     private final ChessPosition end;
-    private ChessPiece.PieceType promotionPiece;
+    private final ChessPiece.PieceType promotionPiece;
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
@@ -114,11 +114,12 @@ public class ChessMove {
      * Applies this move to the chessboard. Does not check for validity
      * @param board board to make the move on
      */
-    public void apply(ChessBoard board){
+    public ReversibleChessMove<? extends ChessMove> apply(ChessBoard board){
+        var toReturn = new ReversibleChessMove<>(board, this);
         if(this.hackApply!=null){
             //stinky
             this.hackApply.accept(board);
-            return;
+            return toReturn;
         }
 
         var startPiece=board.getPiece(this.start);
@@ -135,6 +136,8 @@ public class ChessMove {
             if(this.getStartPosition().getColumn()==8)
                 board.removeCastlePrivileges(startPiece.getTeamColor(), CastleMove.Side.KINGSIDE);
         }
+
+        return toReturn;
     }
 
     public String toString(){
@@ -151,5 +154,46 @@ public class ChessMove {
 
     //--
 
-    public static class ReversibleChessMove{}
+    public static class ReversibleChessMove<T extends ChessMove>{
+        public final T move;
+        public final ChessPiece takenPiece;
+        public final String moveDataState;
+        public final Consumer<ChessBoard> onReverse;
+        protected ReversibleChessMove(T move, ChessPiece takenPiece,
+                                      String moveDataState, Consumer<ChessBoard> onReverse){
+            this.move=move;
+            this.takenPiece=takenPiece;
+            this.moveDataState=moveDataState;
+            this.onReverse=onReverse;
+        }
+
+        //for use during a game
+        public ReversibleChessMove(ChessBoard board, T move){
+            this(move, board.getPiece(move.getEndPosition()), board.miscMoveDataToString(),
+                    getDefaultConsumer(move,
+                            board.getPiece(move.getStartPosition()),board.getPiece(move.getEndPosition()),
+                            board.miscMoveDataToString()));
+        }
+        private static Consumer<ChessBoard> getDefaultConsumer(ChessMove move,
+                                                               ChessPiece startPiece, ChessPiece endPiece,
+                                                               String moveData){
+            return board -> {
+                board.addPiece(move.start, startPiece);
+                board.addPiece(move.end, endPiece);
+                board.applyMoveData(moveData);
+            };
+        }
+
+        //for deserializing history
+        public ReversibleChessMove(ChessBoard board, T move, ChessPiece takenPiece, String moveDataState){
+            this(move, takenPiece, moveDataState,
+                    getDefaultConsumer(move,board.getPiece(move.getEndPosition()),takenPiece,moveDataState));
+        }
+
+        public String toString(){
+            return this.move.toString()+":"+
+                    (this.takenPiece==null?"":this.takenPiece.toCompressedString())+":"+
+                    this.moveDataState;
+        }
+    }
 }

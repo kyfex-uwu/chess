@@ -19,14 +19,14 @@ public class ChessGame {
     }
     TeamColor currTeam;
     ChessBoard board;
-    public final ArrayList<ChessMove.ReversibleChessMove> history = new ArrayList<>();
+    public final ArrayList<ChessMove.ReversibleChessMove<?>> history = new ArrayList<>();
 
     public ChessGame() {
         this.currTeam=TeamColor.WHITE;
         this.board=new ChessBoard();
         this.board.resetBoard();
     }
-    ChessGame(TeamColor currTeam, ChessBoard board, ArrayList<ChessMove.ReversibleChessMove> history){
+    ChessGame(TeamColor currTeam, ChessBoard board, ArrayList<ChessMove.ReversibleChessMove<?>> history){
         this.currTeam=currTeam;
         this.board=board;
         this.history.addAll(history);
@@ -97,8 +97,7 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         var piece = this.board.getPiece(move.getStartPosition());
         if(piece.getTeamColor()==this.currTeam&&this.validMoves(move.getStartPosition()).contains(move)){
-            move.apply(this.board);
-            //this.history.add(reversibleMove);
+            this.history.add(move.apply(this.board));
         }else{
             throw new InvalidMoveException();
         }

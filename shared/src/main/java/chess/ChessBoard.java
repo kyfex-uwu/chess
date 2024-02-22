@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
 public class ChessBoard {
     final ChessPiece[] pieces = new ChessPiece[8*8];
 
-    final boolean[] blackDoubleMoved =new boolean[8];
-    final boolean[] whiteDoubleMoved =new boolean[8];
-    final boolean[] blackCanCastle=new boolean[]{true, true};
-    final boolean[] whiteCanCastle=new boolean[]{true, true};
+    private final boolean[] blackDoubleMoved =new boolean[8];
+    private final boolean[] whiteDoubleMoved =new boolean[8];
+    private final boolean[] blackCanCastle=new boolean[]{true, true};
+    private final boolean[] whiteCanCastle=new boolean[]{true, true};
 
     public ChessBoard() {}
     private ChessBoard(ChessPiece[] pieces, boolean[] BEP, boolean[] WEP, boolean[] BCC, boolean[] WCC){
@@ -251,8 +251,50 @@ public class ChessBoard {
         color.whiteOrBlack(this.whiteCanCastle, this.blackCanCastle)[side== CastleMove.Side.QUEENSIDE?0:1]=false;
     }
 
-    public void addCastlePrivileges(ChessGame.TeamColor color, CastleMove.Side side){
-        color.whiteOrBlack(this.whiteCanCastle, this.blackCanCastle)[side== CastleMove.Side.QUEENSIDE?0:1]=true;
+    //--
+
+    public String miscMoveDataToString(){
+        boolean[] allArray = new boolean[this.blackDoubleMoved.length+this.whiteDoubleMoved.length+
+                this.blackCanCastle.length+this.whiteCanCastle.length];
+        System.arraycopy(this.blackDoubleMoved, 0, allArray, 0, 8);
+        System.arraycopy(this.whiteDoubleMoved, 0, allArray, 8, 8);
+        System.arraycopy(this.blackCanCastle, 0, allArray, 16, 2);
+        System.arraycopy(this.whiteCanCastle, 0, allArray, 18, 2);
+
+        StringBuilder toReturn= new StringBuilder();
+        for(int i=0;i<allArray.length;i+=4){
+            int n=0;
+            for(int j=0;j<4;j++){
+                n=n*2+(j+i<allArray.length?(allArray[j+i]?1:0):0);
+            }
+            toReturn.append(Integer.toString(n, 16));
+        }
+        return toReturn.toString();
+    }
+    public void applyMoveData(String moveData){
+        var miscData = moveData.toCharArray();
+        var miscDataToBools = new boolean[miscData.length*4];
+        for(int i=0;i< miscData.length;i++){
+            int num = Integer.valueOf(String.valueOf(miscData[i]),16);
+            for(int j=0;j<4;j++){
+                miscDataToBools[i*4+j]=num%2==1;
+                num/=2;
+            }
+        }
+        for(int i=0;i<miscDataToBools.length;i++){
+            var val = miscDataToBools[i];
+            if(i<8){
+                this.blackDoubleMoved[i]=val;
+            }else if(i<16){
+                this.whiteDoubleMoved[i-8]=val;
+            }else if(i<18){
+                this.blackCanCastle[i-16]=val;
+            }else if(i<20){
+                this.whiteCanCastle[i-18]=val;
+            }else{
+                break;
+            }
+        }
     }
 
     //--

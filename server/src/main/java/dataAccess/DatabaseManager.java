@@ -27,9 +27,9 @@ public class DatabaseManager {
                 connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
             }
         } catch(SQLException e){
-            throw new RuntimeException("connection failed, "+e.getMessage());
+            throw new RuntimeException("connection failed", e);
         }catch (Exception ex) {
-            throw new RuntimeException("unable to process db.properties. " + ex.getMessage());
+            throw new RuntimeException("unable to process db.properties", ex);
         }
     }
 

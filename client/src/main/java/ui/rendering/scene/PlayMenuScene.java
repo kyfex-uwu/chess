@@ -1,7 +1,7 @@
 package ui.rendering.scene;
 
 import chess.ChessGame;
-import chess.Json;
+import chess.Serialization;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import model.GameData;
@@ -184,7 +184,7 @@ public class PlayMenuScene extends Scene{
                         this.myGames.clear();
                         var games = JsonParser.parseString(data).getAsJsonObject().getAsJsonArray("games");
                         for(var game : games){
-                            var gameData = Json.GSON.fromJson(game.toString(), GameData.class);
+                            var gameData = Serialization.GSON.fromJson(game.toString(), GameData.class);
                             this.myGames.add(gameData);
                         }
                     }catch(Exception e){
@@ -296,7 +296,7 @@ public class PlayMenuScene extends Scene{
                                 this.browsableGames.clear();
                                 var games = JsonParser.parseString(data).getAsJsonObject().getAsJsonArray("games");
                                 for(var game : games){
-                                    var gameData = Json.GSON.fromJson(game.toString(), GameData.class);
+                                    var gameData = Serialization.GSON.fromJson(game.toString(), GameData.class);
                                     this.browsableGames.add(gameData);
                                 }
                             }catch(Exception e){
@@ -334,12 +334,12 @@ public class PlayMenuScene extends Scene{
             "create", args -> {
                 var toSend = new JsonObject();
                 toSend.addProperty("gameName", this.gameName);
-                Online.request(Online.ReqMethod.POST, "game", Json.GSON.toJson(toSend))
+                Online.request(Online.ReqMethod.POST, "game", Serialization.GSON.toJson(toSend))
                         .ifSuccess(s -> {
                             this.createMode=false;
                             final int id;
                             try{
-                                id = ((Double) Json.GSON.fromJson(s, Map.class).get("gameID")).intValue();
+                                id = ((Double) Serialization.GSON.fromJson(s, Map.class).get("gameID")).intValue();
                             }catch (Exception e){
                                 PlayMenuScene.this.dialogMessage = "Could not parse game ID";
                                 return;

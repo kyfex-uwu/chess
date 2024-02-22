@@ -1,6 +1,6 @@
 package server;
 
-import chess.Json;
+import chess.Serialization;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -36,7 +36,7 @@ public class Server {
 
     private record ErrorMessage(String message){
         public static String error(String message){
-            return Json.GSON.toJson(new ErrorMessage("Error: "+message));
+            return Serialization.GSON.toJson(new ErrorMessage("Error: "+message));
         }
     }
     public static class InvalidRequestException extends Exception{}
@@ -54,11 +54,11 @@ public class Server {
             GamesService.clear();
 
             res.status(200);
-            return Json.jsonEmpty;
+            return Serialization.jsonEmpty;
         });
         //register
         Spark.post("/user", (req, res) -> {
-            var data = Json.GSON.fromJson(req.body(), UserData.class);
+            var data = Serialization.GSON.fromJson(req.body(), UserData.class);
 
             if(TESTING&&data.pfp()==null)
                 data = new UserData(data.username(), data.password(), data.email());
@@ -75,11 +75,11 @@ public class Server {
             }
 
             res.status(200);
-            return Json.GSON.toJson(new AuthData(token.get(), data.username()));
+            return Serialization.GSON.toJson(new AuthData(token.get(), data.username()));
         });
         //login
         Spark.post("/session", (req, res) -> {
-            var data = Json.GSON.fromJson(req.body(), LoginData.class);
+            var data = Serialization.GSON.fromJson(req.body(), LoginData.class);
 
             var token = AuthService.login(data);
             if(token.isEmpty()){
@@ -88,7 +88,7 @@ public class Server {
             }
 
             res.status(200);
-            return Json.GSON.toJson(new AuthData(token.get(), data.username()));
+            return Serialization.GSON.toJson(new AuthData(token.get(), data.username()));
         });
         //logout
         Spark.delete("/session", (req, res) -> {
@@ -100,7 +100,7 @@ public class Server {
             AuthService.logout(req.headers("Authorization"));
 
             res.status(200);
-            return Json.jsonEmpty;
+            return Serialization.jsonEmpty;
         });
 
         //list games
@@ -113,7 +113,7 @@ public class Server {
 
             JsonArray array = new JsonArray();
             for(var data : GamesService.getGames()) {
-                array.add(Json.GSON.toJsonTree(data));
+                array.add(Serialization.GSON.toJsonTree(data));
             }
 
             var toReturn = new JsonObject();
@@ -152,7 +152,7 @@ public class Server {
                 res.status(hRes.get().status);
                 return ErrorMessage.error(hRes.get().message);
             }
-            var data = Json.GSON.fromJson(req.body(), JoinGameData.class);
+            var data = Serialization.GSON.fromJson(req.body(), JoinGameData.class);
             if (!data.isValid()) throw new InvalidRequestException();
 
             var username = AuthService.getUserFromToken(req.headers("authorization")).username();
@@ -174,7 +174,7 @@ public class Server {
             //watch
 
             res.status(200);
-            return Json.jsonEmpty;
+            return Serialization.jsonEmpty;
         });
 
         //--
@@ -195,7 +195,7 @@ public class Server {
 
             res.status(200);
 
-            return Json.GSON.toJson(new UserData(user.username(),"","",user.pfp()));
+            return Serialization.GSON.toJson(new UserData(user.username(),"","",user.pfp()));
         });
 
         //get games with user
@@ -208,7 +208,7 @@ public class Server {
 
             JsonArray array = new JsonArray();
             for(var data : GamesService.getGamesWithUser(req.params(":username"))) {
-                array.add(Json.GSON.toJsonTree(data));
+                array.add(Serialization.GSON.toJsonTree(data));
             }
 
             var toReturn = new JsonObject();

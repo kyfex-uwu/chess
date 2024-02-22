@@ -1,7 +1,7 @@
 package server;
 
 import chess.InvalidMoveException;
-import chess.Json;
+import chess.Serialization;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import services.AuthService;
@@ -42,9 +42,9 @@ public class WebsocketHandler {
 
     @OnWebSocketMessage
     public void onMessage(Session user, String message) throws IOException {
-        var values=Json.GSON.fromJson(message, Map.class);
+        var values= Serialization.GSON.fromJson(message, Map.class);
         var type = UserGameCommand.CommandType.valueOf(values.get("commandType").toString());
-        var messageObj = Json.GSON.fromJson(message, type.clazz);
+        var messageObj = Serialization.GSON.fromJson(message, type.clazz);
 
         var idObj = values.get("_messageID");
         if(idObj!=null){
@@ -91,10 +91,10 @@ public class WebsocketHandler {
     private static void send(Session user, ServerMessage message){
         if(user==null) return;
 
-        try{ user.getRemote().sendString(Json.GSON.toJsonTree(message).toString()); }catch(Exception e){ }
+        try{ user.getRemote().sendString(Serialization.GSON.toJsonTree(message).toString()); }catch(Exception e){ }
     }
     private static void sendWithId(Session user, ServerMessage message, int id){
-        var toSend = Json.GSON.toJsonTree(message);
+        var toSend = Serialization.GSON.toJsonTree(message);
         toSend.getAsJsonObject().addProperty("_messageID", String.valueOf(id));
         try{ user.getRemote().sendString(toSend.toString()); }catch(Exception e){ }
     }
