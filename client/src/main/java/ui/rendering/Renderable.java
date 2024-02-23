@@ -22,7 +22,7 @@ public abstract class Renderable {
     public static void render(int width, int height, List<Renderable> toRender){
         var toPrint = new StringBuilder("\u001b[3J\u001b[2J\u001b[0;0H");
 
-        toRender.sort(Comparator.comparingInt(Renderable::getOrder));
+        toRender.sort(Comparator.comparingDouble(Renderable::getOrder));
 
         var screen = new Pixel[height][width];
         for(var row : screen)
@@ -48,12 +48,12 @@ public abstract class Renderable {
 
     protected int x;
     protected int y;
-    private final int order;
-    public Renderable(int order){ this.order=order; }
+    private final float order;
+    public Renderable(float order){ this.order=order; }
     public Renderable(){ this(0); }
     public abstract void render(Pixel[][] screen);
 
-    public int getOrder(){ return this.order; }
+    public float getOrder(){ return this.order; }
     public <T extends Renderable> T setPos(int x, int y) {
         this.x=x;
         this.y=y;

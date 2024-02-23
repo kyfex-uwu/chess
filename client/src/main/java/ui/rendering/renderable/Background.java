@@ -44,7 +44,7 @@ public class Background extends Renderable {
     }
 
     @Override
-    public int getOrder() { return -100; }
+    public float getOrder() { return -100; }
 
     public static void darken(Pixel[][] screen){
         for(var y=0;y<screen.length;y++){

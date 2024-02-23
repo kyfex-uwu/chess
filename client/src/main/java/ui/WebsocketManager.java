@@ -7,8 +7,8 @@ import ui.rendering.scene.GameScene;
 import ui.rendering.scene.PlayMenuScene;
 import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.IdentifyCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import javax.websocket.*;
@@ -27,7 +27,6 @@ public class WebsocketManager {
         inst = null;
         try {
             inst = new WebsocketManager();
-            sendMessage(new IdentifyCommand(PlayData.currAuth.authToken()));
             return true;
         }catch(Exception e){
             return false;
@@ -80,8 +79,8 @@ public class WebsocketManager {
             waitingMessage.message = messageObj;
             waitingMessage.lock.countDown();
         }else{
+            var scene = Main.getScene();
             if(messageObj instanceof LoadGameMessage loadGameMessage){
-                var scene = Main.getScene();
                 if(scene instanceof GameScene gameScene){
                     gameScene.data = new GameData(gameScene.data.gameID, gameScene.data.gameName,
                             gameScene.data.whiteUsername, gameScene.data.blackUsername, gameScene.data.watchers,
@@ -93,6 +92,11 @@ public class WebsocketManager {
                                 gameData.game = loadGameMessage.game;
                                 Main.getScene().onLine(new String[0]);
                             });
+                }
+            }else if(messageObj instanceof NotificationMessage notificationMessage){
+                if(scene instanceof GameScene gameScene){
+                    gameScene.setNotification(notificationMessage.message);
+                    Main.getScene().onLine(new String[0]);
                 }
             }
         }

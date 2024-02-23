@@ -46,7 +46,7 @@ public abstract class Scene extends Renderable{
         Renderable.render(screen[0].length,screen.length, this.toRender);
     }
     @Override
-    public int getOrder() {
+    public float getOrder() {
         return 0;
     }
 }

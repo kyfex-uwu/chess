@@ -19,8 +19,7 @@ public class UserGameCommand {
         JOIN_OBSERVER(JoinAsObserverCommand.class),
         MAKE_MOVE(MakeMoveCommand.class),
         LEAVE(LeaveGameCommand.class),
-        RESIGN(ResignCommand.class),
-        IDENTIFY(IdentifyCommand.class);
+        RESIGN(ResignCommand.class);
 
         public final Class<? extends UserGameCommand> clazz;
         CommandType(Class<? extends UserGameCommand> clazz){

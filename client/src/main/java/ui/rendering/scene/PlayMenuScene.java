@@ -13,6 +13,8 @@ import ui.rendering.Renderable;
 import ui.rendering.Sprite;
 import ui.rendering.renderable.Background;
 import ui.rendering.renderable.Nineslice;
+import webSocketMessages.userCommands.JoinAsObserverCommand;
+import webSocketMessages.userCommands.JoinAsPlayerCommand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -262,7 +264,18 @@ public class PlayMenuScene extends Scene{
                     try {
                         var gameIndex = Integer.valueOf(args[0], 36);
                         if(gameIndex>=0&&gameIndex<this.myGames.size()){
-                            this.changeScene(new GameScene(this.myGames.get(gameIndex)));
+                            var game = this.myGames.get(gameIndex);
+                            this.changeScene(new GameScene(game));
+
+                            if(game.whiteUsername.equals(PlayData.currAuth.username())||
+                                    game.blackUsername.equals(PlayData.currAuth.username()))
+                                WebsocketManager.sendMessage(new JoinAsPlayerCommand(
+                                        PlayData.currAuth.authToken(), game.gameID,
+                                        game.whiteUsername.equals(PlayData.selfData.username())?
+                                                ChessGame.TeamColor.WHITE: ChessGame.TeamColor.BLACK));
+                            else
+                                WebsocketManager.sendMessage(new JoinAsObserverCommand(
+                                        PlayData.currAuth.authToken(), game.gameID));
                             return;
                         }
                     }catch(Exception ignored){}

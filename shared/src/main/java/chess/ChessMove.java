@@ -205,7 +205,8 @@ public class ChessMove {
         }
         public String toAlgNotation(){
             return (this.piece.getPieceType()!=ChessPiece.PieceType.PAWN?
-                    Character.toUpperCase(this.piece.getPieceType().identifier):"")+
+                    Character.toUpperCase(this.piece.getPieceType().identifier):(this.takenPiece!=null?
+                        Character.toString((int)'a'-1+this.move.getStartPosition().getColumn()):""))+
                     //disambugation here
                     (this.takenPiece==null?"":"x")+
                     this.move.getEndPosition()+

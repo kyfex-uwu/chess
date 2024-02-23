@@ -6,13 +6,8 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import services.AuthService;
 import services.GamesService;
-import webSocketMessages.serverMessages.ErrorMessage;
-import webSocketMessages.serverMessages.LoadGameMessage;
-import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.serverMessages.SuccessMessage;
-import webSocketMessages.userCommands.IdentifyCommand;
-import webSocketMessages.userCommands.MakeMoveCommand;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.serverMessages.*;
+import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -41,19 +36,30 @@ public class WebsocketHandler {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session user, String message) throws IOException {
+    public void onMessage(Session session, String message) throws IOException {
         var values= Serialization.GSON.fromJson(message, Map.class);
         var type = UserGameCommand.CommandType.valueOf(values.get("commandType").toString());
         var messageObj = Serialization.GSON.fromJson(message, type.clazz);
 
         var idObj = values.get("_messageID");
+        var username = reverseUsers.get(session);
+        if(username==null){
+            try {
+                username=AuthService.getUserFromToken(messageObj.getAuthString()).username();
+                addUser(username, session);
+            }catch(Exception ignored){
+                send(session, new ErrorMessage("Could not identify you"));
+                return;
+            }
+        }
+
         if(idObj!=null){
             int id = Integer.parseInt(idObj.toString());
             if(messageObj instanceof MakeMoveCommand makeMoveObj){
                 try {
                     var game = GamesService.getGameById(makeMoveObj.gameID, true);
                     if(game==null){
-                        sendWithId(user, new ErrorMessage("game not found"), id);
+                        sendWithId(session, new ErrorMessage("game not found"), id);
                         return;
                     }
 
@@ -61,24 +67,45 @@ public class WebsocketHandler {
                         game.game.makeMove(makeMoveObj.move);
                         GamesService.updateGame(makeMoveObj.gameID, game.game);
                     }catch(InvalidMoveException e){
-                        sendWithId(user, new ErrorMessage("invalid move"), id);
+                        sendWithId(session, new ErrorMessage("invalid move"), id);
                     }
 
-                    sendWithId(user, new SuccessMessage(true), id);
+                    sendWithId(session, new SuccessMessage(true), id);
                     var toSend = new LoadGameMessage(game.game, game.gameID);
                     send(connectedUsers.get(game.whiteUsername),toSend);
                     send(connectedUsers.get(game.blackUsername),toSend);
-                    for(var username : game.watchers)
-                        send(connectedUsers.get(username), toSend);
+                    for(var watcherName : game.watchers)
+                        send(connectedUsers.get(watcherName), toSend);
                 }catch(Exception e){
-                    sendWithId(user, new ErrorMessage("something went wrong"), id);
+                    sendWithId(session, new ErrorMessage("something went wrong"), id);
                 }
             }
         }else{
-            if(messageObj instanceof IdentifyCommand identifyCommand){
+            if(messageObj instanceof JoinAsPlayerCommand joinPCommand){
                 try {
-                    addUser(AuthService.getUserFromToken(identifyCommand.getAuthString()).username(),user);
-                }catch(Exception ignored){}
+                    var game = GamesService.getGameById(joinPCommand.gameID, true);
+                    if(!joinPCommand.playerColor.whiteOrBlack(game.whiteUsername,game.blackUsername)
+                            .equals(username)){
+                        send(session, new ErrorMessage("Color does not match"));
+                        return;
+                    }
+
+                    var toSend = new NotificationMessage(username+" joined the game as "+joinPCommand.playerColor.name);
+                    if(!username.equals(game.whiteUsername)) send(connectedUsers.get(game.whiteUsername),toSend);
+                    if(!username.equals(game.blackUsername)) send(connectedUsers.get(game.blackUsername),toSend);
+                    for(var watcherName : game.watchers)
+                        if(!username.equals(watcherName)) send(connectedUsers.get(watcherName), toSend);
+                }catch(Exception ignored){ }
+            }else if(messageObj instanceof JoinAsObserverCommand joinOCommand){
+                try {
+                    var game = GamesService.getGameById(joinOCommand.gameID, true);
+
+                    var toSend = new NotificationMessage(username+" started watching the game");
+                    if(!username.equals(game.whiteUsername)) send(connectedUsers.get(game.whiteUsername),toSend);
+                    if(!username.equals(game.blackUsername)) send(connectedUsers.get(game.blackUsername),toSend);
+                    for(var watcherName : game.watchers)
+                        if(!username.equals(watcherName)) send(connectedUsers.get(watcherName), toSend);
+                }catch(Exception ignored){ }
             }
         }
     }

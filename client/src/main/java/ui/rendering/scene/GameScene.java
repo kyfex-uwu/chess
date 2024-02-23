@@ -10,6 +10,7 @@ import ui.rendering.Renderable;
 import ui.rendering.Sprite;
 import ui.rendering.renderable.Background;
 import ui.rendering.renderable.ChessRenderer;
+import ui.rendering.renderable.Nineslice;
 import ui.rendering.renderable.PFPMaker;
 import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.SuccessMessage;
@@ -155,15 +156,41 @@ public class GameScene extends Scene{
         this.blackPFP = PFPMaker.pfpToSprite(this.blackUser.pfp());
     }
     public GameData data;
+    private ChessPiece.Offset boardPos;
+    private ChessMove pawnPromotionMove;
+    private String[] notification;
+    public void setNotification(String notif){
+        var maxWidth = Config.screenWidth()-GameScene.this.boardPos.x()-9;
+        System.out.println(maxWidth);
+
+        var mutNotif = new ArrayList<String>();
+        var currStr="";
+        for(var str : notif.split(" ")){
+            if(currStr.length()+1+str.length()<=maxWidth)
+                currStr+=(currStr.length()>0?" ":"")+str;
+            else{
+                mutNotif.add(currStr);
+                currStr=str;
+            }
+        }
+        mutNotif.add(currStr);
+        this.notification = mutNotif.toArray(new String[0]);
+    }
+
+    private static final Nineslice notifNineslice = new Nineslice("""
+            \s╔─╗\s
+            \s│ │\s
+            \s╚─╝\s""",
+            ()->Config.Palette.DIALOG_OUTLINE, ()->Config.Palette.DIALOG_MAIN, ()->Config.Palette.DIALOG_TEXT)
+            .floatText(Nineslice.FloatDir.CENTER);
 
     private final ChessRenderer.RenderData.Builder builder = new ChessRenderer.RenderData.Builder();
-    private ChessPiece.Offset boardPos;
     @Override
     public void init() {
         super.init();
         this.builder.isBig(Config.displayBig());
         this.toRender.add(new Background());
-        this.toRender.add(new Renderable(8) {
+        this.toRender.add(new Renderable(7) {
             @Override
             public void render(Pixel[][] screen) {
                 var tempScreen = new Pixel[Config.screenHeight()][Config.screenWidth()];
@@ -213,10 +240,10 @@ public class GameScene extends Scene{
                 Sprite.Builder.fromStr(toPrint, false)
                         .withFGColor(GameScene.this.data.game.getTeamTurn().whiteOrBlack(Config.Palette.PIECE_WHITE, Config.Palette.PIECE_BLACK))
                         .withBGColor(GameScene.this.data.game.getTeamTurn().whiteOrBlack(Config.Palette.BOARD_WHITE, Config.Palette.BOARD_BLACK))
-                        .build().draw(startingX+lastX+2, screen.length-2, screen);
+                        .build().draw(startingX+lastX-toPrint.length()+1, startingY-2, screen);
             }
         });
-        this.toRender.add(new Renderable(6) {
+        this.toRender.add(new Renderable(5) {
             @Override
             public void render(Pixel[][] screen) {
                 var takenPieces = GameScene.this.data.game.history.stream()
@@ -267,7 +294,7 @@ public class GameScene extends Scene{
                 }
             }
         });
-        this.toRender.add(new Renderable(7) {
+        this.toRender.add(new Renderable(6) {
             @Override
             public void render(Pixel[][] screen) {
                 Sprite topSprite;
@@ -348,21 +375,34 @@ public class GameScene extends Scene{
                 }
             }
         });
-        this.toRender.add(new Renderable(5) {
+        this.toRender.add(new Renderable(4) {
             @Override
             public void render(Pixel[][] screen) {
                 for(int i=0;i<Math.min(GameScene.this.data.game.history.size(),
-                        screen.length-9+(PlayData.loggedIn()?0:2));i++){
+                        screen.length-6+(PlayData.loggedIn()?0:2));i++){
                     var revMove = GameScene.this.data.game.history.get(GameScene.this.data.game.history.size()-i-1);
 
                     Sprite.Builder.fromStr(" ".repeat(8-revMove.toAlgNotation().length())+
                                     revMove.toAlgNotation()+"   ")
-                            .withBGColor(revMove.piece.getTeamColor().whiteOrBlack(
+                            .withFGColor(revMove.piece.getTeamColor().whiteOrBlack(
                                     Config.Palette.BOARD_BLACK,Config.Palette.BOARD_WHITE))
                             .withBGColor(revMove.piece.getTeamColor().whiteOrBlack(
                                     Config.Palette.BOARD_WHITE,Config.Palette.BOARD_BLACK))
-                            .build().draw(screen[0].length-11-3, 5+i-(PlayData.loggedIn()?0:2), screen);
+                            .build().draw(screen[0].length-11-2, 5+i-(PlayData.loggedIn()?0:2), screen);
                 }
+            }
+        });
+        this.toRender.add(new Renderable(8) {
+            @Override
+            public void render(Pixel[][] screen) {
+                if(GameScene.this.notification==null) return;
+
+                notifNineslice.render(screen,
+                        GameScene.this.boardPos.x()+1, screen.length-3-GameScene.this.notification.length,
+                        screen[0].length-GameScene.this.boardPos.x()-3, GameScene.this.notification.length+2,
+                        String.join("\n",GameScene.this.notification));
+
+                GameScene.this.notification=null;
             }
         });
     }
@@ -373,7 +413,6 @@ public class GameScene extends Scene{
     }
 
     private final ArgConsumer consumer;
-    private ChessMove pawnPromotionMove;
     private final ArgConsumer pawnPromotionConsumer = new ArgConsumer(Map.of(
             "back", args -> GameScene.this.pawnPromotionMove=null,
             "rook", args ->
