@@ -15,6 +15,7 @@ import ui.rendering.renderable.PFPMaker;
 import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.SuccessMessage;
 import webSocketMessages.userCommands.MakeMoveCommand;
+import webSocketMessages.userCommands.ResignCommand;
 
 import java.util.*;
 
@@ -66,6 +67,7 @@ public class GameScene extends Scene{
 
         this.consumer = new ArgConsumer(Map.of(
                 "move", args -> {
+                    if(GameScene.this.data.game.winner!= ChessGame.WinType.NONE) return;
                     if(args.length<2){
                         GameScene.this.dialogMessage="Missing start/end position";
                         return;
@@ -108,10 +110,20 @@ public class GameScene extends Scene{
                         GameScene.this.dialogMessage="Invalid position";
                     }
                 },
+                "resign", args -> {
+                    if(PlayData.loggedIn())
+                        WebsocketManager.sendMessage(new ResignCommand(PlayData.currAuth.authToken(),
+                                GameScene.this.data.gameID));
+                    else{
+                        GameScene.this.data.game.winner=GameScene.this.data.game.getTeamTurn().whiteOrBlack(
+                                ChessGame.WinType.BLACK, ChessGame.WinType.WHITE);
+                    }
+                },
                 "back", args -> this.changeScene(new PlayMenuScene())
         ),ArgConsumer.helpCommandMaker(
                 "move [startpos] [endpos]", "Makes the specified move",
                 "show [pos]", "Shows all legal moves a piece at that position can make",
+                "resign", "Resigns",
                 "back", "Returns to the setup scene"
         ));
 
@@ -227,14 +239,23 @@ public class GameScene extends Scene{
                 }
 
                 String toPrint;
-                if(GameScene.this.data.game.isInCheckmate(GameScene.this.data.game.getTeamTurn())){
-                    toPrint=" Checkmate! "+GameScene.this.data.game.getTeamTurn().opposite()+" wins ";
-                }else if(GameScene.this.data.game.isInStalemate(GameScene.this.data.game.getTeamTurn())){
-                    toPrint=" Stalemate ";
+                if(GameScene.this.data.game.winner==ChessGame.WinType.NONE) {
+                    toPrint = " " + GameScene.this.data.game.getTeamTurn().name + "'s move ";
+                    if (GameScene.this.data.game.isInCheck(GameScene.this.data.game.getTeamTurn()))
+                        toPrint += "(Check) ";
                 }else{
-                    toPrint=" "+GameScene.this.data.game.getTeamTurn().name + "'s move ";
-                    if(GameScene.this.data.game.isInCheck(GameScene.this.data.game.getTeamTurn()))
-                        toPrint+="(Check) ";
+                    toPrint=switch(GameScene.this.data.game.winner){
+                        case WHITE -> " White wins ";
+                        case BLACK -> " Black wins ";
+                        default -> " Draw ";
+                    };
+                    if (GameScene.this.data.game.isInCheckmate(GameScene.this.data.game.winner.color.opposite()))
+                        toPrint+= "(Checkmate) ";
+                    else if (GameScene.this.data.game.isInStalemate(GameScene.this.data.game.winner.color.opposite()))
+                        toPrint+= "(Stalemate) ";
+                    else if(GameScene.this.data.game.winner!= ChessGame.WinType.DRAW)
+                        toPrint+="(Resignation) ";
+
                 }
 
                 Sprite.Builder.fromStr(toPrint, false)
@@ -378,8 +399,32 @@ public class GameScene extends Scene{
         this.toRender.add(new Renderable(4) {
             @Override
             public void render(Pixel[][] screen) {
+                int winnerOffs=0;
+                if(GameScene.this.data.game.winner!= ChessGame.WinType.NONE){
+                    winnerOffs=1;
+                    var winStr = switch (GameScene.this.data.game.winner){
+                        case WHITE -> "1-0";
+                        case BLACK -> "0-1";
+                        case DRAW -> "1/2-1/2";
+                        default -> "";
+                    };
+                    Sprite.Builder.fromStr(" ".repeat(8-winStr.length())+winStr+"   ")
+                            .withFGColor(switch (GameScene.this.data.game.winner){
+                                case WHITE -> Config.Palette.BOARD_WHITE;
+                                case BLACK -> Config.Palette.BOARD_BLACK;
+                                default -> Config.Palette.BOARD_TEXT;
+                            })
+                            .withBGColor(switch (GameScene.this.data.game.winner){
+                                case WHITE -> Config.Palette.BOARD_BLACK;
+                                case BLACK -> Config.Palette.BOARD_WHITE;
+                                default -> Config.Palette.BOARD_GRAY;
+                            })
+                            .build().draw(screen[0].length-11-2, 5-(PlayData.loggedIn()?0:2),
+                                    screen);
+                }
+
                 for(int i=0;i<Math.min(GameScene.this.data.game.history.size(),
-                        screen.length-6+(PlayData.loggedIn()?0:2));i++){
+                        screen.length-6+(PlayData.loggedIn()?0:2)-winnerOffs);i++){
                     var revMove = GameScene.this.data.game.history.get(GameScene.this.data.game.history.size()-i-1);
 
                     Sprite.Builder.fromStr(" ".repeat(8-revMove.toAlgNotation().length())+
@@ -388,7 +433,8 @@ public class GameScene extends Scene{
                                     Config.Palette.BOARD_BLACK,Config.Palette.BOARD_WHITE))
                             .withBGColor(revMove.piece.getTeamColor().whiteOrBlack(
                                     Config.Palette.BOARD_WHITE,Config.Palette.BOARD_BLACK))
-                            .build().draw(screen[0].length-11-2, 5+i-(PlayData.loggedIn()?0:2), screen);
+                            .build().draw(screen[0].length-11-2, 5+i-(PlayData.loggedIn()?0:2)+winnerOffs,
+                                    screen);
                 }
             }
         });

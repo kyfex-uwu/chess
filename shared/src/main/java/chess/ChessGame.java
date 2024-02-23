@@ -10,12 +10,13 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
-    public static boolean TESTING = false;
+    public static boolean TESTING = true;
     static{
         if(TESTING) System.out.println("=".repeat(50)+"\nTESTING\n"+"=".repeat(50));
     }
-    TeamColor currTeam;
-    ChessBoard board;
+    private TeamColor currTeam;
+    private ChessBoard board;
+    public WinType winner = WinType.NONE;
     public final ArrayList<ChessMove.ReversibleChessMove<?>> history = new ArrayList<>();
 
     public ChessGame() {
@@ -79,6 +80,14 @@ public class ChessGame {
             return black;
         }
     }
+    public enum WinType{
+        WHITE(TeamColor.WHITE),
+        BLACK(TeamColor.BLACK),
+        DRAW(null),
+        NONE(null);
+        public final TeamColor color;
+        WinType(TeamColor color){ this.color = color; }
+    }
 
     /**
      * @see ChessBoard#validMovesOf(ChessPosition)
@@ -99,10 +108,13 @@ public class ChessGame {
             var toAdd = move.apply(this.board);
 
             toAdd.piece=piece;
-            if(this.isInCheckmate(piece.getTeamColor().opposite()))
-                toAdd.checkType= ChessMove.ReversibleChessMove.CheckType.MATE;
-            else if(this.isInCheck(piece.getTeamColor().opposite()))
+            if(this.isInCheckmate(piece.getTeamColor().opposite())) {
+                toAdd.checkType = ChessMove.ReversibleChessMove.CheckType.MATE;
+                this.winner = this.currTeam.whiteOrBlack(WinType.WHITE, WinType.BLACK);
+            }else if(this.isInCheck(piece.getTeamColor().opposite()))
                 toAdd.checkType= ChessMove.ReversibleChessMove.CheckType.CHECK;
+            else if(this.isInStalemate(piece.getTeamColor().opposite()))
+                this.winner = WinType.DRAW;
 
             this.history.add(toAdd);
         }else{

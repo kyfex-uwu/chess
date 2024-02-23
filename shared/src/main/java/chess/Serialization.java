@@ -90,8 +90,8 @@ public class Serialization {
         @Override
         public JsonElement serialize(ChessGame chessGame, Type type, JsonSerializationContext jsonSerializationContext) {
             var toReturn = new JsonObject();
-            toReturn.addProperty("currTeam", chessGame.currTeam.name());
-            toReturn.add("board", GSON.toJsonTree(chessGame.board));
+            toReturn.addProperty("currTeam", chessGame.getTeamTurn().name());
+            toReturn.add("board", GSON.toJsonTree(chessGame.getBoard()));
 
             var history = new JsonArray();
             for(var reversibleMove : chessGame.history)

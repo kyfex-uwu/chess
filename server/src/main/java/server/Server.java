@@ -157,7 +157,7 @@ public class Server {
 
             var username = AuthService.getUserFromToken(req.headers("authorization")).username();
 
-            if(!data.playerColor().isEmpty()){//joining
+            if(data.playerColor()!=null&&!data.playerColor().isEmpty()){//joining
                 var gameJoin = GamesService.joinGame(data.gameID(), data.playerColor(), username);
                 if (gameJoin.isPresent()) {
                     res.status(gameJoin.get().status);
