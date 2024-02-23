@@ -3,8 +3,6 @@ package chess.specialmoves;
 import chess.*;
 import com.google.gson.JsonPrimitive;
 
-import java.util.Arrays;
-
 import static chess.Serialization.deserializeChessPosition;
 
 /**
@@ -55,11 +53,6 @@ public class DoublePawnMove extends ChessMove {
         //backwards
         public ReversibleDoublePawnMove(ChessBoard board, DoublePawnMove move, String moveDataState){
             super(board, move, null, moveDataState);
-        }
-
-        @Override
-        public String toString(){
-            return super.toString();
         }
     }
 }

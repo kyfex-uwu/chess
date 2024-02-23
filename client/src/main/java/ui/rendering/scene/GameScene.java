@@ -156,7 +156,7 @@ public class GameScene extends Scene{
     }
     public GameData data;
 
-    private ChessRenderer.RenderData.Builder builder = new ChessRenderer.RenderData.Builder();
+    private final ChessRenderer.RenderData.Builder builder = new ChessRenderer.RenderData.Builder();
     private ChessPiece.Offset boardPos;
     @Override
     public void init() {
@@ -191,7 +191,7 @@ public class GameScene extends Scene{
                 Sprite.Builder.fromStr(GameScene.this.data.gameName).withFGColor(Config.Palette.BOARD_TEXT)
                         .build().draw(startingX, startingY-2, screen);
                 if(GameScene.this.data.gameID!=-1)
-                    Sprite.Builder.fromStr(GameScene.this.data.gameID+"").withFGColor(Config.Palette.BOARD_GRAY)
+                    Sprite.Builder.fromStr(String.valueOf(GameScene.this.data.gameID)).withFGColor(Config.Palette.BOARD_GRAY)
                             .build().draw(startingX, startingY-1, screen);
                 for(int y=0;y<=lastY;y++) {
                     for (int x = 0; x<=lastX;x++){
@@ -353,12 +353,14 @@ public class GameScene extends Scene{
             public void render(Pixel[][] screen) {
                 for(int i=0;i<Math.min(GameScene.this.data.game.history.size(),
                         screen.length-9+(PlayData.loggedIn()?0:2));i++){
-                    var algNot = GameScene.this.data.game.history.get(GameScene.this.data.game.history.size()-i-1)
-                            .toAlgNotation();
+                    var revMove = GameScene.this.data.game.history.get(GameScene.this.data.game.history.size()-i-1);
 
-                    Sprite.Builder.fromStr(" ".repeat(8-algNot.length())+algNot+"   ")
-                            .withBGColor(i%2==0?Config.Palette.BOARD_BLACK:Config.Palette.BOARD_WHITE)
-                            .withFGColor(i%2==0?Config.Palette.BOARD_WHITE:Config.Palette.BOARD_BLACK)
+                    Sprite.Builder.fromStr(" ".repeat(8-revMove.toAlgNotation().length())+
+                                    revMove.toAlgNotation()+"   ")
+                            .withBGColor(revMove.piece.getTeamColor().whiteOrBlack(
+                                    Config.Palette.BOARD_BLACK,Config.Palette.BOARD_WHITE))
+                            .withBGColor(revMove.piece.getTeamColor().whiteOrBlack(
+                                    Config.Palette.BOARD_WHITE,Config.Palette.BOARD_BLACK))
                             .build().draw(screen[0].length-11-3, 5+i-(PlayData.loggedIn()?0:2), screen);
                 }
             }

@@ -86,5 +86,9 @@ public class CastleMove extends ChessMove {
         public String toString(){
             return "scastle:"+this.move.color.ordinal()+this.move.side.ordinal()+":"+this.moveDataState;
         }
+
+        public String toAlgNotation(){
+            return this.move.side==Side.KINGSIDE?"O-O":"O-O-O";
+        }
     }
 }

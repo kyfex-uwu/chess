@@ -1,8 +1,5 @@
 package chess;
 
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -99,7 +96,15 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         var piece = this.board.getPiece(move.getStartPosition());
         if(piece.getTeamColor()==this.currTeam&&this.validMoves(move.getStartPosition()).contains(move)){
-            this.history.add(move.apply(this.board));
+            var toAdd = move.apply(this.board);
+
+            toAdd.piece=piece;
+            if(this.isInCheckmate(piece.getTeamColor().opposite()))
+                toAdd.checkType= ChessMove.ReversibleChessMove.CheckType.MATE;
+            else if(this.isInCheck(piece.getTeamColor().opposite()))
+                toAdd.checkType= ChessMove.ReversibleChessMove.CheckType.CHECK;
+
+            this.history.add(toAdd);
         }else{
             throw new InvalidMoveException();
         }

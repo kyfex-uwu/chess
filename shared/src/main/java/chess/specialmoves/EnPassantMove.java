@@ -76,10 +76,5 @@ public class EnPassantMove extends ChessMove {
         public ReversibleEnPassantMove(ChessBoard board, EnPassantMove move, ChessPiece takenPiece, String moveDataState) {
             super(move, takenPiece, moveDataState, getDefaultConsumer(board, move, takenPiece, false));
         }
-
-        @Override
-        public String toString(){
-            return super.toString();
-        }
     }
 }

@@ -123,6 +123,13 @@ public class Serialization {
                                 reversibleMoveArgs[1].length()>0?pieceFromChar(reversibleMoveArgs[1].charAt(0)):null,
                                 reversibleMoveArgs[2]);
                     }
+
+                    reversibleChessMove.piece = board.getPiece(reversibleChessMove.move.getEndPosition());
+                    if(board.isInCheckMate(reversibleChessMove.piece.getTeamColor().opposite()))
+                        reversibleChessMove.checkType = ChessMove.ReversibleChessMove.CheckType.MATE;
+                    else if(board.isInCheckMate(reversibleChessMove.piece.getTeamColor().opposite()))
+                        reversibleChessMove.checkType = ChessMove.ReversibleChessMove.CheckType.CHECK;
+
                     reversibleChessMove.onReverse.accept(board);
                     history.add(reversibleChessMove);
                 }

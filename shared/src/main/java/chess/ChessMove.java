@@ -190,13 +190,28 @@ public class ChessMove {
                     getDefaultConsumer(move,board.getPiece(move.getEndPosition()),takenPiece,moveDataState));
         }
 
+        public ChessPiece piece;
+        public CheckType checkType=CheckType.NONE;
+        public enum CheckType{
+            CHECK("+"), MATE("#"), NONE("");
+            public final String str;
+            CheckType(String str){ this.str=str; }
+        }
+
         public String toString(){
             return this.move.toString()+":"+
                     (this.takenPiece==null?"":this.takenPiece.toCompressedString())+":"+
                     this.moveDataState;
         }
         public String toAlgNotation(){
-            return "mov"+"a".repeat((int) (Math.random()*3));
+            return (this.piece.getPieceType()!=ChessPiece.PieceType.PAWN?
+                    Character.toUpperCase(this.piece.getPieceType().identifier):"")+
+                    //disambugation here
+                    (this.takenPiece==null?"":"x")+
+                    this.move.getEndPosition()+
+                    (this.move.getPromotionPiece()==null?
+                            "":("="+Character.toUpperCase(this.move.getPromotionPiece().identifier)))+
+                    this.checkType.str;
         }
     }
 }
