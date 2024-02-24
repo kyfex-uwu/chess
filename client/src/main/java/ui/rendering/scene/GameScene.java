@@ -14,6 +14,7 @@ import ui.rendering.renderable.Nineslice;
 import ui.rendering.renderable.PFPMaker;
 import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.SuccessMessage;
+import webSocketMessages.userCommands.LeaveGameCommand;
 import webSocketMessages.userCommands.MakeMoveCommand;
 import webSocketMessages.userCommands.ResignCommand;
 
@@ -119,7 +120,11 @@ public class GameScene extends Scene{
                                 ChessGame.WinType.BLACK, ChessGame.WinType.WHITE);
                     }
                 },
-                "back", args -> this.changeScene(new PlayMenuScene())
+                "back", args -> {
+                    WebsocketManager.sendMessage(new LeaveGameCommand(PlayData.currAuth.authToken(),
+                            GameScene.this.data.gameID));
+                    this.changeScene(new PlayMenuScene());
+                }
         ),ArgConsumer.helpCommandMaker(
                 "move [startpos] [endpos]", "Makes the specified move",
                 "show [pos]", "Shows all legal moves a piece at that position can make",

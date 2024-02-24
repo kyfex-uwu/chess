@@ -91,6 +91,7 @@ public class Serialization {
         public JsonElement serialize(ChessGame chessGame, Type type, JsonSerializationContext jsonSerializationContext) {
             var toReturn = new JsonObject();
             toReturn.addProperty("currTeam", chessGame.getTeamTurn().name());
+            toReturn.addProperty("winner", chessGame.winner.ordinal());
             toReturn.add("board", GSON.toJsonTree(chessGame.getBoard()));
 
             var history = new JsonArray();
@@ -137,6 +138,7 @@ public class Serialization {
                 return new ChessGame(
                         ChessGame.TeamColor.valueOf(obj.get("currTeam").getAsString()),
                         GSON.fromJson(obj.get("board"), ChessBoard.class),
+                        ChessGame.WinType.values()[obj.get("winner").getAsInt()],
                         history);
             }catch (Exception e){
                 throw new JsonParseException("could not parse", e);

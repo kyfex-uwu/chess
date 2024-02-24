@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -24,9 +25,10 @@ public class ChessGame {
         this.board=new ChessBoard();
         this.board.resetBoard();
     }
-    ChessGame(TeamColor currTeam, ChessBoard board, ArrayList<ChessMove.ReversibleChessMove<?>> history){
+    ChessGame(TeamColor currTeam, ChessBoard board, WinType winner, ArrayList<ChessMove.ReversibleChessMove<?>> history){
         this.currTeam=currTeam;
         this.board=board;
+        this.winner=winner;
         this.history.addAll(history);
     }
 
@@ -103,6 +105,8 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if(this.winner!=WinType.NONE) throw new InvalidMoveException("Game is finished");
+
         var piece = this.board.getPiece(move.getStartPosition());
         if(piece.getTeamColor()==this.currTeam&&this.validMoves(move.getStartPosition()).contains(move)){
             var toAdd = move.apply(this.board);
@@ -166,5 +170,24 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return this.board;
+    }
+
+    //--
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessGame chessGame = (ChessGame) o;
+        return currTeam == chessGame.currTeam &&
+                Objects.equals(board, chessGame.board) &&
+                winner == chessGame.winner &&
+                Objects.equals(history, chessGame.history);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(currTeam, board, winner, history);
     }
 }
