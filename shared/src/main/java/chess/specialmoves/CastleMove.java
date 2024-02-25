@@ -27,14 +27,7 @@ public class CastleMove extends ChessMove {
     }
 
     public void apply(ChessBoard board){
-        board.addPiece(new ChessPosition(this.color.row,this.side.x), null);
-        board.addPiece(new ChessPosition(this.color.row,5), null);
-        board.addPiece(new ChessPosition(this.color.row,5+this.side.direc*2),
-                new ChessPiece(this.color, ChessPiece.PieceType.KING));
-        board.addPiece(new ChessPosition(this.color.row,5+this.side.direc),
-                new ChessPiece(this.color, ChessPiece.PieceType.ROOK));
 
-        board.removeCastlePrivileges(this.color);
     }
 
     public String toString(){

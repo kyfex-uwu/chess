@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 import static chess.ChessRenderer.renderGame;
 
-public class Main {
+public class Client {
     private static Collection<ChessMove> movesToShow = List.of();
     private static ChessPosition positionToShow = null;
     public static void main(String[] args) {

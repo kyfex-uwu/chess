@@ -28,13 +28,6 @@ public class AuthDataAccess {
     public static void createToken(AuthData data) throws DataAccessException{
         tokens.put(data.authToken(), data.username());
     }
-    public static String getToken(String username) throws DataAccessException{
-        if(tokens.containsValue(username)) {
-            var toReturn = tokens.entrySet().stream().filter(e->e.getValue().equals(username)).findFirst();
-            if(toReturn.isPresent()) return toReturn.get().getKey();
-        }
-        return null;
-    }
     public static void deleteToken(String token) throws DataAccessException{
         tokens.remove(token);
     }

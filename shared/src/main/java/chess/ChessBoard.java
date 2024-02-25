@@ -23,14 +23,15 @@ public class ChessBoard {
     private final boolean[] whiteCanCastle=new boolean[]{true, true};
 
     public ChessBoard() {}
-    private ChessBoard(ChessPiece[] pieces, boolean[] BEP, boolean[] WEP, boolean[] BCC, boolean[] WCC){
+    private ChessBoard(ChessPiece[] pieces, boolean[] blackDoubleMoved, boolean[] whiteDoubleMoved,
+                       boolean[] blackCanCastle, boolean[] whiteCanCastle){
         for(int i=0;i<pieces.length;i++){
             this.pieces[i]=pieces[i]==null?null:pieces[i].clone();
         }
-        System.arraycopy(BEP, 0, this.blackDoubleMoved, 0, 8);
-        System.arraycopy(WEP, 0, this.whiteDoubleMoved, 0, 8);
-        System.arraycopy(BCC, 0, this.blackCanCastle, 0, 2);
-        System.arraycopy(WCC, 0, this.whiteCanCastle, 0, 2);
+        System.arraycopy(blackDoubleMoved, 0, this.blackDoubleMoved, 0, 8);
+        System.arraycopy(whiteDoubleMoved, 0, this.whiteDoubleMoved, 0, 8);
+        System.arraycopy(blackCanCastle, 0, this.blackCanCastle, 0, 2);
+        System.arraycopy(whiteCanCastle, 0, this.whiteCanCastle, 0, 2);
     }
 
     /**
@@ -268,12 +269,14 @@ public class ChessBoard {
                 Arrays.equals(this.blackDoubleMoved, otherBoard.blackDoubleMoved);
     }
 
-    private static String miscMoveDataToString(boolean[] BDM, boolean[] WDM, boolean[] BC, boolean[] WC){
-        boolean[] allArray = new boolean[BDM.length+WDM.length+BC.length+WC.length];
-        System.arraycopy(BDM, 0, allArray, 0, 8);
-        System.arraycopy(WDM, 0, allArray, 8, 8);
-        System.arraycopy(BC, 0, allArray, 16, 2);
-        System.arraycopy(WC, 0, allArray, 18, 2);
+    private static String miscMoveDataToString(boolean[] blackDoubleMoved, boolean[] whiteDoubleMoved,
+                                               boolean[] blackCanCastle, boolean[] whiteCanCastle){
+        boolean[] allArray = new boolean[blackDoubleMoved.length+whiteDoubleMoved.length+
+                blackCanCastle.length+whiteCanCastle.length];
+        System.arraycopy(blackDoubleMoved, 0, allArray, 0, 8);
+        System.arraycopy(whiteDoubleMoved, 0, allArray, 8, 8);
+        System.arraycopy(blackCanCastle, 0, allArray, 16, 2);
+        System.arraycopy(whiteCanCastle, 0, allArray, 18, 2);
 
         StringBuilder toReturn= new StringBuilder();
         for(int i=0;i<allArray.length;i+=4){
@@ -299,47 +302,6 @@ public class ChessBoard {
                             chessBoard.whiteCanCastle));
 
             return toReturn;
-        }
-    }
-    public static ChessBoard deserialize(JsonObject obj) throws JsonParseException{
-        try {
-            var toReturn = new ChessBoard();
-
-            var pieces = obj.get("pieces").getAsString().toCharArray();
-            for (int i = 0; i < 64; i++) {
-                if(pieces[i]==' ') continue;
-                toReturn.pieces[i] = new ChessPiece(
-                        Character.isLowerCase(pieces[i])? ChessGame.TeamColor.WHITE: ChessGame.TeamColor.BLACK,
-                        ChessPiece.PieceType.getType(pieces[i]));
-            }
-
-            var miscData = obj.get("miscMovedData").getAsString().toCharArray();
-            var miscDataToBools = new boolean[miscData.length*4];
-            for(int i=0;i< miscData.length;i++){
-                int num = Integer.valueOf(String.valueOf(miscData[i]),16);
-                for(int j=0;j<4;j++){
-                    miscDataToBools[i*4+j]=num%2==1;
-                    num/=2;
-                }
-            }
-            for(int i=0;i<miscDataToBools.length;i++){
-                var val = miscDataToBools[i];
-                if(i<8){
-                    toReturn.blackDoubleMoved[i]=val;
-                }else if(i<16){
-                    toReturn.whiteDoubleMoved[i-8]=val;
-                }else if(i<18){
-                    toReturn.blackCanCastle[i-16]=val;
-                }else if(i<20){
-                    toReturn.whiteCanCastle[i-18]=val;
-                }else{
-                    break;
-                }
-            }
-
-            return toReturn;
-        }catch(Exception e){
-            throw new JsonParseException("Could not parse");
         }
     }
 }
