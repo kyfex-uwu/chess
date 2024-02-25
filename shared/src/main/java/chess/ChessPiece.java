@@ -81,12 +81,6 @@ public class ChessPiece {
             this.moves=Collections.unmodifiableCollection(collection);
         }
 
-        public static PieceType getType(char piece){
-            piece=Character.toLowerCase(piece);
-            for(var val : PieceType.values())
-                if(val.identifier==piece) return val;
-            return null;
-        }
     }
 
     /**
