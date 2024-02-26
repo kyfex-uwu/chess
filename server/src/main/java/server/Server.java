@@ -1,10 +1,7 @@
 package server;
 
 import chess.Serialization;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 import dataAccess.DataAccessException;
 import model.AuthData;
 import model.JoinGameData;

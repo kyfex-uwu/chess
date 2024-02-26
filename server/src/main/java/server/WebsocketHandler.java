@@ -12,42 +12,29 @@ import webSocketMessages.serverMessages.*;
 import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static chess.ChessGame.TESTING;
 
 @WebSocket
 public class WebsocketHandler {
     private static class SessionData{
+        public final Session session;
         public final String username;
-        public GameData currGameData;
-        public SessionData(String username){ this.username = username; }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            SessionData that = (SessionData) o;
-            return Objects.equals(username, that.username) && Objects.equals(currGameData, that.currGameData);
-        }
-        @Override
-        public int hashCode() {
-            return Objects.hash(username, currGameData);
+        public Integer gameID;
+        public SessionData(Session session, String username){
+            this.session = session;
+            this.username=username;
         }
     }
-    private static final Map<SessionData, Session> connectedUsers = new HashMap<>();
-    private static final Map<Session, SessionData> reverseUsers = new HashMap<>();
-    private static void addUser(SessionData data, Session session){
-        connectedUsers.put(data, session);
-        reverseUsers.put(session, data);
+    private static final Set<SessionData> connectedUsers = new HashSet<>();
+    private static SessionData getBySession(Session session){
+        return connectedUsers.stream().filter(data->data.session.equals(session))
+                .findFirst().orElse(null);
     }
-    private static Session getSession(String username){
-        for(var entry : connectedUsers.entrySet())
-            if(entry.getKey().username.equals(username)&&entry.getValue().isOpen())
-                return entry.getValue();
-        return null;
+    private static SessionData getByUsername(String username){
+        return connectedUsers.stream().filter(data->data.username.equals(username))
+                .findFirst().orElse(null);
     }
 
     @OnWebSocketConnect
@@ -55,11 +42,18 @@ public class WebsocketHandler {
 
     }
 
+    @OnWebSocketError
+    public void onError(Session user, Throwable error) throws IOException {
+        onClose(user, -1, "error");
+    }
     @OnWebSocketClose
     public void onClose(Session user, int statusCode, String reason) throws IOException {
-        var username = reverseUsers.remove(user);
-        if(username!=null){
-            connectedUsers.remove(username);
+        var toRemove = getBySession(user);
+        if(toRemove!=null){
+            try {
+                onLeave(GamesService.getGameById(toRemove.gameID, true), toRemove);
+            }catch(Exception ignored){}
+            connectedUsers.remove(toRemove);
         }
     }
 
@@ -71,11 +65,11 @@ public class WebsocketHandler {
         var messageObj = Serialization.GSON.fromJson(message, type.clazz);
 
         var idObj = values.get("_messageID");
-        var sessionData = reverseUsers.get(session);
+        var sessionData = getBySession(session);
         if(sessionData==null){
             try {
-                sessionData=new SessionData(AuthService.getUserFromToken(messageObj.getAuthString()).username());
-                addUser(sessionData, session);
+                sessionData=new SessionData(session,AuthService.getUserFromToken(messageObj.getAuthString()).username());
+                connectedUsers.add(sessionData);
             }catch(Exception ignored){
                 send(session, new ErrorMessage("Could not identify you"));
                 return;
@@ -92,7 +86,7 @@ public class WebsocketHandler {
                         sendWithId(session, new ErrorMessage("game not found"), id);
                         return;
                     }
-                    if(!gameData.equals(sessionData.currGameData)){
+                    if(makeMoveObj.gameID!=sessionData.gameID){
                         sendWithId(session, new ErrorMessage("not joined"), id);
                         return;
                     }
@@ -134,7 +128,7 @@ public class WebsocketHandler {
                     sendToGame(gameData,
                             new NotificationMessage(sessionData+" joined the game as "+joinPCommand.playerColor.name),
                             sessionData.username);
-                    sessionData.currGameData =gameData;
+                    sessionData.gameID=joinPCommand.gameID;
                     send(session, new LoadGameMessage(gameData.game, gameData.gameID));
                 }catch(Exception ignored){ }
             }else if(messageObj instanceof JoinAsObserverCommand joinOCommand){
@@ -148,7 +142,7 @@ public class WebsocketHandler {
                     sendToGame(gameData,
                             new NotificationMessage(sessionData+" started watching the game"),
                             sessionData.username);
-                    sessionData.currGameData =gameData;
+                    sessionData.gameID=joinOCommand.gameID;
                     send(session, new LoadGameMessage(gameData.game, gameData.gameID));
                 }catch(Exception ignored){ }
             }else if(messageObj instanceof ResignCommand resignCommand){
@@ -158,7 +152,7 @@ public class WebsocketHandler {
                         send(session, new ErrorMessage("Game not found"));
                         return;
                     }
-                    if(!gameData.game.equals(sessionData.currGameData.game)){
+                    if(gameData.gameID!=resignCommand.gameID){
                         send(session, new ErrorMessage("not joined"));
                         return;
                     }
@@ -183,7 +177,7 @@ public class WebsocketHandler {
                         send(session, new ErrorMessage("Game not found"));
                         return;
                     }
-                    if(!gameData.equals(sessionData.currGameData)){
+                    if(gameData.gameID!= leaveGameCommand.gameID){
                         send(session, new ErrorMessage("not joined"));
                         return;
                     }
@@ -193,30 +187,29 @@ public class WebsocketHandler {
             }
         }
     }
+    private static void onLeave(GameData gameData, SessionData leavingUser){
+        if(leavingUser==null) return;
+
+        leavingUser.gameID=null;
+        sendToGame(gameData, new NotificationMessage(leavingUser+" left"), leavingUser.username);
+    }
 
     private static void sendToGame(GameData gameData, ServerMessage message, String toExclude){
-        //new Exception().printStackTrace();
+        if(gameData==null) return;
+        if(toExclude==null) toExclude="";
+
         if(!toExclude.equals(gameData.whiteUsername)) sendIfInGame(gameData, message, gameData.whiteUsername);
         if(!toExclude.equals(gameData.blackUsername)) sendIfInGame(gameData, message, gameData.blackUsername);
         for(var watcherName : gameData.watchers)
             if(!toExclude.equals(watcherName)) sendIfInGame(gameData, message, watcherName);
     }
     private static void sendIfInGame(GameData gameData, ServerMessage message, String sendTo){
-        var session = getSession(sendTo);
-        var data = reverseUsers.get(session);
-        if(data!=null&&gameData.game.equals(data.currGameData.game)){
-            System.out.println("sent to "+sendTo+" "+message);
-            send(session, message);
-        }
-    }
-    private static void onLeave(GameData gameData, SessionData leavingUser){
-        leavingUser.currGameData =null;
-        sendToGame(gameData, new NotificationMessage(leavingUser+" left"), leavingUser.username);
-    }
+        if(gameData==null) return;
 
-    @OnWebSocketError
-    public void onError(Session user, Throwable error) throws IOException {
-        onClose(user, -1, "error");
+        var user = getByUsername(sendTo);
+        if(user!=null&&user.gameID!=null&&gameData.gameID==user.gameID){
+            send(user.session, message);
+        }
     }
 
     private static void send(Session user, ServerMessage message){
@@ -225,7 +218,6 @@ public class WebsocketHandler {
     private static void sendWithId(Session user, ServerMessage message, Integer id){
         if(user==null||!user.isOpen()) return;
 
-        System.out.println("sent for real! "+message);
         var toSend = Serialization.GSON.toJsonTree(message);
         if(id!=null) toSend.getAsJsonObject().addProperty("_messageID", String.valueOf(id));
         try{ user.getRemote().sendString(toSend.toString()); }catch(Exception e){ }
