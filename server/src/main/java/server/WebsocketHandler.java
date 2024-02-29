@@ -90,6 +90,11 @@ public class WebsocketHandler {
                         sendWithId(session, new ErrorMessage("not joined"), id);
                         return;
                     }
+                    if(!gameData.game.getTeamTurn().whiteOrBlack(
+                            gameData.whiteUsername,gameData.blackUsername).equals(sessionData.username)){
+                        sendWithId(session, new ErrorMessage("not your turn"), id);
+                        return;
+                    }
 
                     try {
                         gameData.game.makeMove(makeMoveObj.move);
@@ -216,7 +221,10 @@ public class WebsocketHandler {
         sendWithId(user, message, null);
     }
     private static void sendWithId(Session user, ServerMessage message, Integer id){
+        if(TESTING&&message instanceof SuccessMessage) return;
         if(user==null||!user.isOpen()) return;
+        //System.out.print(message+", ");
+        //try{ System.out.println(getBySession(user).username); }catch(Exception e){ System.out.println();}
 
         var toSend = Serialization.GSON.toJsonTree(message);
         if(id!=null) toSend.getAsJsonObject().addProperty("_messageID", String.valueOf(id));
