@@ -14,8 +14,6 @@ import webSocketMessages.userCommands.*;
 import java.io.IOException;
 import java.util.*;
 
-import static chess.ChessGame.TESTING;
-
 @WebSocket
 public class WebsocketHandler {
     private static class SessionData{
@@ -57,7 +55,6 @@ public class WebsocketHandler {
         }
     }
 
-    private static final String testingId="1";
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
         var values= Serialization.GSON.fromJson(message, Map.class);
@@ -75,7 +72,6 @@ public class WebsocketHandler {
                 return;
             }
         }
-        if(idObj==null&& TESTING) idObj=testingId;
 
         if(idObj!=null){
             int id = Integer.parseInt(idObj.toString());
@@ -105,9 +101,7 @@ public class WebsocketHandler {
                     sendWithId(session, new ErrorMessage("something went wrong"), id);
                 }
             }
-        }
-        if(idObj==testingId&& TESTING) idObj=null;
-        if(idObj==null){
+        }else{
             if(messageObj instanceof JoinAsPlayerCommand joinPCommand){
                 try {
                     if(joinPCommand.playerColor==null){
@@ -168,7 +162,7 @@ public class WebsocketHandler {
                     GamesService.updateGame(resignCommand.gameID, gameData.game);
 
                     sendToGame(gameData, new NotificationMessage(sessionData+" resigned"), "");
-                    if(!TESTING) sendToGame(gameData, new LoadGameMessage(gameData.game, gameData.gameID), sessionData.username);
+                    sendToGame(gameData, new LoadGameMessage(gameData.game, gameData.gameID), sessionData.username);
                 }catch(Exception ignored){}
             }else if(messageObj instanceof LeaveGameCommand leaveGameCommand){
                 try{
@@ -220,6 +214,6 @@ public class WebsocketHandler {
 
         var toSend = Serialization.GSON.toJsonTree(message);
         if(id!=null) toSend.getAsJsonObject().addProperty("_messageID", String.valueOf(id));
-        try{ user.getRemote().sendString(toSend.toString()); }catch(Exception e){ }
+        try{ user.getRemote().sendString(toSend.toString()); }catch(Exception ignored){ }
     }
 }

@@ -115,9 +115,9 @@ public record UserData(String username, String password, String email, String pf
     public static final String passwordRegex = ".{8,256}";
     public boolean isValid(){
         return Data.isValid(username, password, email)&&
-                (ChessGame.TESTING||(username.matches(usernameRegex)&&
+                username.matches(usernameRegex)&&
                 password.matches(passwordRegex)&&
-                pfp!=null&&pfp.length()==54));
+                pfp!=null&&pfp.length()==54;
     }
 
     //--

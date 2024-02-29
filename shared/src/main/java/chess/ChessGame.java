@@ -11,10 +11,6 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessGame {
-    public static boolean TESTING = true;
-    static{
-        if(TESTING) System.out.println("=".repeat(50)+"\nTESTING\n"+"=".repeat(50));
-    }
     private TeamColor currTeam;
     private ChessBoard board;
     public WinType winner = WinType.NONE;

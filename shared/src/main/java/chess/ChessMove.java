@@ -19,57 +19,6 @@ public class ChessMove {
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
-        var stacktrace = Arrays.toString(new Exception().getStackTrace());
-        if(ChessGame.TESTING&&stacktrace.contains("reflect")){
-            //we are testing!
-            if(stacktrace.contains("EnPassantTests")){
-                if(Math.abs(startPosition.getColumn()-endPosition.getColumn())==1&&
-                        Math.abs(startPosition.getRow()-endPosition.getRow())==1){
-                    //if this move resembles an en passant
-                    this.hackApply = board -> {
-                        var startPiece=board.getPiece(this.getStartPosition());
-
-                        board.addPiece(this.getEndPosition(), this.getPromotionPiece()==null ?
-                                startPiece :
-                                new ChessPiece(startPiece.getTeamColor(),this.getPromotionPiece()));
-                        board.addPiece(this.getStartPosition(), null);
-                        board.addPiece(this.getEndPosition().addOffset(new ChessPiece.Offset(0,
-                                -startPiece.getTeamColor().advDir)), null);
-                    };
-                }else if(startPosition.getColumn()==endPosition.getColumn()&&
-                        Math.abs(startPosition.getRow()-endPosition.getRow())==2){
-                    //if this move resembles a double move
-                    this.hackApply = board -> {
-                        var startPiece=board.getPiece(this.getStartPosition());
-
-                        board.addPiece(this.getEndPosition(), this.getPromotionPiece()==null ?
-                                startPiece :
-                                new ChessPiece(startPiece.getTeamColor(),this.getPromotionPiece()));
-                        board.addPiece(this.getStartPosition(), null);
-
-                        board.setDoubleMoved(this.getStartPosition().getColumn(), startPiece.getTeamColor());
-                    };
-                }
-            }else if(stacktrace.contains("CastlingTests")){
-                if((startPosition.getRow()==1||startPosition.getRow()==8)&&startPosition.getColumn()==5&&
-                        Math.abs(startPosition.getColumn()-endPosition.getColumn())==2){
-                    //if this move resembles a castle
-                    var color = startPosition.getRow()==1? ChessGame.TeamColor.WHITE: ChessGame.TeamColor.BLACK;
-                    var side = endPosition.getColumn()==3?CastleMove.Side.QUEENSIDE: CastleMove.Side.KINGSIDE;
-                    this.hackApply = board -> {
-                        board.addPiece(new ChessPosition(color.row,side.x), null);
-                        board.addPiece(new ChessPosition(color.row,5), null);
-                        board.addPiece(new ChessPosition(color.row,5+side.direc*2),
-                                new ChessPiece(color, ChessPiece.PieceType.KING));
-                        board.addPiece(new ChessPosition(color.row,5+side.direc),
-                                new ChessPiece(color, ChessPiece.PieceType.ROOK));
-
-                        board.removeCastlePrivileges(color);
-                    };
-                }
-            }
-        }
-
         this.start=startPosition;
         this.end=endPosition;
         this.promotionPiece=promotionPiece;
@@ -108,7 +57,6 @@ public class ChessMove {
         return new ChessMove(this.start, this.end, type);
     }
 
-    private Consumer<ChessBoard> hackApply;
 
     /**
      * Applies this move to the chessboard. Does not check for validity
@@ -116,11 +64,6 @@ public class ChessMove {
      */
     public ReversibleChessMove<? extends ChessMove> apply(ChessBoard board){
         var toReturn = new ReversibleChessMove<>(board, this);
-        if(this.hackApply!=null){
-            //stinky
-            this.hackApply.accept(board);
-            return toReturn;
-        }
 
         var startPiece=board.getPiece(this.start);
         board.addPiece(this.end, this.promotionPiece==null ?

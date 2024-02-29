@@ -121,8 +121,9 @@ public class GameScene extends Scene{
                     }
                 },
                 "back", args -> {
-                    WebsocketManager.sendMessage(new LeaveGameCommand(PlayData.currAuth.authToken(),
-                            GameScene.this.data.gameID));
+                    if(PlayData.loggedIn())
+                        WebsocketManager.sendMessage(new LeaveGameCommand(PlayData.currAuth.authToken(),
+                                GameScene.this.data.gameID));
                     this.changeScene(new PlayMenuScene());
                 }
         ),ArgConsumer.helpCommandMaker(
