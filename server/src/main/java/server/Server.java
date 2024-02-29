@@ -110,6 +110,10 @@ public class Server {
             res.status(200);
             return toReturn;
         });
+        pt2();
+        return Spark.port();
+    }
+    private static void pt2(){
         //create game
         Spark.post("/game", (req, res) -> {
             var hRes= AuthService.validateHeader(req);
