@@ -96,8 +96,9 @@ public class WebsocketHandler {
                         return;
                     }
 
+                    String moveStr="";
                     try {
-                        gameData.game.makeMove(makeMoveObj.move);
+                        moveStr=gameData.game.makeMove(makeMoveObj.move).toAlgNotation();
                         GamesService.updateGame(makeMoveObj.gameID, gameData.game);
                     }catch(InvalidMoveException e){
                         sendWithId(session, new ErrorMessage("invalid move"), id);
@@ -106,6 +107,8 @@ public class WebsocketHandler {
 
                     sendWithId(session, new SuccessMessage(true), id);
                     sendToGame(gameData, new LoadGameMessage(gameData.game, gameData.gameID), "");
+                    sendToGame(gameData, new NotificationMessage(sessionData.username+" moved "+moveStr),
+                            sessionData.username);
                 }catch(Exception e){
                     sendWithId(session, new ErrorMessage("something went wrong"), id);
                 }
@@ -223,11 +226,9 @@ public class WebsocketHandler {
     private static void sendWithId(Session user, ServerMessage message, Integer id){
         if(TESTING&&message instanceof SuccessMessage) return;
         if(user==null||!user.isOpen()) return;
-        //System.out.print(message+", ");
-        //try{ System.out.println(getBySession(user).username); }catch(Exception e){ System.out.println();}
 
         var toSend = Serialization.GSON.toJsonTree(message);
-        if(id!=null) toSend.getAsJsonObject().addProperty("_messageID", String.valueOf(id));
+        if(!TESTING&&id!=null) toSend.getAsJsonObject().addProperty("_messageID", String.valueOf(id));
         try{ user.getRemote().sendString(toSend.toString()); }catch(Exception e){ }
     }
 }

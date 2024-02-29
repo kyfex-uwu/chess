@@ -526,12 +526,8 @@ public class WebSocketTests {
         ChessPosition startingPosition = TestFactory.getNewPosition(2, 5);
         ChessPosition endingPosition = TestFactory.getNewPosition(3, 5);
         ChessMove move = TestFactory.getNewMove(startingPosition, endingPosition, null);
-        System.out.println("making move");
         messages = makeMove(white.user, white.authToken, gameID, move,
                 Set.of(black.user, observer.user), Set.of(white2.user, black2.user, observer2.user));
-        //changed, lines were not empty
-        for(var user : messages.keySet())
-            System.out.println(user+", "+messages.get(user));
         assertLoadGameMessage(messages.get(white.user));
         assertMoveMadePair(messages.get(black.user));
         assertMoveMadePair(messages.get(observer.user));
