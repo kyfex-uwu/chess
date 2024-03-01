@@ -71,4 +71,11 @@ public class AuthService {
     public static UserData getUserFromName(String name) throws DataAccessException {
         return AuthDataAccess.getUser(name);
     }
+
+    public static void putAchievements(int achievements, String username) throws DataAccessException{
+        if(achievements==0) return;
+
+        var data = AuthDataAccess.getUser(username);
+        AuthDataAccess.updateAchievements(data.achievements()|achievements, username);
+    }
 }

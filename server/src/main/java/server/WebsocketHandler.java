@@ -1,6 +1,8 @@
 package server;
 
+import achievements.Achievement;
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.InvalidMoveException;
 import chess.Serialization;
 import model.GameData;
@@ -92,8 +94,9 @@ public class WebsocketHandler {
                         return;
                     }
 
+                    ChessMove.ReversibleChessMove<?> reversibleMove;
                     try {
-                        gameData.game.makeMove(makeMoveObj.move);
+                        reversibleMove = gameData.game.makeMove(makeMoveObj.move);
                         GamesService.updateGame(makeMoveObj.gameID, gameData.game);
                     }catch(InvalidMoveException e){
                         sendWithId(session, new ErrorMessage("invalid move"), id);
@@ -102,6 +105,23 @@ public class WebsocketHandler {
 
                     sendWithId(session, new SuccessMessage(true), id);
                     sendToGame(gameData, new LoadGameMessage(gameData.game, gameData.gameID), "");
+
+                    try {
+                        var currAchievements = Achievement.getNewAchievements(
+                                sessionData.username, gameData, reversibleMove);
+                        var oldAchievements = AuthService.getUserFromName(sessionData.username).achievements();
+                        if (currAchievements != oldAchievements) {
+                            AuthService.putAchievements(currAchievements, sessionData.username);
+                            var userData = AuthService.getUserFromName(sessionData.username);
+
+                            var achievementIDs = Achievement.intToAchievementIDs(
+                                    userData.achievements() ^ oldAchievements);
+                            send(session, new NotificationMessage("Achievement"+(achievementIDs.size()>1?"s":"")+
+                                    " "+String.join(", ",achievementIDs)+" gotten!"));
+
+                        }
+                    }catch(Exception e){}//bruh
+
                 }catch(Exception e){
                     sendWithId(session, new ErrorMessage("something went wrong"), id);
                 }
@@ -168,6 +188,7 @@ public class WebsocketHandler {
 
                     sendToGame(gameData, new NotificationMessage(sessionData+" resigned"), "");
                     sendToGame(gameData, new LoadGameMessage(gameData.game, gameData.gameID), sessionData.username);
+                    //todo: check here too for achievements
                 }catch(Exception ignored){}
             }else if(messageObj instanceof LeaveGameCommand leaveGameCommand){
                 try{

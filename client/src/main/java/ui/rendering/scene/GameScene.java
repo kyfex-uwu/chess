@@ -179,7 +179,6 @@ public class GameScene extends Scene{
     private String[] notification;
     public void setNotification(String notif){
         var maxWidth = Config.screenWidth()-GameScene.this.boardPos.x()-9;
-        System.out.println(maxWidth);
 
         var mutNotif = new ArrayList<String>();
         var currStr="";

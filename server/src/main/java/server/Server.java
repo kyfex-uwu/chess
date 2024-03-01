@@ -1,5 +1,6 @@
 package server;
 
+import achievements.WinStreakAchievement;
 import chess.Serialization;
 import com.google.gson.*;
 import dataAccess.DataAccessException;
@@ -39,8 +40,9 @@ public class Server {
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
-        Spark.staticFiles.location("web");
+        WinStreakAchievement.condition = (achievement, userData, gameData, lastMove) -> false;
 
+        Spark.staticFiles.location("web");
         Spark.webSocket("/connect", WebsocketHandler.class);
 
         //delete db

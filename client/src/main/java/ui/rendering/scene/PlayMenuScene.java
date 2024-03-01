@@ -321,9 +321,9 @@ public class PlayMenuScene extends Scene{
             "back", args -> this.createMode=false,
             "name", args -> {
                 if(args.length==0) return;
-                var tryName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                var tryName = String.join(" ", args);
                 if(tryName.length()>=3&&tryName.length()<=32)
-                    this.gameName = args[0];
+                    this.gameName = tryName;
                 else
                     this.dialogMessage = "Wrong size: name must be 3-32 characters";
             },

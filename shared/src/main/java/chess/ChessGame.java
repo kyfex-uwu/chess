@@ -100,7 +100,7 @@ public class ChessGame {
      * @param move chess move to preform
      * @throws InvalidMoveException if move is invalid
      */
-    public void makeMove(ChessMove move) throws InvalidMoveException {
+    public ChessMove.ReversibleChessMove<?> makeMove(ChessMove move) throws InvalidMoveException {
         if(this.winner!=WinType.NONE) throw new InvalidMoveException("Game is finished");
 
         var piece = this.board.getPiece(move.getStartPosition());
@@ -117,10 +117,11 @@ public class ChessGame {
                 this.winner = WinType.DRAW;
 
             this.history.add(toAdd);
+            this.setTeamTurn(this.currTeam.opposite());
+            return toAdd;
         }else{
             throw new InvalidMoveException();
         }
-        this.setTeamTurn(this.currTeam.opposite());
     }
 
     /**

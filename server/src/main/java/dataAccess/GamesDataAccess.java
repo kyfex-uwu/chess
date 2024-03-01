@@ -114,6 +114,7 @@ public class GamesDataAccess {
                     if(!resultSet.next()) throw new DataAccessException("no game found");
 
                     var watchers = resultSet.getString(1);
+                    if(watchers.contains(","+username+",")) return;//already watching
                     DatabaseManager.execStatement(
                             "UPDATE games SET watchers=? WHERE gameID=?", query -> {
                                 query.setString(1, watchers+","+username);

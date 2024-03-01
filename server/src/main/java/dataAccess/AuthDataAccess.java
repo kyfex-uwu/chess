@@ -23,7 +23,8 @@ public class AuthDataAccess {
             toReturn.set(new UserData(resultSet.getString(1),
                     resultSet.getString(2),
                     resultSet.getString(3),
-                    resultSet.getString(4)));
+                    resultSet.getString(4),
+                    resultSet.getInt(5)));
         });
         return toReturn.get();
     }
@@ -72,11 +73,24 @@ public class AuthDataAccess {
                 toReturn.set(new UserData(
                         resultSet2.getString(1),
                         resultSet2.getString(2),
-                        resultSet2.getString(3)
+                        resultSet2.getString(3),
+                        resultSet2.getString(4),
+                        resultSet2.getInt(5)
                 ));
             });
         });
 
         return toReturn.get();
+    }
+
+    //--
+
+    public static void updateAchievements(int achievements, String username) throws DataAccessException{
+        if(username==null||username.isEmpty()) throw new DataAccessException("invalid username");
+
+        DatabaseManager.execStatement("UPDATE users SET achievements=? WHERE username=?\n", query->{
+            query.setInt(1, achievements);
+            query.setString(2, username);
+        });
     }
 }
