@@ -86,6 +86,11 @@ public class WebsocketHandler {
                         sendWithId(session, new ErrorMessage("not joined"), id);
                         return;
                     }
+                    if(!gameData.game.getTeamTurn().whiteOrBlack(
+                            gameData.whiteUsername,gameData.blackUsername).equals(sessionData.username)){
+                        sendWithId(session, new ErrorMessage("not your turn"), id);
+                        return;
+                    }
 
                     try {
                         gameData.game.makeMove(makeMoveObj.move);

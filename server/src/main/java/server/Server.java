@@ -12,8 +12,6 @@ import services.GamesService;
 import spark.ExceptionHandler;
 import spark.Spark;
 
-import static chess.ChessGame.TESTING;
-
 public class Server {
     //todo: golden board when you checkmate without losing a piece
 
@@ -56,9 +54,6 @@ public class Server {
         //register
         Spark.post("/user", (req, res) -> {
             var data = Serialization.GSON.fromJson(req.body(), UserData.class);
-
-            if(TESTING&&data.pfp()==null)
-                data = new UserData(data.username(), data.password(), data.email());
 
             if(!AuthService.registerUser(data)){
                 res.status(FailedResponse.ALREADY_TAKEN.status);
@@ -130,7 +125,7 @@ public class Server {
             String gameName;
             try{
                 gameName=((JsonObject)body).get("gameName").getAsString();
-                if(!TESTING&&!gameName.matches("[\\w ]{3,32}")) throw new Exception("wrong size");
+                if(!gameName.matches("[\\w ]{3,32}")) throw new Exception("wrong size");
             }catch(Exception e){
                 res.status(FailedResponse.BAD_REQ.status);
                 return ErrorMessage.error(FailedResponse.BAD_REQ.message);
