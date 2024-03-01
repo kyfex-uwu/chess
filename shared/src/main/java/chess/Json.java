@@ -20,12 +20,14 @@ public class Json {
 
     //-- ChessBoard
 
-    private static String miscMoveDataToString(boolean[] BDM, boolean[] WDM, boolean[] BC, boolean[] WC){
-        boolean[] allArray = new boolean[BDM.length+WDM.length+BC.length+WC.length];
-        System.arraycopy(BDM, 0, allArray, 0, 8);
-        System.arraycopy(WDM, 0, allArray, 8, 8);
-        System.arraycopy(BC, 0, allArray, 16, 2);
-        System.arraycopy(WC, 0, allArray, 18, 2);
+    private static String miscMoveDataToString(boolean[] blackDoubleMoved, boolean[] whiteDoubleMoved,
+                                               boolean[] blackCanCastle, boolean[] whiteCanCastle){
+        boolean[] allArray = new boolean[blackDoubleMoved.length+whiteDoubleMoved.length+
+                blackCanCastle.length+whiteCanCastle.length];
+        System.arraycopy(blackDoubleMoved, 0, allArray, 0, 8);
+        System.arraycopy(whiteDoubleMoved, 0, allArray, 8, 8);
+        System.arraycopy(blackCanCastle, 0, allArray, 16, 2);
+        System.arraycopy(whiteCanCastle, 0, allArray, 18, 2);
 
         StringBuilder toReturn= new StringBuilder();
         for(int i=0;i<allArray.length;i+=4){
