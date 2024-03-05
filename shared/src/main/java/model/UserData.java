@@ -3,8 +3,6 @@ package model;
 import java.util.Objects;
 
 public record UserData(String username, String password, String email, String pfp, int achievements) implements Data {
-
-    private record Color(int r, int g, int b){}
     private static String pfpGenerator(){
         boolean[] pixels = new boolean[6*3];
         for(int i=0;i<5;i++) pixels[(int) (Math.random()*18)]=true;
