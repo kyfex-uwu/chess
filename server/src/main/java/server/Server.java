@@ -3,6 +3,7 @@ package server;
 import chess.ChessBoard;
 import com.google.gson.*;
 import dataAccess.DataAccessException;
+import dataAccess.DatabaseManager;
 import model.*;
 import services.AuthService;
 import services.GamesService;
@@ -36,6 +37,7 @@ public class Server {
     public static class InvalidRequestException extends Exception{}
 
     public int run(int desiredPort) {
+        try{ DatabaseManager.createDatabase(); }catch(Exception e){}
         Spark.port(desiredPort);
         
         Spark.staticFiles.location("web");

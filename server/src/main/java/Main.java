@@ -8,6 +8,5 @@ public class Main {
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
 
-        DatabaseManager.createDatabase();
     }
 }
