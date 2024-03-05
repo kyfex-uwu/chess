@@ -180,7 +180,6 @@ public class Server {
         });
 
         Spark.awaitInitialization();
-        return Spark.port();
     }
     private static final boolean logErrors=false;
 
