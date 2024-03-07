@@ -79,7 +79,14 @@ public class DatabaseManager {
      * Creates the database if it does not already exist.
      */
     public static void createDatabase() throws DataAccessException {
-        execStatement("CREATE DATABASE IF NOT EXISTS " + databaseName);
+        try {
+            try(var conn = DriverManager.getConnection(connectionUrl, user, password)) {
+                conn.prepareStatement("CREATE DATABASE IF NOT EXISTS " + databaseName).executeUpdate();
+            }
+        } catch(SQLException e){
+            throw new DataAccessException(e);
+        }
+
         execStatement("CREATE TABLE IF NOT EXISTS "+ """
                 `users` (
                   `username` VARCHAR(16) NOT NULL,
