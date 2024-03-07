@@ -81,6 +81,11 @@ public class AuthTests {
         Assertions.assertNull(AuthDataAccess.userFromToken("token"),
                 "Token is valid after being deleted");
     }
+    @Test @DisplayName("Delete Bad Token")
+    public void deleteBadToken() throws DataAccessException{
+        Assertions.assertThrows(DataAccessException.class, ()->AuthDataAccess.deleteToken(null));
+        Assertions.assertThrows(DataAccessException.class, ()->AuthDataAccess.deleteToken(""));
+    }
 
     @Test @DisplayName("User From Token")
     public void userFromToken() throws DataAccessException{
