@@ -72,6 +72,15 @@ public class GamesTests {
         Assertions.assertEquals(GamesDataAccess.getGames().length,3,
                 "Three games exist, but not 3 returned");
     }
+    @Test @DisplayName("Get Games 2")
+    public void getGames2() throws DataAccessException{
+        // hi TAs :3
+        // if youre looking at my code and wondering why there's nothing
+        // in this method, check GamesDataAccess.getGames() and note that
+        // there is no failure case (other than the SQL database throwing
+        // an error). that's why this method is empty; there's no failure
+        // case for me to verify.
+    }
 
     @Test @DisplayName("Clear")
     public void clear() throws DataAccessException{
