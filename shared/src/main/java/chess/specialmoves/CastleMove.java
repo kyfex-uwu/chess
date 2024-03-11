@@ -6,6 +6,13 @@ import chess.*;
  * Represents a castling move
  */
 public class CastleMove extends ChessMove {
+    static{
+        Json.specialMoveDeserializers.put("castle", data->
+                new CastleMove(
+                        ChessGame.TeamColor.valueOf(data[1]),
+                        Side.valueOf(data[2])));
+    }
+
     public enum Side{
         KINGSIDE(8, 1),
         QUEENSIDE(1, -1);
@@ -30,6 +37,6 @@ public class CastleMove extends ChessMove {
     }
 
     public String toString(){
-        return this.side.toString()+" "+this.color+" "+super.toString();
+        return  "scastle "+this.color+" "+this.side;
     }
 }

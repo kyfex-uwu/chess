@@ -1,7 +1,10 @@
 package server;
 
-import chess.ChessBoard;
-import com.google.gson.*;
+import chess.Json;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import dataAccess.DataAccessException;
 import dataAccess.DatabaseManager;
 import model.*;
@@ -10,17 +13,17 @@ import services.GamesService;
 import spark.ExceptionHandler;
 import spark.Spark;
 
+import static chess.ChessGame.TESTING;
+
 public class Server {
-    public static final String jsonEmpty = "{}";
-    public static final Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(ChessBoard.class, new ChessBoard.ChessBoardSerializer())
-            .create();
+    //todo: golden board when you checkmate without losing a piece
 
     public enum FailedResponse {
         ALREADY_TAKEN(403, "already taken"),
         NOT_AUTH(401, "not authorized"),
         BAD_REQ(400,"bad request"),
-        SERVER_ERROR(500, "something went wrong, please try again");
+        NOT_FOUND(404,"not found"),
+        SERVER_ERROR(500, "something went wrong :(");
         public final int status;
         public final String message;
         FailedResponse(int status, String message){
@@ -31,7 +34,7 @@ public class Server {
 
     private record ErrorMessage(String message){
         public static String error(String message){
-            return GSON.toJson(new ErrorMessage("Error: "+message));
+            return Json.GSON.toJson(new ErrorMessage("Error: "+message));
         }
     }
     public static class InvalidRequestException extends Exception{}
@@ -39,7 +42,7 @@ public class Server {
     public int run(int desiredPort) {
         try{ DatabaseManager.createDatabase(); }catch(Exception e){}
         Spark.port(desiredPort);
-        
+
         Spark.staticFiles.location("web");
 
         //delete db
@@ -48,11 +51,14 @@ public class Server {
             GamesService.clear();
 
             res.status(200);
-            return jsonEmpty;
+            return Json.jsonEmpty;
         });
         //register
         Spark.post("/user", (req, res) -> {
-            var data = GSON.fromJson(req.body(), UserData.class);
+            var data = Json.GSON.fromJson(req.body(), UserData.class);
+
+            if(TESTING&&data.pfp()==null)
+                data = new UserData(data.username(), data.password(), data.email());
 
             if(!AuthService.registerUser(data)){
                 res.status(FailedResponse.ALREADY_TAKEN.status);
@@ -66,11 +72,11 @@ public class Server {
             }
 
             res.status(200);
-            return GSON.toJson(new AuthData(token.get(), data.username()));
+            return Json.GSON.toJson(new AuthData(token.get(), data.username()));
         });
         //login
         Spark.post("/session", (req, res) -> {
-            var data = GSON.fromJson(req.body(), LoginData.class);
+            var data = Json.GSON.fromJson(req.body(), LoginData.class);
 
             var token = AuthService.login(data);
             if(token.isEmpty()){
@@ -79,7 +85,7 @@ public class Server {
             }
 
             res.status(200);
-            return GSON.toJson(new AuthData(token.get(), data.username()));
+            return Json.GSON.toJson(new AuthData(token.get(), data.username()));
         });
         //logout
         Spark.delete("/session", (req, res) -> {
@@ -91,7 +97,7 @@ public class Server {
             AuthService.logout(req.headers("Authorization"));
 
             res.status(200);
-            return jsonEmpty;
+            return Json.jsonEmpty;
         });
 
         //list games
@@ -104,7 +110,7 @@ public class Server {
 
             JsonArray array = new JsonArray();
             for(var data : GamesService.getGames()) {
-                array.add(GSON.toJsonTree(data));
+                array.add(Json.GSON.toJsonTree(data));
             }
 
             var toReturn = new JsonObject();
@@ -128,6 +134,7 @@ public class Server {
             String gameName;
             try{
                 gameName=((JsonObject)body).get("gameName").getAsString();
+                if(!TESTING&&!gameName.matches("[\\w ]{3,32}")) throw new Exception("wrong size");
             }catch(Exception e){
                 res.status(FailedResponse.BAD_REQ.status);
                 return ErrorMessage.error(FailedResponse.BAD_REQ.message);
@@ -146,7 +153,7 @@ public class Server {
                 res.status(hRes.get().status);
                 return ErrorMessage.error(hRes.get().message);
             }
-            var data = GSON.fromJson(req.body(), JoinGameData.class);
+            var data = Json.GSON.fromJson(req.body(), JoinGameData.class);
             if (!data.isValid()) throw new InvalidRequestException();
 
             var username = AuthService.getUserFromToken(req.headers("authorization")).username();
@@ -162,7 +169,47 @@ public class Server {
             }
 
             res.status(200);
-            return jsonEmpty;
+            return Json.jsonEmpty;
+        });
+
+        //--
+
+        //get specified user data
+        Spark.get("/user/:username", (req, res) -> {
+            var hRes=AuthService.validateHeader(req);
+            if(hRes.isPresent()){
+                res.status(hRes.get().status);
+                return ErrorMessage.error(hRes.get().message);
+            }
+
+            var user = AuthService.getUserFromName(req.params(":username"));
+            if(user==null){
+                res.status(FailedResponse.NOT_FOUND.status);
+                return ErrorMessage.error(FailedResponse.NOT_FOUND.message);
+            }
+
+            res.status(200);
+
+            return Json.GSON.toJson(new UserData(user.username(),"","",user.pfp()));
+        });
+
+        //get games with user
+        Spark.get("/game/:username", (req, res) -> {
+            var hRes= AuthService.validateHeader(req);
+            if(hRes.isPresent()){
+                res.status(hRes.get().status);
+                return ErrorMessage.error(hRes.get().message);
+            }
+
+            JsonArray array = new JsonArray();
+            for(var data : GamesService.getGamesWithUser(req.params(":username"))) {
+                array.add(Json.GSON.toJsonTree(data));
+            }
+
+            var toReturn = new JsonObject();
+            toReturn.add("games", array);
+            res.status(200);
+            return toReturn;
         });
 
         ExceptionHandler<Exception> e400handler = (e, request, response) -> {
@@ -183,7 +230,7 @@ public class Server {
 
         Spark.awaitInitialization();
     }
-    private static final boolean logErrors=false;
+    private static final boolean logErrors=true;
 
     public void stop() {
         Spark.stop();

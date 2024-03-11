@@ -28,7 +28,7 @@ function send(path, params, method, authToken) {
       return response.json();
     })
     .then((data) => {
-      document.getElementById('authToken').value = data.authToken || authToken || '';
+      document.getElementById('authToken').value = data.authToken || authToken || 'none';
       document.getElementById('response').innerText = errStr + JSON.stringify(data, null, 2);
     })
     .catch((error) => {

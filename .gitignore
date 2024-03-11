@@ -9,3 +9,6 @@ out/
 
 ### Mac OS ###
 .DS_Store
+
+# config file
+JACC_config

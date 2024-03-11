@@ -1,9 +1,7 @@
 package chess;
 
 import chess.specialmoves.CastleMove;
-import com.google.gson.*;
 
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -15,12 +13,12 @@ import java.util.stream.Collectors;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    private final ChessPiece[] pieces = new ChessPiece[8*8];
+    final ChessPiece[] pieces = new ChessPiece[8*8];
 
-    private final boolean[] blackDoubleMoved =new boolean[8];
-    private final boolean[] whiteDoubleMoved =new boolean[8];
-    private final boolean[] blackCanCastle=new boolean[]{true, true};
-    private final boolean[] whiteCanCastle=new boolean[]{true, true};
+    final boolean[] blackDoubleMoved =new boolean[8];
+    final boolean[] whiteDoubleMoved =new boolean[8];
+    final boolean[] blackCanCastle=new boolean[]{true, true};
+    final boolean[] whiteCanCastle=new boolean[]{true, true};
 
     public ChessBoard() {}
     private ChessBoard(ChessPiece[] pieces, boolean[] blackDoubleMoved, boolean[] whiteDoubleMoved,

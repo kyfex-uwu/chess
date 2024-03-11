@@ -5,8 +5,6 @@ import chess.specialmoves.DoublePawnMove;
 import chess.specialmoves.EnPassantMove;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Represents a single chess piece
@@ -53,7 +51,7 @@ public class ChessPiece {
         }, true, 'r'),
         PAWN(new Offset[]{}, false, 'p');//pawns are handled specially
         public final Collection<List<Offset>> moves;
-        private final char identifier;
+        public final char identifier;
         PieceType(Offset[] offsets, boolean eightFlag, char identifier){
             this.identifier=identifier;
             var collection = new ArrayList<List<Offset>>();

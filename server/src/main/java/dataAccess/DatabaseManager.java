@@ -1,9 +1,7 @@
 package dataAccess;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 public class DatabaseManager {
     private static final String databaseName;
@@ -92,6 +90,7 @@ public class DatabaseManager {
                   `username` VARCHAR(16) NOT NULL,
                   `password` VARCHAR(128) NOT NULL,
                   `email` VARCHAR(320) NOT NULL,
+                  `pfp` VARCHAR(54) NOT NULL,
                   PRIMARY KEY (`username`),
                   UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);""");
         execStatement("CREATE TABLE IF NOT EXISTS "+ """

@@ -7,8 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import passoffTests.TestFactory;
 
-import java.util.Arrays;
-
 /**
  * Tests if the ChessGame implementation can handle En Passant moves
  * En Passant is a situational move in chess taken directly after your opponent has double moved a pawn

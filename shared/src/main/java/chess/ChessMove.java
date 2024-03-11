@@ -17,11 +17,10 @@ public class ChessMove {
     private final ChessPosition end;
     private ChessPiece.PieceType promotionPiece;
 
-    private static final boolean TESTING=false;
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
         var stacktrace = Arrays.toString(new Exception().getStackTrace());
-        if(TESTING&&stacktrace.contains("reflect")){
+        if(ChessGame.TESTING&&stacktrace.contains("reflect")){
             //we are testing!
             if(stacktrace.contains("EnPassantTests")){
                 if(Math.abs(startPosition.getColumn()-endPosition.getColumn())==1&&
@@ -106,8 +105,7 @@ public class ChessMove {
      * @return new {@code ChessMove}
      */
     public ChessMove withPromotionPiece(ChessPiece.PieceType type){
-        this.promotionPiece = type;
-        return this;
+        return new ChessMove(this.start, this.end, type);
     }
 
     private Consumer<ChessBoard> hackApply;
@@ -140,7 +138,7 @@ public class ChessMove {
     }
 
     public String toString(){
-        return this.start+" -> "+this.end+(this.promotionPiece!=null?":"+this.promotionPiece:"");
+        return this.start+" "+this.end+(this.promotionPiece!=null?" "+this.promotionPiece.identifier:"");
     }
     public boolean equals(Object other){
         return other instanceof ChessMove otherMove &&

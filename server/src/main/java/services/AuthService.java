@@ -10,7 +10,8 @@ import server.Server;
 import spark.Request;
 
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Base64;
+import java.util.Optional;
 
 public class AuthService {
     // https://stackoverflow.com/a/56628391/14000178
@@ -44,7 +45,6 @@ public class AuthService {
 
         var user = AuthDataAccess.getUser(loginData.username());
         if(user!=null&&encoder.matches(loginData.password(), user.password())){
-            //AuthDataAccess.deleteToken(AuthDataAccess.getToken(loginData.username()));
             var token = generateNewToken();
             AuthDataAccess.createToken(new AuthData(token, loginData.username()));
             return Optional.of(token);
@@ -64,5 +64,11 @@ public class AuthService {
         if(authHeader==null||authHeader.isEmpty()) return Optional.of(Server.FailedResponse.BAD_REQ);
         if(!validateToken(authHeader)) return Optional.of(Server.FailedResponse.NOT_AUTH);
         return Optional.empty();
+    }
+
+    //--
+
+    public static UserData getUserFromName(String name) throws DataAccessException {
+        return AuthDataAccess.getUser(name);
     }
 }
