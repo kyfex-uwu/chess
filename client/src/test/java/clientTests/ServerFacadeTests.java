@@ -146,7 +146,7 @@ public class ServerFacadeTests {
     }
     @Test @DisplayName("Bad List Games")
     public void badListGames(){
-        Online.request(Online.ReqMethod.GET, "game", new Online.EmptyData())
+        Online.request(Online.ReqMethod.GET, "game", (String)null)
                 .ifSuccess(authData -> {
                     Assertions.fail();
                 }).
