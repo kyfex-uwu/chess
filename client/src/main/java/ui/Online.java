@@ -9,7 +9,8 @@ import java.net.URI;
 import java.util.function.Consumer;
 
 public class Online {
-    private static final String baseUrl = "http://localhost:6000/";
+    private static String baseUrl = "http://localhost:6000/";
+    public static void changeBaseUrl(String newUrl){ baseUrl = newUrl; }
     public enum ReqMethod{
         GET("GET"),
         POST("POST"),
