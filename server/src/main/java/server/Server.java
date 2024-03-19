@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import dataAccess.DataAccessException;
+import dataAccess.DatabaseManager;
 import model.AuthData;
 import model.JoinGameData;
 import model.LoginData;
@@ -42,6 +43,7 @@ public class Server {
     public static class InvalidRequestException extends Exception{}
 
     public int run(int desiredPort) {
+        try{DatabaseManager.createDatabase();}catch(Exception ignored){}
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
