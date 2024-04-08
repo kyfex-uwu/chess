@@ -40,7 +40,7 @@ public class Server {
     public static class InvalidRequestException extends Exception{}
 
     public int run(int desiredPort) {
-        DatabaseManager.createDatabase();
+        try{DatabaseManager.createDatabase();}catch(Exception e){}
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
