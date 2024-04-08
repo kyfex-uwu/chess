@@ -21,14 +21,15 @@ public class ChessBoard {
     private final boolean[] whiteCanCastle=new boolean[]{true, true};
 
     public ChessBoard() {}
-    private ChessBoard(ChessPiece[] pieces, boolean[] BEP, boolean[] WEP, boolean[] BCC, boolean[] WCC){
+    private ChessBoard(ChessPiece[] pieces, boolean[] blackDoubleMoved, boolean[] whiteDoubleMoved,
+                       boolean[] blackCanCastle, boolean[] whiteCanCastle){
         for(int i=0;i<pieces.length;i++){
             this.pieces[i]=pieces[i]==null?null:pieces[i].clone();
         }
-        System.arraycopy(BEP, 0, this.blackDoubleMoved, 0, 8);
-        System.arraycopy(WEP, 0, this.whiteDoubleMoved, 0, 8);
-        System.arraycopy(BCC, 0, this.blackCanCastle, 0, 2);
-        System.arraycopy(WCC, 0, this.whiteCanCastle, 0, 2);
+        System.arraycopy(blackDoubleMoved, 0, this.blackDoubleMoved, 0, 8);
+        System.arraycopy(whiteDoubleMoved, 0, this.whiteDoubleMoved, 0, 8);
+        System.arraycopy(blackCanCastle, 0, this.blackCanCastle, 0, 2);
+        System.arraycopy(whiteCanCastle, 0, this.whiteCanCastle, 0, 2);
     }
 
     /**
