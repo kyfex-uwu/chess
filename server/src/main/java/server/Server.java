@@ -11,6 +11,7 @@ import services.AuthService;
 import services.GamesService;
 import spark.ExceptionHandler;
 import spark.Spark;
+import dataAccess.DatabaseManager;
 
 import static chess.ChessGame.TESTING;
 
